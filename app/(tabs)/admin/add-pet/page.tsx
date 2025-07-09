@@ -127,7 +127,7 @@ export default function AddPetPage() {
         Alert.alert(
           "Success",
           "Pet added successfully!",
-          [{ text: "OK", onPress: () => router.push("/admin/dashboard") }]
+          [{ text: "OK", onPress: () => router.push("/(tabs)/admin/dashboard" as any) }]
         );
       }
     } catch (error) {

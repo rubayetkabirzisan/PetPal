@@ -54,7 +54,7 @@ export default function AuthPage() {
         setMessageType('success');
         setTimeout(() => {
           if (user.type === 'admin') {
-            router.replace('/(tabs)/admin/dashboard');
+            router.replace('/(tabs)/admin/dashboard' as any);
           } else {
             router.replace('/(tabs)/adopter/dashboard' as any);
           }
