@@ -1,21 +1,41 @@
 {
   "expo": {
     "name": "PetPal",
-    "slug": "PetPal",
+    "slug": "petpal-adoption",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "petpal",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/splash-icon.png",
+      "imageWidth": 200,
+      "resizeMode": "contain",
+      "backgroundColor": "#FF7A47"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.petpal.adoption",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app uses the camera to take photos of pets.",
+        "NSLocationWhenInUseUsageDescription": "This app uses location to help find lost pets and track GPS-enabled pets."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#FF7A47"
       },
+      "package": "com.petpal.adoption",
+      "permissions": [
+        "CAMERA",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ],
       "edgeToEdgeEnabled": true
     },
     "web": {
@@ -25,15 +45,19 @@
     },
     "plugins": [
       "expo-router",
+      "expo-camera",
+      "expo-location",
       [
         "expo-splash-screen",
         {
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#FF7A47"
         }
-      ]
+      ],
+      "expo-maps",
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true

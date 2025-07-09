@@ -1,8 +1,8 @@
-# Welcome to your Expo app 👋
+# PetPal Mobile App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A React Native mobile application for pet adoption, built with Expo.
 
-## Get started
+## Get Started
 
 1. Install dependencies
 
@@ -16,24 +16,122 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+## Project Structure
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+The project follows a hybrid structure combining Expo Router (similar to Next.js file-based routing) with a traditional src folder organization:
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+PetPal/
+├── app/                           # Expo Router file-based routing (similar to Next.js pages)
+│   ├── _layout.tsx                # Root layout with global styles
+│   ├── (tabs)/                    # Tab-based navigation group
+│   │   ├── _layout.tsx            # Tab configuration
+│   │   ├── index.tsx              # Home tab
+│   │   ├── admin/                 # Admin tab screens
+│   │   │   ├── dashboard.tsx      # Admin dashboard
+│   │   │   ├── pets.tsx           # Manage pets
+│   │   │   ├── applications.tsx   # View applications
+│   │   │   └── messages.tsx       # Admin messages
+│   │   └── adopter/               # Adopter tab screens
+│   │       ├── dashboard.tsx      # Adopter dashboard
+│   │       ├── browse.tsx         # Browse pets
+│   │       ├── applications.tsx   # My applications
+│   │       └── messages.tsx       # Adopter messages
+│   ├── auth/                      # Authentication screens
+│   │   └── index.tsx              # Login/Register screen
+│   ├── admin/                     # Admin deep screens (non-tab)
+│   │   ├── add-pet/               # Add new pet form
+│   │   │   └── index.tsx
+│   │   ├── pets/                  # Pet management screens
+│   │   │   ├── edit/
+│   │   │   │   └── [id].tsx       # Edit pet (dynamic route)
+│   │   │   └── records/
+│   │   │       └── [id].tsx       # Pet records (dynamic route)
+│   │   └── contact/
+│   │       └── [applicationId].tsx # Contact adopter (dynamic route)
+│   └── adopter/                   # Adopter deep screens (non-tab)
+│       ├── pet/                   # Pet detail screens
+│       │   └── [id]/              # Dynamic pet ID route
+│       │       ├── index.tsx      # Pet details
+│       │       └── apply/         # Apply to adopt
+│       │           └── index.tsx
+│       └── chat/                  # Chat screens
+│           └── [id].tsx           # Individual chat (dynamic route)
+├── src/                           # Source code organized by feature
+│   ├── components/                # Shared components not tied to specific screens
+│   ├── contexts/                  # React contexts for state management
+│   │   └── AuthContext.tsx        # Authentication context
+│   ├── navigation/                # Navigation configuration
+│   │   ├── AdminTabNavigator.tsx  # Admin tab navigator configuration
+│   │   └── AdopterTabNavigator.tsx # Adopter tab navigator configuration
+│   ├── screens/                   # Screen components that map to routes
+│   │   ├── AdminDashboardScreen.tsx
+│   │   ├── AdopterDashboardScreen.tsx
+│   │   ├── ApplicationTrackerScreen.tsx
+│   │   ├── BrowsePetsScreen.tsx
+│   │   ├── ChatScreen.tsx
+│   │   ├── ManagePetsScreen.tsx
+│   │   ├── PetProfileScreen.tsx
+│   │   └── ...more screens
+│   ├── theme/                     # Styling themes and constants
+│   │   └── theme.ts              # Theme configuration
+│   └── lib/                       # Utility functions and data
+│       ├── data.ts               # Sample data for development
+│       └── utils.ts              # Utility functions
+├── components/                    # Shared UI components
+│   ├── Header.tsx                # App header component
+│   └── ui/                       # UI component library
+│       ├── badge.tsx             # Badge component
+│       ├── button.tsx            # Button component
+│       └── ...more UI components
+├── hooks/                         # Custom React hooks
+│   └── useAuth.ts                # Authentication hook
+├── assets/                        # Static assets
+│   ├── images/                   # Images and icons
+│   └── fonts/                    # Custom fonts
+├── App.tsx                        # Root component (redirects to Expo Router)
+└── index.js                       # Entry point
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## NextJS to React Native/Expo Router Migration Notes
+
+This project is a migration of a NextJS pet adoption application to React Native using Expo Router. Here's how the structure maps:
+
+### File Structure Mapping
+
+1. **NextJS → Expo Router**:
+   - `app/page.tsx` → `app/index.tsx` (root screen)
+   - `app/[dynamic]/page.tsx` → `app/[dynamic]/index.tsx` (dynamic routes)
+   - `app/layout.tsx` → `app/_layout.tsx` (layouts)
+
+2. **Component Organization**:
+   - UI components in `components/ui/` remain in the same location
+   - Screen-specific components moved to `src/screens/`
+   - Shared utility functions in `lib/` moved to `src/lib/`
+
+3. **Navigation**:
+   - NextJS file-based routing → Expo Router file-based routing
+   - NextJS grouped routes → Expo Router groups (e.g., `(tabs)`)
+   - Dynamic segments use the same `[param]` syntax
+
+4. **Entry Points**:
+   - NextJS has no explicit entry file → React Native uses `index.js` and `App.tsx`
+   - App configuration in `app.json` for Expo settings
+
+## Development
+
+You can run the app with:
+
+```bash
+# Start the development server
+npx expo start
+
+# Run on iOS simulator
+npx expo run:ios
+
+# Run on Android emulator
+npx expo run:android
+```
 
 ## Learn more
 
