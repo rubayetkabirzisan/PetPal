@@ -1,21 +1,21 @@
 import {
-    getAdopterVerifications,
-    getVerificationStats,
-    updateVerificationStatus,
-    type AdopterVerification
+  getAdopterVerifications,
+  getVerificationStats,
+  updateVerificationStatus,
+  type AdopterVerification
 } from '@/lib/adopter-verification';
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-    Modal,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  Modal,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 export default function AdopterVerificationPage() {
@@ -153,7 +153,7 @@ export default function AdopterVerificationPage() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity 
-          onPress={() => router.push('/admin/dashboard')} 
+          onPress={() => router.push('/(tabs)/admin/dashboard' as any)} 
           style={styles.backButton}
         >
           <Feather name="home" size={24} color="#8B4513" />

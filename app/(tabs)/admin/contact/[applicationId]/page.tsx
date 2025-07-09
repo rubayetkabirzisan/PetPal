@@ -55,12 +55,12 @@ export default function ContactAdopter() {
 
           setMessage(defaultMessage)
         } else {
-          router.push("/admin/applications")
+          router.push("/(tabs)/admin/applications" as any)
         }
       } catch (error) {
         console.error("Error loading application data:", error)
         Alert.alert("Error", "Failed to load application data")
-        router.push("/admin/applications")
+        router.push("/(tabs)/admin/applications" as any)
       } finally {
         setLoading(false)
       }
@@ -79,7 +79,7 @@ export default function ContactAdopter() {
       
       // Redirect back to applications after 3 seconds
       setTimeout(() => {
-        router.push("/admin/applications")
+        router.push("/(tabs)/admin/applications" as any)
       }, 3000)
     } catch (error) {
       Alert.alert("Error", "Failed to send message")
@@ -120,7 +120,7 @@ export default function ContactAdopter() {
       <View style={styles.header}>
         <TouchableOpacity 
           style={styles.backButton} 
-          onPress={() => router.push("/admin/applications")}
+          onPress={() => router.push("/(tabs)/admin/applications" as any)}
         >
           <Feather name="arrow-left" size={24} color="#8B4513" />
         </TouchableOpacity>

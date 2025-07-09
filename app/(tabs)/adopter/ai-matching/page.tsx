@@ -20,7 +20,7 @@ export default function AIMatchingPage() {
     const loadMatchesAndPreferences = async () => {
       try {
         if (!user) {
-          router.push('/auth');
+          router.push("/auth/page" as any);
           return;
         }
 

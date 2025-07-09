@@ -320,7 +320,7 @@ export default function Applications() {
       
       {/* Header */}
       <View style={styles.header}>
-        <Link href="/admin/dashboard" asChild>
+        <Link href="/(tabs)/admin/dashboard/page" asChild>
           <TouchableOpacity style={styles.backButton}>
             <Feather name="home" size={24} color="#8B4513" />
           </TouchableOpacity>

@@ -110,7 +110,7 @@ export default function DemoPage() {
           <View style={styles.cardContent}>
             <TouchableOpacity 
               style={[styles.primaryButton, { backgroundColor: theme.colors.primary }]}
-              onPress={() => router.push("/(tabs)/admin/dashboard")}
+              onPress={() => router.push("/(tabs)/admin/dashboard" as any)}
             >
               <Ionicons name="bar-chart" size={18} color="white" style={styles.buttonIcon} />
               <Text style={styles.primaryButtonText}>Admin Dashboard</Text>
@@ -118,7 +118,7 @@ export default function DemoPage() {
 
             <TouchableOpacity 
               style={[styles.outlineButton, { borderColor: theme.colors.primary }]}
-              onPress={() => router.push("/(tabs)/admin/pets")}
+              onPress={() => router.push("/(tabs)/admin/pets" as any)}
             >
               <Ionicons name="add" size={18} color={theme.colors.primary} style={styles.buttonIcon} />
               <Text style={[styles.outlineButtonText, { color: theme.colors.primary }]}>
@@ -128,7 +128,7 @@ export default function DemoPage() {
 
             <TouchableOpacity 
               style={[styles.outlineButton, { borderColor: theme.colors.primary }]}
-              onPress={() => router.push("/(tabs)/admin/applications")}
+              onPress={() => router.push("/(tabs)/admin/applications" as any)}
             >
               <Ionicons name="document-text" size={18} color={theme.colors.primary} style={styles.buttonIcon} />
               <Text style={[styles.outlineButtonText, { color: theme.colors.primary }]}>

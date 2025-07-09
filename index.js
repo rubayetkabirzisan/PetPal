@@ -1,9 +1,8 @@
 // This file serves as the entry point for the application.
-// It re-exports the default export from the expo-router/entry file.
+// It registers the main App component with React Native.
 
-import 'expo-router/entry';
+import { registerRootComponent } from 'expo';
+import App from './App';
 
-// You can add additional setup or initialization code here if needed.
-// For example, global error handlers, analytics initialization, etc.
-
-// For most cases, this file can remain simple as expo-router handles the routing.
+// Register the main component
+registerRootComponent(App);

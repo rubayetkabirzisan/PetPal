@@ -11,7 +11,7 @@ export default function HomeScreen() {
     if (user) {
       // If user is already logged in, navigate to their dashboard
       if (user.type === 'admin') {
-        router.replace('/(tabs)/admin/dashboard');
+        router.replace('/(tabs)/admin/dashboard' as any);
       } else {
         // Using type assertion for adopter dashboard path
         router.replace('/(tabs)/adopter/dashboard' as any);

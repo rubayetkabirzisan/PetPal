@@ -61,7 +61,7 @@ export default function PetProfilePage() {
 
   const handleApplyForAdoption = () => {
     if (!user) {
-      router.push("/auth");
+      router.push("/auth/page" as any);
       return;
     }
     router.push(`/adopter/pet/${id}/apply` as any);
