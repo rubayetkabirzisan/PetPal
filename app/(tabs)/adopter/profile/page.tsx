@@ -37,7 +37,7 @@ export default function ProfilePage() {
   const handleLogout = () => {
     // Add logout logic here
     // For example: auth.signOut();
-    router.push('/auth');
+    router.push("/auth/page" as any);
   };
 
   const Badge = ({ label }: { label: string }) => (

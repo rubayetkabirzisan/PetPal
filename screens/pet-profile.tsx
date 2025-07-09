@@ -62,12 +62,12 @@ const PetProfileScreen = ({ petId: propPetId }: PetProfileScreenProps) => {
   const handleApplyForAdoption = () => {
     if (!pet || !user) {
       // Redirect to auth if not logged in
-      router.push("/auth");
+      router.push("/auth/page" as any);
       return;
     }
 
     // Redirect to adoption application form
-    router.push(`/adopter/pet/${pet.id}/apply`);
+    router.push(`/adopter/pet/${pet.id}/apply` as any);
   };
 
   const toggleFavorite = async () => {
