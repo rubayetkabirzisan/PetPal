@@ -107,7 +107,7 @@ const BrowsePetsScreen = () => {
     });
 
   const handleViewProfile = (petId: string) => {
-    router.push(`/adopter/pet/${petId}`);
+    router.push(`/adopter/pet/${petId}` as any);
   };
 
   const clearFilters = () => {
