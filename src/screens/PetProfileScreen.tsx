@@ -71,6 +71,14 @@ export default function PetProfileScreen({ navigation, route }: PetProfileScreen
 
   return (
     <View style={styles.container}>
+      {/* Back Button - Fixed at the top */}
+      <TouchableOpacity 
+        style={styles.backButton} 
+        onPress={() => navigation.goBack()}
+      >
+        <Ionicons name="arrow-back" size={24} color="white" />
+      </TouchableOpacity>
+      
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Image Carousel */}
         <View style={styles.imageContainer}>
@@ -240,9 +248,16 @@ export default function PetProfileScreen({ navigation, route }: PetProfileScreen
               <Ionicons name="location-outline" size={16} color={colors.primary} />
               <Text style={styles.contactText}>{pet.shelter.address}</Text>
             </View>
+            
+            {/* Contact Button */}
+            <TouchableOpacity style={styles.contactButton} onPress={handleContactShelter}>
+              <Ionicons name="call" size={20} color="white" />
+              <Text style={styles.contactButtonText}>Contact Shelter</Text>
+            </TouchableOpacity>
           </View>
         </View>
 
+        {/* Add sufficient padding at the bottom to prevent content from being hidden under action buttons */}
         <View style={styles.bottomSpacing} />
       </ScrollView>
 
@@ -265,6 +280,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  backButton: {
+    position: "absolute",
+    top: 50,
+    left: 20,
+    backgroundColor: "rgba(0, 0, 0, 0.4)",
+    borderRadius: 20,
+    padding: 8,
+    zIndex: 10, // Ensure it appears above other elements
   },
   loadingContainer: {
     flex: 1,
@@ -497,8 +521,23 @@ const styles = StyleSheet.create({
     color: colors.text,
     marginLeft: 12,
   },
+  contactButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.primary,
+    borderRadius: 12,
+    padding: 14,
+    marginTop: 16,
+    gap: 8,
+  },
+  contactButtonText: {
+    fontSize: 16,
+    color: "white",
+    fontWeight: "600",
+  },
   bottomSpacing: {
-    height: 120,
+    height: 180, // Increased height to provide more space for the action buttons
   },
   actionButtons: {
     position: "absolute",
@@ -507,11 +546,16 @@ const styles = StyleSheet.create({
     right: 0,
     backgroundColor: "white",
     padding: 24,
-    borderTopWidth: 2,
+    borderTopWidth: 1,
     borderTopColor: colors.border,
     gap: 16,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 10,
   },
   chatButton: {
     flexDirection: "row",

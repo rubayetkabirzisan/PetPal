@@ -46,13 +46,13 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
   const renderQuickActions = () => (
     <View style={styles.quickActionsContainer}>
       <View style={styles.quickActionsRow}>
-        <TouchableOpacity style={styles.quickActionCard}>
+        <TouchableOpacity key="applications" style={styles.quickActionCard}>
           <Ionicons name="calendar-outline" size={24} color={colors.primary} />
           <Text style={styles.quickActionNumber}>3</Text>
           <Text style={styles.quickActionLabel}>Applications</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.quickActionCard}>
+        <TouchableOpacity key="messages" style={styles.quickActionCard}>
           <Ionicons name="chatbubble-outline" size={24} color={colors.primary} />
           <Text style={styles.quickActionNumber}>5</Text>
           <Text style={styles.quickActionLabel}>Messages</Text>
@@ -60,13 +60,13 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
       </View>
 
       <View style={styles.quickActionsRow}>
-        <TouchableOpacity style={styles.quickActionCard}>
+        <TouchableOpacity key="adopted-pets" style={styles.quickActionCard}>
           <Ionicons name="heart-outline" size={24} color={colors.primary} />
           <Text style={styles.quickActionNumber}>2</Text>
           <Text style={styles.quickActionLabel}>Adopted Pets</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.quickActionCard}>
+        <TouchableOpacity key="reminders" style={styles.quickActionCard}>
           <Ionicons name="book-outline" size={24} color={colors.primary} />
           <Text style={styles.quickActionNumber}>4</Text>
           <Text style={styles.quickActionLabel}>Reminders</Text>
@@ -119,9 +119,9 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
     </View>
   )
 
-  const renderPetCard = (pet: Pet) => (
+  const renderPetCard = (pet: Pet, index: number) => (
     <TouchableOpacity
-      key={pet.id}
+      key={`${pet.id}-${index}`} // Add index to ensure uniqueness
       style={styles.petCard}
       onPress={() => navigation.navigate("PetProfile", { petId: pet.id })}
     >
@@ -181,7 +181,9 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
       {renderAIMatchingCard()}
       {renderSearchAndFilters()}
 
-      <View style={styles.petsContainer}>{filteredPets.map(renderPetCard)}</View>
+      <View style={styles.petsContainer}>
+        {filteredPets.map((pet, index) => renderPetCard(pet, index))}
+      </View>
 
       {filteredPets.length === 0 && (
         <View style={styles.emptyState}>

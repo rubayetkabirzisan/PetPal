@@ -1,7 +1,7 @@
 "use client"
 
 import { Ionicons } from "@expo/vector-icons"
-import { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { FlatList, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
 import { getPets, type Pet } from "../lib/data"
 import { colors, spacing } from "../theme/theme"
@@ -15,6 +15,18 @@ export default function BrowsePetsScreen({ navigation }: BrowsePetsScreenProps) 
   const [selectedFilter, setSelectedFilter] = useState("all")
   const [pets, setPets] = useState<Pet[]>([])
   const [favorites, setFavorites] = useState<string[]>([])
+  
+  // Debug logging
+  useEffect(() => {
+    console.log("BrowsePetsScreen initialized");
+    
+    // Verify navigation prop
+    if (navigation) {
+      console.log("Navigation prop is available");
+    } else {
+      console.log("WARNING: Navigation prop is not available");
+    }
+  }, [])
 
   useEffect(() => {
     const allPets = getPets()
@@ -41,47 +53,83 @@ export default function BrowsePetsScreen({ navigation }: BrowsePetsScreenProps) 
     setFavorites(newFavorites)
   }
 
-  const renderPetCard = ({ item: pet }: { item: Pet }) => (
-    <TouchableOpacity style={styles.petCard} onPress={() => navigation.navigate("PetProfile", { petId: pet.id })}>
-      <Image source={{ uri: pet.images[0] || "https://via.placeholder.com/200x150" }} style={styles.petImage} />
-      <View style={styles.petInfo}>
-        <View style={styles.petHeader}>
-          <Text style={styles.petName}>{pet.name}</Text>
-          <TouchableOpacity onPress={() => toggleFavorite(pet.id)}>
-            <Ionicons
-              name={favorites.includes(pet.id) ? "heart" : "heart-outline"}
-              size={24}
-              color={favorites.includes(pet.id) ? colors.primary : colors.text}
-            />
-          </TouchableOpacity>
+  // Safe navigation function using the traditional React Navigation approach
+  const handlePetPress = (petId: string) => {
+    console.log(`Navigating to pet profile: ${petId}`);
+    
+    // Use the same working approach as in AdopterDashboardScreen
+    if (navigation) {
+      navigation.navigate("PetProfile", { petId });
+    } else {
+      console.error("Navigation prop is not available");
+    }
+  };
+
+  const renderPetCard = ({ item: pet, index }: { item: Pet; index: number }) => {
+    return (
+      <TouchableOpacity
+        key={`${pet.id}-${index}`}
+        style={styles.petCard}
+        onPress={() => {
+          // Using the same working approach as AdopterDashboardScreen
+          console.log(`Navigating to pet profile: ${pet.id}`);
+          
+          // Use the traditional React Navigation approach
+          if (navigation) {
+            navigation.navigate("PetProfile", { petId: pet.id });
+          } else {
+            console.error("Navigation prop is not available");
+          }
+        }}
+      >
+        <Image 
+          source={{ uri: pet.images[0] || "https://via.placeholder.com/200x150" }} 
+          style={styles.petImage}
+        />
+        <View style={styles.petInfo}>
+          <View style={styles.petHeader}>
+            <Text style={styles.petName}>{pet.name}</Text>
+            <TouchableOpacity 
+              onPress={(e) => {
+                e.stopPropagation();
+                toggleFavorite(pet.id);
+              }}
+            >
+              <Ionicons
+                name={favorites.includes(pet.id) ? "heart" : "heart-outline"}
+                size={24}
+                color={favorites.includes(pet.id) ? colors.primary : colors.text}
+              />
+            </TouchableOpacity>
+          </View>
+
+          <Text style={styles.petBreed}>
+            {pet.breed} • {pet.age}
+          </Text>
+
+          <View style={styles.petLocation}>
+            <Ionicons name="location-outline" size={14} color={colors.text} />
+            <Text style={styles.petLocationText}>{pet.distance}</Text>
+          </View>
+
+          <View style={styles.petBadges}>
+            {pet.vaccinated && (
+              <View style={[styles.badge, styles.badgeGreen]}>
+                <Text style={styles.badgeText}>Vaccinated</Text>
+              </View>
+            )}
+            {pet.neutered && (
+              <View style={[styles.badge, styles.badgeBlue]}>
+                <Text style={styles.badgeText}>Neutered</Text>
+              </View>
+            )}
+          </View>
+
+          <Text style={styles.adoptionFee}>${pet.adoptionFee} adoption fee</Text>
         </View>
-
-        <Text style={styles.petBreed}>
-          {pet.breed} • {pet.age}
-        </Text>
-
-        <View style={styles.petLocation}>
-          <Ionicons name="location-outline" size={14} color={colors.text} />
-          <Text style={styles.petLocationText}>{pet.distance}</Text>
-        </View>
-
-        <View style={styles.petBadges}>
-          {pet.vaccinated && (
-            <View style={[styles.badge, styles.badgeGreen]}>
-              <Text style={styles.badgeText}>Vaccinated</Text>
-            </View>
-          )}
-          {pet.neutered && (
-            <View style={[styles.badge, styles.badgeBlue]}>
-              <Text style={styles.badgeText}>Neutered</Text>
-            </View>
-          )}
-        </View>
-
-        <Text style={styles.adoptionFee}>${pet.adoptionFee} adoption fee</Text>
-      </View>
-    </TouchableOpacity>
-  )
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -115,7 +163,7 @@ export default function BrowsePetsScreen({ navigation }: BrowsePetsScreenProps) 
       <FlatList
         data={filteredPets}
         renderItem={renderPetCard}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item, index) => `${item.id}-${index}`}
         numColumns={2}
         contentContainerStyle={styles.petsContainer}
         showsVerticalScrollIndicator={false}
@@ -129,6 +177,7 @@ export default function BrowsePetsScreen({ navigation }: BrowsePetsScreenProps) 
       />
     </View>
   )
+
 }
 
 const styles = StyleSheet.create({

@@ -3,7 +3,7 @@ import { Navigation } from "@/components/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { getAdoptionHistory } from "@/lib/adoption-history";
 import { Feather } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
@@ -11,6 +11,7 @@ import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "rea
 import { type AdoptionHistoryEntry } from "@/lib/adoption-history";
 
 export default function AdopterHistoryPage() {
+  const router = useRouter();
   const [adoptedPets, setAdoptedPets] = useState<AdoptionHistoryEntry[]>([]);
   const { user } = useAuth();
 

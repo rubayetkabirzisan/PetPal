@@ -1,16 +1,17 @@
 "use client"
 
 import { Ionicons } from "@expo/vector-icons"
+import { useRouter } from "expo-router"
 import { useState } from "react"
 import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
 import { useAuth } from "../contexts/AuthContext"
 import { colors } from "../theme/theme"
 
 interface AdopterProfileScreenProps {
-  navigation: any
 }
 
-export default function AdopterProfileScreen({ navigation }: AdopterProfileScreenProps) {
+export default function AdopterProfileScreen() {
+  const router = useRouter()
   const [isEditing, setIsEditing] = useState(false)
   const [profile, setProfile] = useState({
     name: "Demo User",
@@ -30,7 +31,14 @@ export default function AdopterProfileScreen({ navigation }: AdopterProfileScree
   const handleLogout = () => {
     Alert.alert("Sign Out", "Are you sure you want to sign out?", [
       { text: "Cancel", style: "cancel" },
-      { text: "Sign Out", style: "destructive", onPress: logout },
+      { 
+        text: "Sign Out", 
+        style: "destructive", 
+        onPress: async () => {
+          await logout()
+          router.replace("/auth" as any)
+        }
+      },
     ])
   }
 
@@ -39,31 +47,55 @@ export default function AdopterProfileScreen({ navigation }: AdopterProfileScree
       icon: "notifications-outline",
       title: "Notifications",
       subtitle: "2 new notifications",
-      onPress: () => navigation.navigate("Notifications"),
+      path: "notifications",
+      onPress: () => router.push("/(tabs)/adopter/notifications/page" as any),
     },
     {
       icon: "heart-outline",
       title: "Adoption History",
       subtitle: "View your adopted pets",
-      onPress: () => navigation.navigate("History"),
+      path: "history",
+      onPress: () => router.push("/(tabs)/adopter/history/page" as any),
     },
     {
       icon: "document-text-outline",
       title: "Applications",
       subtitle: "Track your applications",
-      onPress: () => navigation.navigate("Applications"),
+      path: "applications",
+      onPress: () => router.push("/(tabs)/adopter/applications/page" as any),
     },
     {
       icon: "chatbubble-outline",
       title: "Messages",
       subtitle: "Chat with shelters",
-      onPress: () => navigation.navigate("Messages"),
+      path: "messages",
+      onPress: () => router.push("/(tabs)/adopter/messages/page" as any),
     },
     {
       icon: "settings-outline",
       title: "Settings",
       subtitle: "App preferences",
-      onPress: () => console.log("Settings"),
+      path: "settings",
+      onPress: () => console.log("Settings feature not yet implemented"),
+    },
+    {
+      icon: "log-out-outline",
+      title: "Log Out",
+      subtitle: "Sign out of your account",
+      path: "logout",
+      onPress: () => {
+        Alert.alert("Log Out", "Are you sure you want to log out?", [
+          { text: "Cancel", style: "cancel" },
+          { 
+            text: "Log Out", 
+            style: "destructive", 
+            onPress: async () => {
+              await logout()
+              router.replace("/auth" as any)
+            }
+          }
+        ])
+      },
     },
   ]
 
@@ -174,27 +206,36 @@ export default function AdopterProfileScreen({ navigation }: AdopterProfileScree
       {/* Menu Items */}
       <View style={styles.menuContainer}>
         {menuItems.map((item, index) => (
-          <TouchableOpacity key={index} style={styles.menuItem} onPress={item.onPress}>
+          <TouchableOpacity 
+            key={index} 
+            style={[styles.menuItem, item.title === "Log Out" ? { borderColor: colors.error } : {}]} 
+            onPress={item.onPress}
+          >
             <View style={styles.menuItemLeft}>
-              <View style={styles.menuIcon}>
-                <Ionicons name={item.icon as any} size={20} color={colors.primary} />
+              <View style={[styles.menuIcon, item.title === "Log Out" ? { backgroundColor: "#FFF1F0" } : {}]}>
+                <Ionicons 
+                  name={item.icon as any} 
+                  size={20} 
+                  color={item.title === "Log Out" ? colors.error : colors.primary} 
+                />
               </View>
               <View style={styles.menuItemInfo}>
-                <Text style={styles.menuItemTitle}>{item.title}</Text>
+                <Text style={[
+                  styles.menuItemTitle, 
+                  item.title === "Log Out" ? { color: colors.error } : {}
+                ]}>
+                  {item.title}
+                </Text>
                 <Text style={styles.menuItemSubtitle}>{item.subtitle}</Text>
               </View>
             </View>
-            <Ionicons name="chevron-forward" size={16} color={colors.text} />
+            <Ionicons 
+              name="chevron-forward" 
+              size={16} 
+              color={item.title === "Log Out" ? colors.error : colors.text} 
+            />
           </TouchableOpacity>
         ))}
-      </View>
-
-      {/* Logout Button */}
-      <View style={styles.logoutContainer}>
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={20} color={colors.error} />
-          <Text style={styles.logoutButtonText}>Sign Out</Text>
-        </TouchableOpacity>
       </View>
     </ScrollView>
   )

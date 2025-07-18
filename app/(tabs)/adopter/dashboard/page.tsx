@@ -1,6 +1,6 @@
 import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { router } from "expo-router";
+import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
@@ -29,6 +29,7 @@ interface FilterButtonProps {
 }
 
 export default function AdopterDashboard() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("all");
   const [pets, setPets] = useState<Pet[]>([]);
@@ -298,10 +299,10 @@ export default function AdopterDashboard() {
 
           {recentCareEntries && recentCareEntries.length > 0 ? (
             <View style={styles.entriesContainer}>
-              {recentCareEntries.map((entry) => {
+              {recentCareEntries.map((entry, index) => {
                 const typeStyle = getTypeColor(entry.type);
                 return (
-                  <View key={entry.id} style={styles.entryItem}>
+                  <View key={`${entry.id}-${index}`} style={styles.entryItem}>
                     <View style={styles.entryItemContent}>
                       <View style={styles.entryItemHeader}>
                         <View
@@ -444,9 +445,9 @@ export default function AdopterDashboard() {
 
         {/* Pet Cards */}
         <View style={styles.petCardsContainer}>
-          {filteredPets.map((pet) => (
+          {filteredPets.map((pet, index) => (
             <TouchableOpacity
-              key={pet.id}
+              key={`${pet.id}-${index}`}
               style={styles.petCard}
               onPress={() => router.push(`/(tabs)/adopter/pet/${pet.id}/page` as any)}
             >
