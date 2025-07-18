@@ -46,13 +46,21 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
   const renderQuickActions = () => (
     <View style={styles.quickActionsContainer}>
       <View style={styles.quickActionsRow}>
-        <TouchableOpacity key="applications" style={styles.quickActionCard}>
+        <TouchableOpacity 
+          key="applications" 
+          style={styles.quickActionCard}
+          onPress={() => navigation.navigate("ApplicationTracker")}
+        >
           <Ionicons name="calendar-outline" size={24} color={colors.primary} />
           <Text style={styles.quickActionNumber}>3</Text>
           <Text style={styles.quickActionLabel}>Applications</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity key="messages" style={styles.quickActionCard}>
+        <TouchableOpacity 
+          key="messages" 
+          style={styles.quickActionCard}
+          onPress={() => navigation.navigate("Chat")}
+        >
           <Ionicons name="chatbubble-outline" size={24} color={colors.primary} />
           <Text style={styles.quickActionNumber}>5</Text>
           <Text style={styles.quickActionLabel}>Messages</Text>
@@ -60,13 +68,21 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
       </View>
 
       <View style={styles.quickActionsRow}>
-        <TouchableOpacity key="adopted-pets" style={styles.quickActionCard}>
+        <TouchableOpacity 
+          key="adopted-pets" 
+          style={styles.quickActionCard}
+          onPress={() => navigation.navigate("AdoptionHistory")}
+        >
           <Ionicons name="heart-outline" size={24} color={colors.primary} />
           <Text style={styles.quickActionNumber}>2</Text>
           <Text style={styles.quickActionLabel}>Adopted Pets</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity key="reminders" style={styles.quickActionCard}>
+        <TouchableOpacity 
+          key="reminders" 
+          style={styles.quickActionCard}
+          onPress={() => navigation.navigate("Reminders")}
+        >
           <Ionicons name="book-outline" size={24} color={colors.primary} />
           <Text style={styles.quickActionNumber}>4</Text>
           <Text style={styles.quickActionLabel}>Reminders</Text>
