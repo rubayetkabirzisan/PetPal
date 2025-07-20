@@ -252,12 +252,18 @@ export default function ApplicationTrackerScreen({ navigation, route }: Applicat
         </Text>
 
         <View style={styles.contactButtons}>
-          <TouchableOpacity style={styles.contactButton}>
+          <TouchableOpacity 
+            style={styles.contactButton}
+            onPress={() => navigation.navigate("Contact", { contactType: "phone" })}
+          >
             <Ionicons name="call-outline" size={20} color={colors.primary} />
             <Text style={styles.contactButtonText}>Call Us</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.contactButton}>
+          <TouchableOpacity 
+            style={styles.contactButton}
+            onPress={() => navigation.navigate("Chat", { supportChat: true })}
+          >
             <Ionicons name="chatbubble-outline" size={20} color={colors.primary} />
             <Text style={styles.contactButtonText}>Live Chat</Text>
           </TouchableOpacity>

@@ -49,7 +49,7 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
         <TouchableOpacity 
           key="applications" 
           style={styles.quickActionCard}
-          onPress={() => navigation.navigate("ApplicationTracker")}
+          onPress={() => navigation.navigate("ModernApplicationList")}
         >
           <Ionicons name="calendar-outline" size={24} color={colors.primary} />
           <Text style={styles.quickActionNumber}>3</Text>
