@@ -1,9 +1,8 @@
 import { Feather } from "@expo/vector-icons";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 import { useAuth } from "../../hooks/useAuth";
-import { getAdoptionHistory } from "../../lib/adoption-history";
 
 // Use the type directly from the imported module
 import { type AdoptionHistoryEntry } from "../../lib/adoption-history";
@@ -13,22 +12,71 @@ interface AdoptionHistoryScreenProps {
 }
 
 export default function AdoptionHistoryScreen({ navigation }: AdoptionHistoryScreenProps) {
-  const [adoptedPets, setAdoptedPets] = useState<AdoptionHistoryEntry[]>([]);
+  // Sample adopted pets data for demonstration
+  const samplePets: AdoptionHistoryEntry[] = [
+    {
+      id: "1",
+      petId: "pet-101",
+      userId: "demo-user",
+      petName: "Buddy",
+      petBreed: "Golden Retriever",
+      petImage: "https://images.unsplash.com/photo-1552053831-71594a27632d?w=500&h=500&fit=crop",
+      applicationId: "app-101",
+      applicationDate: "2024-05-15",
+      adoptionDate: "2024-06-01",
+      status: "adopted",
+      notes: "Buddy has adjusted well to his new home. He loves his daily walks in the park.",
+      shelterName: "Happy Paws Shelter",
+      shelterContact: "contact@happypaws.org"
+    },
+    {
+      id: "2",
+      petId: "pet-102",
+      userId: "demo-user",
+      petName: "Luna",
+      petBreed: "Persian Cat",
+      petImage: "https://images.unsplash.com/photo-1543852786-1cf6624b9987?w=500&h=500&fit=crop",
+      applicationId: "app-102",
+      applicationDate: "2024-04-20",
+      adoptionDate: "2024-05-10",
+      status: "adopted",
+      notes: "Luna is very quiet and loves to curl up on the sofa. She's getting along well with the kids.",
+      shelterName: "Feline Friends Rescue",
+      shelterContact: "info@felinefriends.org"
+    },
+    {
+      id: "3",
+      petId: "pet-103",
+      userId: "demo-user",
+      petName: "Max",
+      petBreed: "Beagle",
+      petImage: "https://images.unsplash.com/photo-1550684376-efcbd6e3f031?w=500&h=500&fit=crop",
+      applicationId: "app-103",
+      applicationDate: "2024-06-10",
+      status: "approved",
+      notes: "Your application for Max has been approved. Ready for pickup on July 25th.",
+      shelterName: "Second Chance Shelter",
+      shelterContact: "adopt@secondchance.org"
+    }
+  ];
+
+  const [adoptedPets, setAdoptedPets] = useState<AdoptionHistoryEntry[]>(samplePets);
   const { user } = useAuth();
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const userId = user?.id || "demo-user";
-        const history = await getAdoptionHistory(userId);
-        setAdoptedPets(history);
-      } catch (error) {
-        console.error("Error loading adoption history:", error);
-      }
-    };
+  // Comment out the real data loading for now to show sample data
+  // useEffect(() => {
+  //   const loadData = async () => {
+  //     try {
+  //       const userId = user?.id || "demo-user";
+  //       const history = await getAdoptionHistory(userId);
+  //       setAdoptedPets(history);
+  //     } catch (error) {
+  //       console.error("Error loading adoption history:", error);
+  //     }
+  //   };
 
-    loadData();
-  }, [user]);
+  //   loadData();
+  // }, [user]);
 
   const getStatusBadgeStyle = (status: string) => {
     switch (status) {
