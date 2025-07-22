@@ -90,6 +90,120 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
       </View>
     </View>
   )
+  
+  const renderCareJournalSection = () => {
+    const recentEntries = [
+      {
+        id: "ce-001",
+        petName: "Buddy",
+        type: "medical",
+        title: "Vaccination",
+        description: "Rabies and distemper boosters",
+        date: "2025-06-05",
+      },
+      {
+        id: "ce-002",
+        petName: "Max",
+        type: "grooming",
+        title: "Nail Trimming",
+        description: "Regular nail maintenance",
+        date: "2025-06-20",
+      }
+    ];
+    
+    const getTypeIcon = (type: string) => {
+      switch (type) {
+        case "medical": return "medkit";
+        case "feeding": return "restaurant";
+        case "grooming": return "cut";
+        case "exercise": return "fitness";
+        case "training": return "school";
+        case "vet_visit": return "medical";
+        default: return "document-text";
+      }
+    };
+    
+    const getTypeColor = (type: string) => {
+      switch (type) {
+        case "medical": return { bg: '#FEE2E2', text: '#DC2626' };
+        case "feeding": return { bg: '#DCFCE7', text: '#16A34A' };
+        case "grooming": return { bg: '#DBEAFE', text: '#2563EB' };
+        case "exercise": return { bg: '#F3E8FF', text: '#9333EA' };
+        case "training": return { bg: '#FEF3C7', text: '#D97706' };
+        case "vet_visit": return { bg: '#FEE2E2', text: '#DC2626' };
+        default: return { bg: '#F3F4F6', text: '#4B5563' };
+      }
+    };
+    
+    return (
+      <View style={styles.careJournalSection}>
+        <View style={styles.careJournalContainer}>
+          <View style={styles.sectionHeader}>
+            <View>
+              <Text style={styles.sectionTitle}>Care Journal</Text>
+              <Text style={styles.sectionSubtitle}>Track your pet's health & activities</Text>
+            </View>
+            <TouchableOpacity 
+              style={styles.viewAllButton}
+              onPress={() => navigation.navigate("CareJournal")}
+            >
+              <Text style={styles.viewAllButtonText}>View All</Text>
+            </TouchableOpacity>
+          </View>
+        
+        {recentEntries.map(entry => (
+          <TouchableOpacity 
+            key={entry.id}
+            style={styles.journalEntryCard}
+            onPress={() => navigation.navigate("CareJournal", { 
+              entryId: entry.id 
+            })}
+          >
+            <View style={styles.journalEntryCardContent}>
+              <View 
+                style={[
+                  styles.entryTypeBadge, 
+                  { backgroundColor: getTypeColor(entry.type).bg }
+                ]}
+              >
+                <Ionicons 
+                  name={getTypeIcon(entry.type)} 
+                  size={14} 
+                  color={getTypeColor(entry.type).text} 
+                />
+              </View>
+              <View style={styles.journalEntryInfo}>
+                <View style={styles.journalEntryHeader}>
+                  <Text style={styles.journalEntryPetName}>{entry.petName}</Text>
+                  <Text style={styles.journalEntryDate}>
+                    {new Date(entry.date).toLocaleDateString()}
+                  </Text>
+                </View>
+                <Text style={styles.journalEntryTitle}>{entry.title}</Text>
+                <Text 
+                  style={styles.journalEntryDescription}
+                  numberOfLines={2}
+                >
+                  {entry.description}
+                </Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+        ))}
+        
+        <TouchableOpacity 
+          style={styles.addJournalEntryButton}
+          onPress={() => navigation.navigate("CareJournal", { 
+            action: "add" 
+          })}
+        >
+          <Ionicons name="add" size={16} color="white" />
+          <Text style={styles.addJournalEntryButtonText}>Add Care Entry</Text>
+        </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
 
   const renderAIMatchingCard = () => (
     <TouchableOpacity style={styles.aiMatchingCard}>
@@ -194,6 +308,7 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {renderQuickActions()}
+      {renderCareJournalSection()}
       {renderAIMatchingCard()}
       {renderSearchAndFilters()}
 
@@ -220,6 +335,126 @@ const styles = StyleSheet.create({
   quickActionsContainer: {
     padding: spacing.md,
     gap: spacing.sm,
+  },
+  careJournalSection: {
+    padding: spacing.md,
+    paddingTop: 0,
+    marginBottom: spacing.sm,
+  },
+  careJournalContainer: {
+    backgroundColor: colors.surface,
+    borderRadius: 16,
+    padding: spacing.md,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: spacing.md,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: colors.text,
+  },
+  sectionSubtitle: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginTop: spacing.xs,
+  },
+  viewAllButton: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: 16,
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  viewAllButtonText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: colors.primary,
+  },
+  journalEntryCard: {
+    backgroundColor: "white",
+    borderRadius: 12,
+    marginBottom: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  journalEntryCardContent: {
+    flexDirection: "row",
+    padding: spacing.md,
+  },
+  entryTypeBadge: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: spacing.md,
+  },
+  journalEntryInfo: {
+    flex: 1,
+  },
+  journalEntryHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: spacing.xs,
+  },
+  journalEntryPetName: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: colors.primary,
+  },
+  journalEntryDate: {
+    fontSize: 12,
+    color: colors.textSecondary,
+  },
+  journalEntryTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: colors.text,
+    marginBottom: spacing.xs,
+  },
+  journalEntryDescription: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    lineHeight: 20,
+  },
+  addJournalEntryButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    paddingVertical: spacing.md,
+    marginTop: spacing.md,
+    marginBottom: spacing.xs,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  addJournalEntryButtonText: {
+    color: "white",
+    fontWeight: "600",
+    marginLeft: spacing.xs,
+    fontSize: 15,
   },
   quickActionsRow: {
     flexDirection: "row",

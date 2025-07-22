@@ -11,6 +11,7 @@ import ApplicationFormScreen from "./src/screens/ApplicationFormScreen"
 import ApplicationListScreen from "./src/screens/ApplicationListScreen"
 import ApplicationTrackerScreen from "./src/screens/ApplicationTrackerScreen"
 import AuthScreen from "./src/screens/AuthScreen"
+import CareJournalScreen from "./src/screens/CareJournalScreen"
 import ChatScreen from "./src/screens/ChatScreen"
 import LandingScreen from "./src/screens/LandingScreen"
 import MessagesScreen from "./src/screens/MessagesScreen"
@@ -66,6 +67,7 @@ export default function App() {
             <Stack.Screen name="AdoptionHistory" component={AdoptionHistoryScreen} options={{ headerShown: false }} />
             <Stack.Screen name="Reminders" component={RemindersScreen} options={{ headerShown: false }} />
             <Stack.Screen name="Chat" component={ChatScreen} options={{ headerShown: true, title: "Chat" }} />
+            <Stack.Screen name="CareJournal" component={CareJournalScreen} options={{ headerShown: false }} />
           </Stack.Navigator>
         </NavigationContainer>
       </AuthProvider>

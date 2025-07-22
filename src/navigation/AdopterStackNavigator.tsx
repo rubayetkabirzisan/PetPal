@@ -4,6 +4,7 @@ import { colors } from "../theme/theme"
 import ApplicationDetailsScreen from "../screens/ApplicationDetailsScreen"
 import ApplicationFormScreen from "../screens/ApplicationFormScreen"
 import ApplicationListScreen from "../screens/ApplicationListScreen"
+import CareJournalScreen from "../screens/CareJournalScreen"
 import ChatScreen from "../screens/ChatScreen"
 import MessagesScreen from "../screens/MessagesScreen"
 import PetProfileScreen from "../screens/PetProfileScreen"
@@ -23,6 +24,7 @@ export default function AdopterStackNavigator() {
       <Stack.Screen name="PetProfile" component={PetProfileScreen} />
       <Stack.Screen name="Messages" component={MessagesScreen} />
       <Stack.Screen name="Chat" component={ChatScreen} />
+      <Stack.Screen name="CareJournal" component={CareJournalScreen} />
       <Stack.Screen name="ApplicationForm" component={ApplicationFormScreen} />
       <Stack.Screen name="ApplicationDetails" component={ApplicationDetailsScreen} />
       <Stack.Screen name="ApplicationList" component={ApplicationListScreen} />
