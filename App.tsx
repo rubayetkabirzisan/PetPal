@@ -5,6 +5,7 @@ import { Provider as PaperProvider } from "react-native-paper"
 import { AuthProvider } from "./src/contexts/AuthContext"
 import AdminTabNavigator from "./src/navigation/AdminTabNavigator"
 import AdopterTabNavigator from "./src/navigation/AdopterTabNavigator"
+import AdoptionHistoryScreen from "./src/screens/AdoptionHistoryScreen"
 import ApplicationDetailsScreen from "./src/screens/ApplicationDetailsScreen"
 import ApplicationFormScreen from "./src/screens/ApplicationFormScreen"
 import ApplicationListScreen from "./src/screens/ApplicationListScreen"
@@ -15,6 +16,7 @@ import LandingScreen from "./src/screens/LandingScreen"
 import MessagesScreen from "./src/screens/MessagesScreen"
 import ModernApplicationListScreen from "./src/screens/ModernApplicationListScreen"
 import PetProfileScreen from "./src/screens/PetProfileScreen"
+import RemindersScreen from "./src/screens/RemindersScreen"
 import { theme } from "./src/theme/theme"
 
 const Stack = createStackNavigator()
@@ -61,6 +63,8 @@ export default function App() {
               options={{ headerShown: true, title: "Track Application" }}
             />
             <Stack.Screen name="Messages" component={MessagesScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="AdoptionHistory" component={AdoptionHistoryScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="Reminders" component={RemindersScreen} options={{ headerShown: false }} />
             <Stack.Screen name="Chat" component={ChatScreen} options={{ headerShown: true, title: "Chat" }} />
           </Stack.Navigator>
         </NavigationContainer>
