@@ -220,6 +220,38 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
     </TouchableOpacity>
   )
 
+  const renderGPSAlertsCard = () => {
+    // Mock number of GPS alerts
+    const alertCount: number = 3;
+    
+    return (
+      <TouchableOpacity 
+        style={styles.gpsAlertsCard}
+        onPress={() => navigation.navigate("Tracking")}
+      >
+        <View style={styles.gpsAlertsContent}>
+          <View style={styles.gpsAlertsIconContainer}>
+            <Ionicons name="location" size={28} color="white" />
+            <View style={styles.gpsAlertsBadge}>
+              <Text style={styles.gpsAlertsBadgeText}>{alertCount}</Text>
+            </View>
+          </View>
+          <View style={styles.gpsAlertsInfo}>
+            <Text style={styles.gpsAlertsTitle}>GPS Alerts</Text>
+            <Text style={styles.gpsAlertsSubtitle}>
+              {alertCount > 0
+                ? `${alertCount} ${alertCount === 1 ? 'alert' : 'alerts'} to review`
+                : "All pets are within safe zones"}
+            </Text>
+          </View>
+          <View style={styles.gpsAlertsAction}>
+            <Ionicons name="chevron-forward" size={24} color="white" />
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
   const renderSearchAndFilters = () => (
     <View style={styles.searchContainer}>
       <View style={styles.searchInputContainer}>
@@ -310,6 +342,7 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
       {renderQuickActions()}
       {renderCareJournalSection()}
       {renderAIMatchingCard()}
+      {renderGPSAlertsCard()}
       {renderSearchAndFilters()}
 
       <View style={styles.petsContainer}>
@@ -513,6 +546,61 @@ const styles = StyleSheet.create({
   aiMatchingButtonText: {
     color: colors.primary,
     fontWeight: "600",
+  },
+  gpsAlertsCard: {
+    margin: spacing.md,
+    backgroundColor: "#4A6FA5", // A blue color suitable for GPS/location features
+    borderRadius: 12,
+    padding: spacing.md,
+  },
+  gpsAlertsContent: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  gpsAlertsIconContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    justifyContent: "center",
+    alignItems: "center",
+    position: "relative",
+  },
+  gpsAlertsBadge: {
+    position: "absolute",
+    top: -5,
+    right: -5,
+    backgroundColor: "#FF3B30",
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "#4A6FA5",
+  },
+  gpsAlertsBadgeText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 12,
+  },
+  gpsAlertsInfo: {
+    flex: 1,
+    marginLeft: spacing.md,
+  },
+  gpsAlertsTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "white",
+  },
+  gpsAlertsSubtitle: {
+    fontSize: 14,
+    color: "rgba(255, 255, 255, 0.8)",
+    marginTop: spacing.xs,
+  },
+  gpsAlertsAction: {
+    padding: spacing.xs,
   },
   searchContainer: {
     padding: spacing.md,
