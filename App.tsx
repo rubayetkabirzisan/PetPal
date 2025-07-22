@@ -12,6 +12,7 @@ import ApplicationTrackerScreen from "./src/screens/ApplicationTrackerScreen"
 import AuthScreen from "./src/screens/AuthScreen"
 import ChatScreen from "./src/screens/ChatScreen"
 import LandingScreen from "./src/screens/LandingScreen"
+import MessagesScreen from "./src/screens/MessagesScreen"
 import ModernApplicationListScreen from "./src/screens/ModernApplicationListScreen"
 import PetProfileScreen from "./src/screens/PetProfileScreen"
 import { theme } from "./src/theme/theme"
@@ -59,6 +60,7 @@ export default function App() {
               component={ApplicationTrackerScreen}
               options={{ headerShown: true, title: "Track Application" }}
             />
+            <Stack.Screen name="Messages" component={MessagesScreen} options={{ headerShown: false }} />
             <Stack.Screen name="Chat" component={ChatScreen} options={{ headerShown: true, title: "Chat" }} />
           </Stack.Navigator>
         </NavigationContainer>

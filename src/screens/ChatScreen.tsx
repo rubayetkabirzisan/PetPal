@@ -29,6 +29,11 @@ interface ChatScreenProps {
 }
 
 export default function ChatScreen({ navigation, route }: ChatScreenProps) {
+  // Get the messageId from route params if available
+  const messageId = route?.params?.messageId;
+  
+  // You can use messageId to fetch specific chat messages
+  // For now, we'll use the mock data
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",

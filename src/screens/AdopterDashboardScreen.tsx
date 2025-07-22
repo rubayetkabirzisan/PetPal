@@ -59,7 +59,7 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
         <TouchableOpacity 
           key="messages" 
           style={styles.quickActionCard}
-          onPress={() => navigation.navigate("Chat")}
+          onPress={() => navigation.navigate("Messages")}
         >
           <Ionicons name="chatbubble-outline" size={24} color={colors.primary} />
           <Text style={styles.quickActionNumber}>5</Text>
