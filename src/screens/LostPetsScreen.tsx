@@ -3,15 +3,15 @@
 import { Ionicons } from "@expo/vector-icons"
 import { useEffect, useState } from "react"
 import {
-    Alert,
-    Image,
-    Modal,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  Alert,
+  Image,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from "react-native"
 import { getLostPets, type LostPet } from "../lib/data"
 import { colors, spacing } from "../theme/theme"
