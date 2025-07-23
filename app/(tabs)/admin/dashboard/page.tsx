@@ -4,7 +4,7 @@ import { getApplications, getPets, type AdoptionApplication, type Pet } from "@/
 import { getGPSAlerts, type GPSAlert } from "@/lib/gps-tracking";
 import { getLostPets, type LostPet } from "@/lib/lost-pets";
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { useRouter } from "expo-router";
 import React, { ReactNode, useEffect, useState } from "react";
 import { GestureResponderEvent, Pressable, ScrollView, StyleSheet, Text, TextStyle, TouchableOpacity, View, ViewStyle } from "react-native";
 
@@ -106,6 +106,7 @@ const Badge = ({ children, variant = "default", style = {} }: BadgeProps) => {
 };
 
 export default function AdminDashboard() {
+  const router = useRouter();
   const [pets, setPets] = useState<Pet[]>([]);
   const [applications, setApplications] = useState<AdoptionApplication[]>([]);
   const [lostPetsCount, setLostPetsCount] = useState(0);

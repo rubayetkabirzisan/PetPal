@@ -1,33 +1,82 @@
-import { Header } from "@/components/header";
-import { Navigation } from "@/components/navigation";
-import { useAuth } from "@/hooks/useAuth";
-import { getAdoptionHistory } from "@/lib/adoption-history";
 import { Feather } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-// Use the type directly from the imported module
-import { type AdoptionHistoryEntry } from "@/lib/adoption-history";
+import { useAuth } from "../../hooks/useAuth";
 
-export default function AdopterHistoryPage() {
-  const router = useRouter();
-  const [adoptedPets, setAdoptedPets] = useState<AdoptionHistoryEntry[]>([]);
+// Use the type directly from the imported module
+import { type AdoptionHistoryEntry } from "../../lib/adoption-history";
+
+interface AdoptionHistoryScreenProps {
+  navigation: any;
+}
+
+export default function AdoptionHistoryScreen({ navigation }: AdoptionHistoryScreenProps) {
+  // Sample adopted pets data for demonstration
+  const samplePets: AdoptionHistoryEntry[] = [
+    {
+      id: "1",
+      petId: "pet-101",
+      userId: "demo-user",
+      petName: "Buddy",
+      petBreed: "Golden Retriever",
+      petImage: "https://images.unsplash.com/photo-1552053831-71594a27632d?w=500&h=500&fit=crop",
+      applicationId: "app-101",
+      applicationDate: "2024-05-15",
+      adoptionDate: "2024-06-01",
+      status: "adopted",
+      notes: "Buddy has adjusted well to his new home. He loves his daily walks in the park.",
+      shelterName: "Happy Paws Shelter",
+      shelterContact: "contact@happypaws.org"
+    },
+    {
+      id: "2",
+      petId: "pet-102",
+      userId: "demo-user",
+      petName: "Luna",
+      petBreed: "Persian Cat",
+      petImage: "https://images.unsplash.com/photo-1543852786-1cf6624b9987?w=500&h=500&fit=crop",
+      applicationId: "app-102",
+      applicationDate: "2024-04-20",
+      adoptionDate: "2024-05-10",
+      status: "adopted",
+      notes: "Luna is very quiet and loves to curl up on the sofa. She's getting along well with the kids.",
+      shelterName: "Feline Friends Rescue",
+      shelterContact: "info@felinefriends.org"
+    },
+    {
+      id: "3",
+      petId: "pet-103",
+      userId: "demo-user",
+      petName: "Max",
+      petBreed: "Beagle",
+      petImage: "https://images.unsplash.com/photo-1550684376-efcbd6e3f031?w=500&h=500&fit=crop",
+      applicationId: "app-103",
+      applicationDate: "2024-06-10",
+      status: "approved",
+      notes: "Your application for Max has been approved. Ready for pickup on July 25th.",
+      shelterName: "Second Chance Shelter",
+      shelterContact: "adopt@secondchance.org"
+    }
+  ];
+
+  const [adoptedPets, setAdoptedPets] = useState<AdoptionHistoryEntry[]>(samplePets);
   const { user } = useAuth();
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const userId = user?.id || "demo-user";
-        const history = await getAdoptionHistory(userId);
-        setAdoptedPets(history);
-      } catch (error) {
-        console.error("Error loading adoption history:", error);
-      }
-    };
+  // Comment out the real data loading for now to show sample data
+  // useEffect(() => {
+  //   const loadData = async () => {
+  //     try {
+  //       const userId = user?.id || "demo-user";
+  //       const history = await getAdoptionHistory(userId);
+  //       setAdoptedPets(history);
+  //     } catch (error) {
+  //       console.error("Error loading adoption history:", error);
+  //     }
+  //   };
 
-    loadData();
-  }, [user]);
+  //   loadData();
+  // }, [user]);
 
   const getStatusBadgeStyle = (status: string) => {
     switch (status) {
@@ -58,12 +107,19 @@ export default function AdopterHistoryPage() {
 
   return (
     <View style={styles.container}>
-      <Header
-        title="Adoption History"
-        subtitle={`${adoptedPets.length} pets in your family`}
-        showNotifications={true}
-        userType="adopter"
-      />
+      {/* Simple Header */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Feather name="arrow-left" size={24} color="#8B4513" />
+        </TouchableOpacity>
+        <View style={styles.headerTitleContainer}>
+          <Text style={styles.headerTitle}>Adoption History</Text>
+          <Text style={styles.headerSubtitle}>{`${adoptedPets.length} pets in your family`}</Text>
+        </View>
+        <TouchableOpacity style={styles.notificationButton}>
+          <Feather name="bell" size={24} color="#8B4513" />
+        </TouchableOpacity>
+      </View>
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer}>
         {adoptedPets.length === 0 ? (
@@ -73,21 +129,20 @@ export default function AdopterHistoryPage() {
             <Text style={styles.emptyMessage}>Your adopted pets will appear here</Text>
             <TouchableOpacity
               style={styles.browseButton}
-              onPress={() => router.push("/(tabs)/adopter/dashboard" as any)}
+              onPress={() => navigation.navigate("AdopterTabs", { screen: "Browse" })}
             >
               <Text style={styles.browseButtonText}>Browse Available Pets</Text>
             </TouchableOpacity>
           </View>
         ) : (
           <View style={styles.petsContainer}>
-            {adoptedPets.map((pet) => (
+            {adoptedPets.map((pet: AdoptionHistoryEntry) => (
               <View key={pet.id} style={styles.petCard}>
                 {/* Pet Image */}
                 <View style={styles.imageContainer}>
                   <Image
                     source={{ uri: pet.petImage || "https://via.placeholder.com/400x192" }}
                     style={styles.petImage}
-                    defaultSource={require("@/assets/images/adaptive-icon.png")}
                   />
                 </View>
 
@@ -138,14 +193,14 @@ export default function AdopterHistoryPage() {
                       <>
                         <TouchableOpacity
                           style={styles.primaryButton}
-                          onPress={() => router.push("/(tabs)/adopter/care-journal" as any)}
+                          onPress={() => navigation.navigate("CareJournal")}
                         >
                           <Feather name="file-text" size={16} color="white" style={styles.buttonIcon} />
                           <Text style={styles.primaryButtonText}>Care Journal</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
                           style={styles.outlineButton}
-                          onPress={() => router.push("/(tabs)/adopter/reminders" as any)}
+                          onPress={() => navigation.navigate("Reminders")}
                         >
                           <Feather name="bell" size={16} color="#FF7A47" style={styles.buttonIcon} />
                           <Text style={styles.outlineButtonText}>Reminders</Text>
@@ -155,7 +210,7 @@ export default function AdopterHistoryPage() {
                     {pet.status === "approved" && (
                       <TouchableOpacity
                         style={styles.primaryButton}
-                        onPress={() => router.push(`/adopter/applications/${pet.applicationId}` as any)}
+                        onPress={() => navigation.navigate("ApplicationDetails", { applicationId: pet.applicationId })}
                       >
                         <Feather name="calendar" size={16} color="white" style={styles.buttonIcon} />
                         <Text style={styles.primaryButtonText}>View Application</Text>
@@ -173,7 +228,7 @@ export default function AdopterHistoryPage() {
                       </View>
                       <TouchableOpacity
                         style={styles.chatButton}
-                        onPress={() => router.push(`/adopter/chat/${pet.petId}` as any)}
+                        onPress={() => navigation.navigate("Chat", { petId: pet.petId })}
                       >
                         <Feather name="message-circle" size={16} color="#FF7A47" style={styles.buttonIcon} />
                         <Text style={styles.chatButtonText}>Chat</Text>
@@ -186,8 +241,6 @@ export default function AdopterHistoryPage() {
           </View>
         )}
       </ScrollView>
-
-      <Navigation userType="adopter" />
     </View>
   );
 }
@@ -196,6 +249,35 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#FFF5F0",
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: 50,
+    paddingBottom: 16,
+    backgroundColor: '#FFF5F0',
+  },
+  backButton: {
+    padding: 8,
+  },
+  headerTitleContainer: {
+    flex: 1,
+    marginLeft: 16,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#8B4513',
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    color: '#8B4513',
+    marginTop: 2,
+  },
+  notificationButton: {
+    padding: 8,
   },
   scrollView: {
     flex: 1,

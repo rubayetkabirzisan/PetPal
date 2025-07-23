@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 import { Link, usePathname, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -25,6 +26,8 @@ export function Header({
   const { user } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
+  // Add React Navigation for more reliable navigation
+  const navigation = useNavigation();
 
   // Determine home path based on user type
   const homePath = userType === "admin" ? "/(tabs)/admin/dashboard" : "/(tabs)/adopter/dashboard";
@@ -34,6 +37,24 @@ export function Header({
 
   // Determine if we should show landing page button (only on dashboard pages)
   const showLandingButton = pathname?.includes("/dashboard");
+  
+  // Safe navigation back function
+  const handleGoBack = () => {
+    try {
+      // Try React Navigation first as it's more reliable
+      if (navigation) {
+        navigation.goBack();
+      } else if (backHref && router) {
+        // Fall back to Expo Router if needed
+        router.push(backHref as any);
+      } else if (router) {
+        // Last resort
+        router.back();
+      }
+    } catch (error) {
+      console.warn("Navigation error:", error);
+    }
+  };
 
   useEffect(() => {
     // Mock notification count - in real app, this would come from API
@@ -45,8 +66,11 @@ export function Header({
       <View style={styles.container}>
         <View style={styles.leftSection}>
           {/* Back Button, Home Button, or Landing Button */}
-          {showBackButton && backHref ? (
-            <TouchableOpacity style={styles.iconButton} onPress={() => backHref && router.push(backHref as any)}>
+          {showBackButton ? (
+            <TouchableOpacity 
+              style={styles.iconButton} 
+              onPress={handleGoBack}
+            >
               <Ionicons name="arrow-back" size={24} color="#8B4513" />
             </TouchableOpacity>
           ) : showHomeButton ? (

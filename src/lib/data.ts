@@ -1,10 +1,10 @@
 // Sample data for development and testing
 import {
-    initializeSampleData,
-    sampleApplications as libraryApplications,
-    samplePets as libraryPets,
-    sampleMessages,
-    sampleNotifications
+  initializeSampleData,
+  sampleApplications as libraryApplications,
+  samplePets as libraryPets,
+  sampleMessages,
+  sampleNotifications
 } from '../../lib/sample-data';
 
 // Pet Types and Breeds
@@ -649,3 +649,21 @@ export default {
   getApplicationById,
   initializeData
 };
+
+// Get pets adopted by a specific user
+export const getAdoptedPets = async (userId: string) => {
+  return [
+    {
+      id: "pet-1",
+      name: "Max",
+      species: "Dog",
+      image: "https://example.com/max.jpg"
+    },
+    {
+      id: "pet-2",
+      name: "Bella",
+      species: "Cat",
+      image: "https://example.com/bella.jpg"
+    }
+  ];
+}

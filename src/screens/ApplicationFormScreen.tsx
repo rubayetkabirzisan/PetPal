@@ -100,13 +100,14 @@ export default function ApplicationFormScreen({ navigation, route }: Application
           Alert.alert(
             "Application Submitted!",
             "Your adoption application has been submitted successfully. You will receive updates via email and in-app notifications.",
-            [
-              {
+            [                {
                 text: "OK",
-                onPress: () => navigation.navigate("adopter", { 
-                  screen: "applications",
-                  params: { applicationId: "new-app-" + Date.now() }
-                }),
+                onPress: () => {
+                  // Navigate directly to ApplicationList screen with applicationId parameter
+                  navigation.navigate("ApplicationList", { 
+                    applicationId: "new-app-" + Date.now() 
+                  });
+                },
               },
             ],
           )

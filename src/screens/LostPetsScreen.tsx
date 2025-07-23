@@ -3,15 +3,15 @@
 import { Ionicons } from "@expo/vector-icons"
 import { useEffect, useState } from "react"
 import {
-    Alert,
-    Image,
-    Modal,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  Alert,
+  Image,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from "react-native"
 import { getLostPets, type LostPet } from "../lib/data"
 import { colors, spacing } from "../theme/theme"
@@ -95,7 +95,8 @@ export default function LostPetsScreen({ navigation }: LostPetsScreenProps) {
   }
 
   const handleReportLostPet = () => {
-    Alert.alert("Report Lost Pet", "This feature will allow you to report a lost pet with photos and details.")
+    // Navigate to the ReportLostPet screen in the root navigator
+    navigation.getParent()?.navigate("ReportLostPet")
   }
 
   const handleReportSighting = (petId: string) => {
@@ -255,8 +256,10 @@ export default function LostPetsScreen({ navigation }: LostPetsScreenProps) {
             <TextInput
               style={styles.locationInput}
               placeholder="Enter a city or area"
+              placeholderTextColor={colors.textSecondary}
               value={filters.location || ""}
               onChangeText={(text) => setFilters(prev => ({...prev, location: text || null}))}
+              clearButtonMode="while-editing"
             />
           </View>
           
@@ -354,8 +357,10 @@ export default function LostPetsScreen({ navigation }: LostPetsScreenProps) {
           <TextInput
             style={styles.searchInput}
             placeholder="Search by name, breed, location..."
+            placeholderTextColor={colors.textSecondary}
             value={searchQuery}
             onChangeText={setSearchQuery}
+            clearButtonMode="while-editing"
           />
           <TouchableOpacity style={styles.filterButton} onPress={() => setFilterModalVisible(true)}>
             <Ionicons name="options" size={20} color={colors.primary} />
@@ -481,11 +486,12 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderRadius: 8,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+    paddingVertical: 0, // Reduced vertical padding to give more space to the text input
     marginBottom: spacing.md,
     alignItems: "center",
     borderWidth: 1,
     borderColor: colors.border,
+    height: 42, // Set explicit height for the container
   },
   searchIcon: {
     marginRight: spacing.sm,
@@ -494,7 +500,8 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     color: colors.text,
-    height: 24,
+    height: 36,
+    padding: 0, // Remove any default padding that might interfere
   },
   filterButton: {
     padding: spacing.xs,
@@ -769,6 +776,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
     fontSize: 14,
     color: colors.text,
+    height: 40,
   },
   filterActions: {
     flexDirection: "row",

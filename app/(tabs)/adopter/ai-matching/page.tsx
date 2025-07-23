@@ -5,11 +5,12 @@ import { PetMatch, getTopMatches } from '@lib/ai-matching';
 import { getAllPets } from '@lib/data';
 import { UserPreferences, getDefaultPreferences, getUserPreferences } from '@lib/preferences';
 import { useTheme } from '@src/contexts/ThemeContext';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function AIMatchingPage() {
+  const router = useRouter();
   const { user } = useAuth();
   const [matches, setMatches] = useState<PetMatch[]>([]);
   const [preferences, setPreferences] = useState<UserPreferences | null>(null);

@@ -9,7 +9,7 @@ export interface Reminder {
   description: string
   dueDate: string
   recurring: boolean
-  recurringInterval?: "weekly" | "monthly" | "yearly"
+  recurringInterval?: "daily" | "weekly" | "monthly" | "yearly"
   completed: boolean
   completedDate?: string
   createdDate: string

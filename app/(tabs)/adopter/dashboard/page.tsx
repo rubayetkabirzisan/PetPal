@@ -1,6 +1,6 @@
 import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { router } from "expo-router";
+import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
@@ -29,6 +29,7 @@ interface FilterButtonProps {
 }
 
 export default function AdopterDashboard() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("all");
   const [pets, setPets] = useState<Pet[]>([]);
@@ -82,12 +83,28 @@ export default function AdopterDashboard() {
 
         // Load care journal data
         const careEntries = await getCareEntries();
+        console.log('Care entries loaded:', careEntries);
         setCareEntriesCount(careEntries.length);
 
         // Get recent care entries (last 3)
         const sortedEntries = [...careEntries]
           .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
           .slice(0, 3);
+        
+        // Check for duplicate IDs in care entries
+        const ids = new Set();
+        const hasDuplicateIds = sortedEntries.some(entry => {
+          if (ids.has(entry.id)) {
+            console.error('Duplicate ID found in care entries:', entry.id);
+            return true;
+          }
+          ids.add(entry.id);
+          return false;
+        });
+        
+        console.log('Recent care entries:', sortedEntries);
+        console.log('Has duplicate IDs:', hasDuplicateIds);
+        
         setRecentCareEntries(sortedEntries);
 
         // Mock messages count
@@ -127,6 +144,16 @@ export default function AdopterDashboard() {
 
     return matchesSearch && matchesFilter;
   });
+  
+  // Check for duplicate pet IDs
+  useEffect(() => {
+    const petIds = filteredPets.map(pet => pet.id);
+    const uniqueIds = new Set(petIds);
+    if (petIds.length !== uniqueIds.size) {
+      console.error('Duplicate pet IDs found!', 
+        petIds.filter((id, index) => petIds.indexOf(id) !== index));
+    }
+  }, [filteredPets]);
 
   const toggleFavorite = async (petId: string) => {
     const newFavorites = favorites.includes(petId) ? favorites.filter((id) => id !== petId) : [...favorites, petId];
@@ -162,7 +189,16 @@ export default function AdopterDashboard() {
   const QuickActionCard = ({ icon, count, label, onPress }: QuickActionCardProps) => (
     <TouchableOpacity
       style={styles.quickActionCard}
-      onPress={onPress}
+      onPress={() => {
+        console.log(`Navigating to: ${label}`);
+        try {
+          onPress();
+          console.log(`Navigation to ${label} successful`);
+        } catch (error) {
+          console.error(`Error navigating to ${label}:`, error);
+        }
+      }}
+      activeOpacity={0.6}
     >
       {icon}
       <Text style={styles.quickActionCount}>{count}</Text>
@@ -201,13 +237,19 @@ export default function AdopterDashboard() {
             icon={<Feather name="calendar" size={24} color="#FF7A47" />}
             count={applicationsCount}
             label="Applications"
-            onPress={() => router.push("/(tabs)/adopter/applications" as any)}
+            onPress={() => {
+              console.log("Navigating to applications");
+              router.push("/(tabs)/adopter/applications/page" as any);
+            }}
           />
           <QuickActionCard
             icon={<Feather name="message-circle" size={24} color="#FF7A47" />}
             count={messagesCount}
             label="Messages"
-            onPress={() => router.push("/(tabs)/adopter/messages" as any)}
+            onPress={() => {
+              console.log("Navigating to messages");
+              router.push("/(tabs)/adopter/messages/page" as any);
+            }}
           />
         </View>
 
@@ -217,13 +259,19 @@ export default function AdopterDashboard() {
             icon={<Feather name="heart" size={24} color="#FF7A47" />}
             count={adoptedPetsCount}
             label="Adopted Pets"
-            onPress={() => router.push("/(tabs)/adopter/history" as any)}
+            onPress={() => {
+              console.log("Navigating to adoption history");
+              router.push("/(tabs)/adopter/history/page" as any);
+            }}
           />
           <QuickActionCard
             icon={<Feather name="book-open" size={24} color="#FF7A47" />}
             count={upcomingReminders}
             label="Reminders Due"
-            onPress={() => router.push("/(tabs)/adopter/reminders" as any)}
+            onPress={() => {
+              console.log("Navigating to reminders");
+              router.push("/(tabs)/adopter/reminders/page" as any);
+            }}
           />
         </View>
 
@@ -239,19 +287,22 @@ export default function AdopterDashboard() {
             </View>
             <TouchableOpacity
               style={styles.addEntryButton}
-              onPress={() => router.push("/(tabs)/adopter/care-journal" as any)}
+              onPress={() => {
+                console.log("Navigating to add care journal entry");
+                router.push("/(tabs)/adopter/care-journal/page" as any);
+              }}
             >
               <Feather name="plus-circle" size={16} color="white" style={{ marginRight: 4 }} />
               <Text style={styles.addEntryButtonText}>Add Entry</Text>
             </TouchableOpacity>
           </View>
 
-          {recentCareEntries.length > 0 ? (
+          {recentCareEntries && recentCareEntries.length > 0 ? (
             <View style={styles.entriesContainer}>
-              {recentCareEntries.map((entry) => {
+              {recentCareEntries.map((entry, index) => {
                 const typeStyle = getTypeColor(entry.type);
                 return (
-                  <View key={entry.id} style={styles.entryItem}>
+                  <View key={`${entry.id}-${index}`} style={styles.entryItem}>
                     <View style={styles.entryItemContent}>
                       <View style={styles.entryItemHeader}>
                         <View
@@ -273,17 +324,23 @@ export default function AdopterDashboard() {
               })}
               <TouchableOpacity
                 style={styles.viewAllButton}
-                onPress={() => router.push("/(tabs)/adopter/care-journal" as any)}
+                onPress={() => {
+                  console.log("Navigating to view all care journal entries");
+                  router.push("/(tabs)/adopter/care-journal/page" as any);
+                }}
               >
                 <Text style={styles.viewAllButtonText}>View All Entries</Text>
               </TouchableOpacity>
             </View>
           ) : (
             <View style={styles.emptyEntriesContainer}>
-              <Text style={styles.emptyText}>No care entries yet</Text>
+              <Text style={styles.emptyText}>No care entries yet</Text>                
               <TouchableOpacity
                 style={styles.addEntryButton}
-                onPress={() => router.push("/(tabs)/adopter/care-journal" as any)}
+                onPress={() => {
+                  console.log("Navigating to care journal");
+                  router.push("/(tabs)/adopter/care-journal/page" as any);
+                }}
               >
                 <Feather name="plus-circle" size={16} color="white" style={{ marginRight: 4 }} />
                 <Text style={styles.addEntryButtonText}>Start Journaling</Text>
@@ -298,7 +355,7 @@ export default function AdopterDashboard() {
             {lostPetsCount > 0 && (
               <TouchableOpacity
                 style={styles.alertCard}
-                onPress={() => router.push("/(tabs)/adopter/lost-pets" as any)}
+                onPress={() => router.push("/(tabs)/adopter/lost-pets/page" as any)}
               >
                 <Feather name="alert-triangle" size={24} color="#DC2626" />
                 <Text style={styles.alertCardCount}>{lostPetsCount}</Text>
@@ -308,7 +365,7 @@ export default function AdopterDashboard() {
             {gpsAlertsCount > 0 && (
               <TouchableOpacity
                 style={styles.gpsAlertCard}
-                onPress={() => router.push("/(tabs)/adopter/gps-tracking" as any)}
+                onPress={() => router.push("/(tabs)/adopter/gps-tracking/page" as any)}
               >
                 <Feather name="shield" size={24} color="#EA580C" />
                 <Text style={styles.gpsAlertCardCount}>{gpsAlertsCount}</Text>
@@ -321,7 +378,7 @@ export default function AdopterDashboard() {
         {/* AI Matching Feature */}
         <TouchableOpacity
           style={styles.aiCard}
-          onPress={() => router.push("/(tabs)/adopter/ai-matching" as any)}
+          onPress={() => router.push("/(tabs)/adopter/ai-matching/page" as any)}
         >
           <View style={styles.aiCardContent}>
             <View>
@@ -330,7 +387,7 @@ export default function AdopterDashboard() {
             </View>
             <TouchableOpacity
               style={styles.aiButton}
-              onPress={() => router.push("/(tabs)/adopter/ai-matching" as any)}
+              onPress={() => router.push("/(tabs)/adopter/ai-matching/page" as any)}
             >
               <Feather name="star" size={16} color="#FF7A47" style={{ marginRight: 4 }} />
               <Text style={styles.aiButtonText}>Try Now</Text>
@@ -388,11 +445,11 @@ export default function AdopterDashboard() {
 
         {/* Pet Cards */}
         <View style={styles.petCardsContainer}>
-          {filteredPets.map((pet) => (
+          {filteredPets.map((pet, index) => (
             <TouchableOpacity
-              key={pet.id}
+              key={`${pet.id}-${index}`}
               style={styles.petCard}
-              onPress={() => router.push(`/adopter/pet/${pet.id}` as any)}
+              onPress={() => router.push(`/(tabs)/adopter/pet/${pet.id}/page` as any)}
             >
               <View style={styles.petCardContent}>
                 <View style={styles.petImageContainer}>
@@ -442,7 +499,7 @@ export default function AdopterDashboard() {
                     </View>
                     <TouchableOpacity
                       style={styles.viewButton}
-                      onPress={() => router.push(`/adopter/pet/${pet.id}` as any)}
+                      onPress={() => router.push(`/(tabs)/adopter/pet/${pet.id}/page` as any)}
                     >
                       <Feather name="eye" size={12} color="white" style={{ marginRight: 4 }} />
                       <Text style={styles.viewButtonText}>View</Text>
