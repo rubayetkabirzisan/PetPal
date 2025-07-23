@@ -95,7 +95,8 @@ export default function LostPetsScreen({ navigation }: LostPetsScreenProps) {
   }
 
   const handleReportLostPet = () => {
-    Alert.alert("Report Lost Pet", "This feature will allow you to report a lost pet with photos and details.")
+    // Navigate to the ReportLostPet screen in the root navigator
+    navigation.getParent()?.navigate("ReportLostPet")
   }
 
   const handleReportSighting = (petId: string) => {

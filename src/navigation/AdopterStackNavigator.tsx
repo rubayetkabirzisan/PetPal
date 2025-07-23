@@ -8,6 +8,7 @@ import CareJournalScreen from "../screens/CareJournalScreen"
 import ChatScreen from "../screens/ChatScreen"
 import MessagesScreen from "../screens/MessagesScreen"
 import PetProfileScreen from "../screens/PetProfileScreen"
+import ReportLostPetScreen from "../screens/ReportLostPetScreen"
 import AdopterTabNavigator from "./AdopterTabNavigator"
 
 const Stack = createStackNavigator()
@@ -28,6 +29,7 @@ export default function AdopterStackNavigator() {
       <Stack.Screen name="ApplicationForm" component={ApplicationFormScreen} />
       <Stack.Screen name="ApplicationDetails" component={ApplicationDetailsScreen} />
       <Stack.Screen name="ApplicationList" component={ApplicationListScreen} />
+      <Stack.Screen name="ReportLostPet" component={ReportLostPetScreen} />
     </Stack.Navigator>
   )
 }

@@ -18,6 +18,7 @@ import MessagesScreen from "./src/screens/MessagesScreen"
 import ModernApplicationListScreen from "./src/screens/ModernApplicationListScreen"
 import PetProfileScreen from "./src/screens/PetProfileScreen"
 import RemindersScreen from "./src/screens/RemindersScreen"
+import ReportLostPetScreen from "./src/screens/ReportLostPetScreen"
 import { theme } from "./src/theme/theme"
 
 const Stack = createStackNavigator()
@@ -68,6 +69,11 @@ export default function App() {
             <Stack.Screen name="Reminders" component={RemindersScreen} options={{ headerShown: false }} />
             <Stack.Screen name="Chat" component={ChatScreen} options={{ headerShown: true, title: "Chat" }} />
             <Stack.Screen name="CareJournal" component={CareJournalScreen} options={{ headerShown: false }} />
+            <Stack.Screen 
+              name="ReportLostPet" 
+              component={ReportLostPetScreen} 
+              options={{ headerShown: true, title: "Report Lost Pet" }}
+            />
           </Stack.Navigator>
         </NavigationContainer>
       </AuthProvider>
