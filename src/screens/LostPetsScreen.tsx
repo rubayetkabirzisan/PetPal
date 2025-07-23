@@ -5,6 +5,7 @@ import { useEffect, useState } from "react"
 import {
   Alert,
   Image,
+  Linking,
   Modal,
   ScrollView,
   StyleSheet,
@@ -102,6 +103,46 @@ export default function LostPetsScreen({ navigation }: LostPetsScreenProps) {
   const handleReportSighting = (petId: string) => {
     Alert.alert("Report Sighting", "This feature will allow you to report a sighting of this lost pet.")
   }
+  
+  const handleContactOwner = (pet: LostPet) => {
+    // Check if we have contact info available
+    if (pet.contactInfo) {
+      Alert.alert(
+        "Contact Options",
+        `Contact ${pet.contactInfo.name} via:`,
+        [
+          {
+            text: "Call",
+            onPress: () => {
+              const phoneNumber = pet.contactInfo?.phone;
+              if (phoneNumber) {
+                Linking.openURL(`tel:${phoneNumber}`);
+              } else {
+                Alert.alert("Error", "Phone number not available");
+              }
+            },
+          },
+          {
+            text: "Email",
+            onPress: () => {
+              const email = pet.contactInfo?.email;
+              if (email) {
+                Linking.openURL(`mailto:${email}?subject=About your lost pet: ${pet.name}`);
+              } else {
+                Alert.alert("Error", "Email not available");
+              }
+            },
+          },
+          {
+            text: "Cancel",
+            style: "cancel",
+          },
+        ]
+      );
+    } else {
+      Alert.alert("Contact Information", "Contact information not available for this pet.");
+    }
+  };
 
   const renderLostPetCard = (pet: LostPet) => (
     <View key={pet.id} style={styles.petCard}>
@@ -137,7 +178,10 @@ export default function LostPetsScreen({ navigation }: LostPetsScreenProps) {
         )}
 
         <View style={styles.petActions}>
-          <TouchableOpacity style={styles.contactButton}>
+          <TouchableOpacity 
+            style={styles.contactButton}
+            onPress={() => handleContactOwner(pet)}
+          >
             <Ionicons name="call-outline" size={16} color="white" />
             <Text style={styles.contactButtonText}>Contact</Text>
           </TouchableOpacity>
