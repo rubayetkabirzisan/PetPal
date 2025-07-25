@@ -15,8 +15,10 @@ interface TrackedPet {
   status: "Safe" | "Alert" | "Low Battery"
 }
 
+import { StackNavigationProp } from "@react-navigation/stack"
+
 interface GPSTrackingScreenProps {
-  navigation: any
+  navigation: StackNavigationProp<any>
 }
 
 export default function GPSTrackingScreen({ navigation }: GPSTrackingScreenProps) {
@@ -47,8 +49,28 @@ export default function GPSTrackingScreen({ navigation }: GPSTrackingScreenProps
     setTrackedPets(mockTrackedPets)
   }, [])
 
+  // Handle navigation to the PetMapScreen with pet information
   const handleViewMap = (petId: string) => {
-    Alert.alert("View Map", "This would open a detailed map view showing the pet's location and movement history.")
+    // Find the pet object
+    const selectedPet = trackedPets.find(pet => pet.id === petId)
+    
+    if (!selectedPet) {
+      Alert.alert("Error", "Could not find the pet's tracking information.")
+      return
+    }
+    
+    // Navigate to PetMapScreen with pet details
+    navigation.navigate("PetMap", {
+      petId: selectedPet.id,
+      petName: selectedPet.name,
+      petType: selectedPet.type,
+      lastLocation: selectedPet.lastLocation,
+      coordinates: {
+        // Mock coordinates - in a real app these would come from the pet's tracking data
+        latitude: 37.7749 + (Math.random() - 0.5) * 0.01,  // Random variation around San Francisco
+        longitude: -122.4194 + (Math.random() - 0.5) * 0.01
+      }
+    })
   }
 
   const handleSetSafeZone = (petId: string) => {

@@ -16,6 +16,7 @@ import ChatScreen from "./src/screens/ChatScreen"
 import LandingScreen from "./src/screens/LandingScreen"
 import MessagesScreen from "./src/screens/MessagesScreen"
 import ModernApplicationListScreen from "./src/screens/ModernApplicationListScreen"
+import PetLocationScreen from "./src/screens/PetLocationScreen"
 import PetProfileScreen from "./src/screens/PetProfileScreen"
 import RemindersScreen from "./src/screens/RemindersScreen"
 import ReportLostPetScreen from "./src/screens/ReportLostPetScreen"
@@ -73,6 +74,11 @@ export default function App() {
               name="ReportLostPet" 
               component={ReportLostPetScreen} 
               options={{ headerShown: true, title: "Report Lost Pet" }}
+            />
+            <Stack.Screen 
+              name="PetMap" 
+              component={PetLocationScreen} 
+              options={{ headerShown: false }}
             />
           </Stack.Navigator>
         </NavigationContainer>
