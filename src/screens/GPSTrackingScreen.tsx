@@ -74,7 +74,27 @@ export default function GPSTrackingScreen({ navigation }: GPSTrackingScreenProps
   }
 
   const handleSetSafeZone = (petId: string) => {
-    Alert.alert("Set Safe Zone", "This would allow you to define safe zones and get alerts when your pet leaves them.")
+    // Find the pet object
+    const selectedPet = trackedPets.find(pet => pet.id === petId)
+    
+    if (!selectedPet) {
+      Alert.alert("Error", "Could not find the pet's information.")
+      return
+    }
+    
+    // Use the same approach as the working handleViewMap function
+    // Navigate using the screen name format that works elsewhere in the app
+    navigation.navigate("SafeZone", {
+      petId: selectedPet.id,
+      petName: selectedPet.name,
+      petType: selectedPet.type,
+      lastLocation: selectedPet.lastLocation,
+      coordinates: {
+        // Mock coordinates - in a real app these would come from the pet's tracking data
+        latitude: 37.7749 + (Math.random() - 0.5) * 0.01,  // Random variation around San Francisco
+        longitude: -122.4194 + (Math.random() - 0.5) * 0.01
+      }
+    })
   }
 
   const getStatusColor = (status: string) => {
@@ -131,9 +151,18 @@ export default function GPSTrackingScreen({ navigation }: GPSTrackingScreenProps
           <Text style={styles.actionButtonText}>View Map</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.secondaryActionButton} onPress={() => handleSetSafeZone(pet.id)}>
-          <Ionicons name="shield-outline" size={16} color={colors.primary} />
-          <Text style={styles.secondaryActionButtonText}>Safe Zone</Text>
+        <TouchableOpacity 
+          style={styles.secondaryActionButton} 
+          onPress={() => handleSetSafeZone(pet.id)}
+          activeOpacity={0.7}
+        >
+          <View style={styles.buttonContent}>
+            <Ionicons name="shield-checkmark" size={16} color={colors.primary} />
+            <Text style={styles.secondaryActionButtonText}>Safe Zone</Text>
+          </View>
+          <View style={styles.featureBadge}>
+            <Text style={styles.featureBadgeText}>2</Text>
+          </View>
         </TouchableOpacity>
       </View>
     </View>
@@ -312,14 +341,39 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
     gap: spacing.xs,
     flex: 1,
-    justifyContent: "center",
+    justifyContent: "space-between",
     borderWidth: 1,
     borderColor: colors.primary,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+    position: "relative",
+    overflow: "hidden",
+  },
+  buttonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
   },
   secondaryActionButtonText: {
     color: colors.primary,
     fontSize: 14,
     fontWeight: "600",
+  },
+  featureBadge: {
+    backgroundColor: colors.secondary,
+    borderRadius: 10,
+    width: 20,
+    height: 20,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  featureBadgeText: {
+    color: colors.primary,
+    fontSize: 10,
+    fontWeight: "bold",
   },
   emptyState: {
     alignItems: "center",
