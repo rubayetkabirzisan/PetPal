@@ -1,14 +1,16 @@
 import { Ionicons } from "@expo/vector-icons"
+import Slider from '@react-native-community/slider'
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import React, { useState } from "react"
 import {
-    Alert,
-    ScrollView,
-    StyleSheet,
-    Switch,
-    Text,
-    TouchableOpacity,
-    View
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from "react-native"
 import MapView, { Circle, Marker, PROVIDER_GOOGLE } from "react-native-maps"
 import { colors, spacing } from "../theme/theme"
@@ -42,10 +44,17 @@ export default function SafeZoneScreen() {
   
   // State for safe zone settings
   const [safeZones, setSafeZones] = useState([
-    { id: '1', name: 'Home', radius: 200, active: true },
-    { id: '2', name: 'Park', radius: 300, active: false },
+    { id: '1', name: 'Home', radius: 200, active: true, type: 'home' },
+    { id: '2', name: 'Park', radius: 300, active: false, type: 'park' },
   ]);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [isAddingZone, setIsAddingZone] = useState(false);
+  const [editingZone, setEditingZone] = useState<string | null>(null);
+  const [newZone, setNewZone] = useState({
+    name: '',
+    radius: 200,
+    type: 'home',
+  });
   
   // Format coordinates for display
   const formatCoordinate = (value: number): string => {
@@ -63,16 +72,76 @@ export default function SafeZoneScreen() {
 
   // Handle adding a new safe zone
   const handleAddSafeZone = () => {
+    setIsAddingZone(true);
+  };
+
+  // Handle saving a new safe zone
+  const handleSaveZone = () => {
+    if (!newZone.name.trim()) {
+      Alert.alert("Error", "Please enter a name for the safe zone");
+      return;
+    }
+
+    if (editingZone) {
+      // Update existing zone
+      setSafeZones(
+        safeZones.map(zone =>
+          zone.id === editingZone
+            ? { ...zone, name: newZone.name, radius: newZone.radius, type: newZone.type }
+            : zone
+        )
+      );
+      Alert.alert("Success", `Safe zone "${newZone.name}" updated successfully`);
+    } else {
+      // Add new zone
+      const newZoneItem = {
+        id: Date.now().toString(),
+        name: newZone.name,
+        radius: newZone.radius,
+        active: true,
+        type: newZone.type
+      };
+
+      setSafeZones([...safeZones, newZoneItem]);
+      Alert.alert("Success", `New safe zone "${newZone.name}" added for ${petName}`);
+    }
+
+    setNewZone({ name: '', radius: 200, type: 'home' });
+    setIsAddingZone(false);
+    setEditingZone(null);
+  };
+
+  // Handle canceling zone creation
+  const handleCancelZone = () => {
+    setNewZone({ name: '', radius: 200, type: 'home' });
+    setIsAddingZone(false);
+    setEditingZone(null);
+  };
+
+  // Handle editing an existing zone
+  const handleEditZone = (zone: any) => {
+    setNewZone({
+      name: zone.name,
+      radius: zone.radius,
+      type: zone.type
+    });
+    setEditingZone(zone.id);
+    setIsAddingZone(true);
+  };
+
+  // Handle deleting a zone
+  const handleDeleteZone = (zoneId: string, zoneName: string) => {
     Alert.alert(
-      "Add Safe Zone", 
-      "This would open a map to set a new safe zone location.",
+      "Delete Safe Zone",
+      `Are you sure you want to delete "${zoneName}"?`,
       [
         { text: "Cancel", style: "cancel" },
-        { 
-          text: "Add", 
+        {
+          text: "Delete",
+          style: "destructive",
           onPress: () => {
-            // In a real app, this would open a map interface
-            Alert.alert("Success", "New safe zone added for " + petName);
+            setSafeZones(safeZones.filter(zone => zone.id !== zoneId));
+            Alert.alert("Deleted", `Safe zone "${zoneName}" has been deleted`);
           }
         }
       ]
@@ -134,22 +203,104 @@ export default function SafeZoneScreen() {
           <View key={zone.id} style={styles.zoneItem}>
             <View style={styles.zoneInfo}>
               <Text style={styles.zoneName}>{zone.name}</Text>
-              <Text style={styles.zoneRadius}>{zone.radius}m radius</Text>
+              <Text style={styles.zoneRadius}>{zone.radius}m radius • {zone.type}</Text>
             </View>
-            <Switch
-              value={zone.active}
-              onValueChange={() => toggleSafeZone(zone.id)}
-              trackColor={{ false: colors.border, true: colors.primary }}
-              thumbColor="white"
-            />
+            <View style={styles.zoneActions}>
+              <TouchableOpacity 
+                style={styles.editButton} 
+                onPress={() => handleEditZone(zone)}
+              >
+                <Ionicons name="create-outline" size={18} color={colors.primary} />
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.deleteButton} 
+                onPress={() => handleDeleteZone(zone.id, zone.name)}
+              >
+                <Ionicons name="trash-outline" size={18} color="#FF6B6B" />
+              </TouchableOpacity>
+              <Switch
+                value={zone.active}
+                onValueChange={() => toggleSafeZone(zone.id)}
+                trackColor={{ false: colors.border, true: colors.primary }}
+                thumbColor="white"
+              />
+            </View>
           </View>
         ))}
         
-        {/* Add Safe Zone Button */}
-        <TouchableOpacity style={styles.addButton} onPress={handleAddSafeZone}>
-          <Ionicons name="add-circle" size={20} color="white" />
-          <Text style={styles.addButtonText}>Add Safe Zone</Text>
-        </TouchableOpacity>
+        {!isAddingZone ? (
+          /* Add Safe Zone Button */
+          <TouchableOpacity style={styles.addButton} onPress={handleAddSafeZone}>
+            <Ionicons name="add-circle" size={20} color="white" />
+            <Text style={styles.addButtonText}>Add Safe Zone</Text>
+          </TouchableOpacity>
+        ) : (
+          /* Add Safe Zone Form */
+          <View style={styles.addZoneForm}>
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>Zone Name:</Text>
+              <TextInput
+                style={styles.textInput}
+                value={newZone.name}
+                onChangeText={(text) => setNewZone({...newZone, name: text})}
+                placeholder="Enter zone name (e.g. Home, Park)"
+                placeholderTextColor={colors.textSecondary}
+              />
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>Zone Type:</Text>
+              <View style={styles.typeSelector}>
+                {['home', 'work', 'park', 'vet', 'other'].map(type => (
+                  <TouchableOpacity
+                    key={type}
+                    style={[
+                      styles.typeOption,
+                      newZone.type === type && styles.typeOptionSelected
+                    ]}
+                    onPress={() => setNewZone({...newZone, type})}
+                  >
+                    <Text style={[
+                      styles.typeOptionText,
+                      newZone.type === type && styles.typeOptionTextSelected
+                    ]}>
+                      {type.charAt(0).toUpperCase() + type.slice(1)}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+            
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>Radius (meters):</Text>
+              <View style={styles.radiusContainer}>
+                <Text style={styles.radiusValue}>{newZone.radius}m</Text>
+                <Slider
+                  style={styles.slider}
+                  minimumValue={50}
+                  maximumValue={1000}
+                  step={10}
+                  value={newZone.radius}
+                  onValueChange={(value) => setNewZone({...newZone, radius: value})}
+                  minimumTrackTintColor={colors.primary}
+                  maximumTrackTintColor={colors.border}
+                  thumbTintColor={colors.primary}
+                />
+              </View>
+            </View>
+            
+            <View style={styles.formButtons}>
+              <TouchableOpacity style={styles.cancelButton} onPress={handleCancelZone}>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.saveButton} onPress={handleSaveZone}>
+                <Text style={styles.saveButtonText}>
+                  {editingZone ? 'Update Zone' : 'Save Zone'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
       </View>
 
       {/* Map View */}
@@ -330,6 +481,17 @@ const styles = StyleSheet.create({
   zoneInfo: {
     flex: 1,
   },
+  zoneActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  editButton: {
+    padding: spacing.xs,
+  },
+  deleteButton: {
+    padding: spacing.xs,
+  },
   zoneName: {
     fontSize: 16,
     fontWeight: "500",
@@ -353,6 +515,99 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 14,
     fontWeight: "bold",
+  },
+  addZoneForm: {
+    backgroundColor: colors.secondary,
+    borderRadius: 8,
+    padding: spacing.md,
+    marginTop: spacing.md,
+  },
+  inputContainer: {
+    marginBottom: spacing.md,
+  },
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: colors.text,
+    marginBottom: spacing.xs,
+  },
+  textInput: {
+    backgroundColor: colors.surface,
+    borderRadius: 8,
+    padding: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
+    color: colors.text,
+    fontSize: 16,
+  },
+  typeSelector: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.xs,
+    marginTop: spacing.xs,
+  },
+  typeOption: {
+    backgroundColor: colors.surface,
+    borderRadius: 16,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  typeOptionSelected: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  typeOptionText: {
+    fontSize: 14,
+    color: colors.text,
+    fontWeight: '500',
+  },
+  typeOptionTextSelected: {
+    color: 'white',
+  },
+  radiusContainer: {
+    marginTop: spacing.xs,
+  },
+  radiusValue: {
+    textAlign: 'center',
+    fontWeight: 'bold',
+    fontSize: 16,
+    color: colors.text,
+    marginBottom: spacing.xs,
+  },
+  slider: {
+    width: '100%',
+    height: 40,
+  },
+  formButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: spacing.md,
+  },
+  cancelButton: {
+    backgroundColor: colors.border,
+    borderRadius: 8,
+    padding: spacing.sm,
+    flex: 1,
+    marginRight: spacing.xs,
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    color: colors.text,
+    fontWeight: '500',
+  },
+  saveButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    padding: spacing.sm,
+    flex: 1,
+    marginLeft: spacing.xs,
+    alignItems: 'center',
+  },
+  saveButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
   mapContainer: {
     backgroundColor: colors.surface,
