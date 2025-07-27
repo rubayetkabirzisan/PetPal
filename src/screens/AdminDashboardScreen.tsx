@@ -104,7 +104,10 @@ export default function AdminDashboardScreen({ navigation }: AdminDashboardScree
             <Text style={styles.alertTitle}>Pending Verifications</Text>
             <Text style={styles.alertMessage}>5 adopter profiles need verification review</Text>
           </View>
-          <TouchableOpacity style={styles.alertButton}>
+          <TouchableOpacity 
+            style={styles.alertButton}
+            onPress={() => navigation.navigate("Applications")}
+          >
             <Text style={styles.alertButtonText}>Review</Text>
           </TouchableOpacity>
         </View>
@@ -117,7 +120,10 @@ export default function AdminDashboardScreen({ navigation }: AdminDashboardScree
             <Text style={styles.alertTitle}>Overdue Health Checks</Text>
             <Text style={styles.alertMessage}>3 pets need scheduled health checkups</Text>
           </View>
-          <TouchableOpacity style={styles.alertButton}>
+          <TouchableOpacity 
+            style={styles.alertButton}
+            onPress={() => navigation.navigate("Analytics")}
+          >
             <Text style={styles.alertButtonText}>Schedule</Text>
           </TouchableOpacity>
         </View>

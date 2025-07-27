@@ -10,7 +10,10 @@ import { ThemeProvider } from "./src/contexts/ThemeContext"
 import AdminTabNavigator from "./src/navigation/AdminTabNavigator"
 import AdopterTabNavigator from "./src/navigation/AdopterTabNavigator"
 import AddPetScreen from "./src/screens/AddPetScreen"
+import AdminApplicationsScreen from "./src/screens/AdminApplicationsScreen"
+import AdminLostPetsScreen from "./src/screens/AdminLostPetsScreen"
 import AdoptionHistoryScreen from "./src/screens/AdoptionHistoryScreen"
+import AnalyticsScreen from "./src/screens/AnalyticsScreen"
 import ApplicationDetailsScreen from "./src/screens/ApplicationDetailsScreen"
 import ApplicationFormScreen from "./src/screens/ApplicationFormScreen"
 import ApplicationListScreen from "./src/screens/ApplicationListScreen"
@@ -19,6 +22,7 @@ import AuthScreen from "./src/screens/AuthScreen"
 import CareJournalScreen from "./src/screens/CareJournalScreen"
 import ChatScreen from "./src/screens/ChatScreen"
 import LandingScreen from "./src/screens/LandingScreen"
+import LostPetsScreen from "./src/screens/LostPetsScreen"
 import MessagesScreen from "./src/screens/MessagesScreen"
 import ModernApplicationListScreen from "./src/screens/ModernApplicationListScreen"
 import NotificationsScreen from "./src/screens/NotificationsScreen"
@@ -116,6 +120,26 @@ export default function App() {
             <Stack.Screen 
               name="AddPet" 
               component={AddPetScreen} 
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen 
+              name="LostPets" 
+              component={LostPetsScreen} 
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen 
+              name="AdminLostPets" 
+              component={AdminLostPetsScreen} 
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen 
+              name="Analytics" 
+              component={AnalyticsScreen} 
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen 
+              name="Applications" 
+              component={AdminApplicationsScreen} 
               options={{ headerShown: false }}
             />
           </Stack.Navigator>
