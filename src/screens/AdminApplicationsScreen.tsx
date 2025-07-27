@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons"
 import React, { useEffect, useState } from "react"
 import {
     Alert,
+    Dimensions,
     Modal,
     ScrollView,
     StyleSheet,
@@ -12,53 +13,118 @@ import {
 } from "react-native"
 import { colors, spacing } from "../theme/theme"
 
-// Mock notification service - in real app, this would be your actual notification/messaging service
-const sendApprovalNotification = async (application: Application) => {
+const { width } = Dimensions.get('window')
+
+// Type definitions
+interface NotificationRecord {
+  timestamp: string;
+  type: 'approval' | 'status_update';
+  status: string;
+  messageId: string | null;
+  success: boolean;
+}
+
+interface FormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  dateOfBirth: string;
+  address: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  housingType: string;
+  ownRent: string;
+  hasYard: boolean;
+  yardFenced: boolean;
+  landlordsName: string;
+  landlordsPhone: string;
+  previousPets: string;
+  currentPets: string;
+  veterinarian: string;
+  vetPhone: string;
+  petExperience: string;
+  workSchedule: string;
+  hoursAlone: string;
+  exerciseCommitment: string;
+  travelFrequency: string;
+  familyMembers: string;
+  allergies: boolean;
+  reference1Name: string;
+  reference1Phone: string;
+  reference1Relation: string;
+  reference2Name: string;
+  reference2Phone: string;
+  reference2Relation: string;
+  whyAdopt: string;
+  expectations: string;
+  trainingPlan: string;
+  healthCareCommitment: string;
+  financialPreparation: string;
+  additionalComments: string;
+}
+
+interface Application {
+  id: string;
+  petId: string;
+  petName: string;
+  petType: string;
+  petBreed: string;
+  adopterName: string;
+  adopterEmail: string;
+  adopterPhone: string;
+  status: string;
+  submittedDate: string;
+  priority: string;
+  notes: string;
+  notificationHistory: NotificationRecord[];
+  formData: FormData;
+}
+
+interface NavigationProps {
+  goBack: () => void;
+}
+
+interface Props {
+  navigation: NavigationProps;
+}
+
+interface NotificationResult {
+  success: boolean;
+  messageId?: string | null;
+  error?: string;
+}
+
+interface NotificationMessage {
+  to: string;
+  subject: string;
+  body: string;
+  type: 'approval' | 'status_update';
+  applicationId: string;
+  newStatus?: string;
+  timestamp: string;
+}
+
+// Mock notification service
+const sendApprovalNotification = async (application: Application): Promise<NotificationResult> => {
   try {
-    // Simulate API call to send notification
-    const message = {
+    const message: NotificationMessage = {
       to: application.adopterEmail,
       subject: `🎉 Great News! Your adoption application for ${application.petName} has been approved!`,
-      body: `Dear ${application.adopterName},
-
-We're thrilled to inform you that your adoption application for ${application.petName} has been approved! 
-
-Pet Details:
-- Name: ${application.petName}
-- Breed: ${application.petBreed}
-- Type: ${application.petType}
-
-Next Steps:
-1. Please contact us within 48 hours to schedule a meet-and-greet
-2. Bring a valid ID and proof of address
-3. Complete the final adoption paperwork
-4. Pay the adoption fee
-
-Our team will be in touch shortly with specific instructions and scheduling options.
-
-Thank you for choosing to adopt and giving ${application.petName} a loving home!
-
-Best regards,
-PetPal Adoption Center
-Phone: (555) 123-PETS
-Email: adoptions@petpal.com`,
+      body: `Dear ${application.adopterName},\n\nWe're thrilled to inform you that your adoption application for ${application.petName} has been approved!\n\nNext Steps:\n1. Contact us within 48 hours\n2. Schedule a meet-and-greet\n3. Complete final paperwork\n\nBest regards,\nPetPal Adoption Center`,
       type: 'approval',
       applicationId: application.id,
       timestamp: new Date().toISOString()
     }
-
-    // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    console.log('Approval notification sent:', message)
     return { success: true, messageId: `msg_${Date.now()}` }
   } catch (error) {
-    console.error('Failed to send approval notification:', error)
-    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+    return { success: false, error: (error as Error).message }
   }
 }
 
-const sendStatusUpdateNotification = async (application: Application, newStatus: string) => {
+const sendStatusUpdateNotification = async (application: Application, newStatus: string): Promise<NotificationResult> => {
   try {
     let subject = ''
     let body = ''
@@ -66,41 +132,17 @@ const sendStatusUpdateNotification = async (application: Application, newStatus:
     switch (newStatus) {
       case 'Under Review':
         subject = `Application Update: ${application.petName} adoption application is under review`
-        body = `Dear ${application.adopterName},
-
-Thank you for your interest in adopting ${application.petName}. 
-
-Your application is currently under review by our adoption team. We carefully evaluate each application to ensure the best match for both our pets and adoptive families.
-
-We will contact you within 2-3 business days with an update on your application status.
-
-If you have any questions, please don't hesitate to contact us.
-
-Best regards,
-PetPal Adoption Center`
+        body = `Dear ${application.adopterName},\n\nYour application for ${application.petName} is now under review. We'll contact you within 2-3 business days.\n\nBest regards,\nPetPal Adoption Center`
         break
-      
       case 'Rejected':
         subject = `Application Update: ${application.petName} adoption application`
-        body = `Dear ${application.adopterName},
-
-Thank you for your interest in adopting ${application.petName}.
-
-After careful consideration, we have decided to proceed with another applicant for this pet. This decision is not a reflection of your ability to provide a loving home.
-
-We encourage you to browse our other available pets, as we may have other wonderful companions that would be perfect for your family.
-
-Thank you for considering adoption.
-
-Best regards,
-PetPal Adoption Center`
+        body = `Dear ${application.adopterName},\n\nAfter careful consideration, we have decided to proceed with another applicant for ${application.petName}. We encourage you to browse our other available pets.\n\nBest regards,\nPetPal Adoption Center`
         break
-      
       default:
-        return { success: true, messageId: null } // No notification for other statuses
+        return { success: true, messageId: null }
     }
 
-    const message = {
+    const message: NotificationMessage = {
       to: application.adopterEmail,
       subject,
       body,
@@ -110,107 +152,34 @@ PetPal Adoption Center`
       timestamp: new Date().toISOString()
     }
 
-    // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    console.log('Status update notification sent:', message)
     return { success: true, messageId: `msg_${Date.now()}` }
   } catch (error) {
-    console.error('Failed to send status update notification:', error)
-    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+    return { success: false, error: (error as Error).message }
   }
 }
 
-interface AdminApplicationsScreenProps {
-  navigation: any
-}
-
-type HousingType = "house" | "apartment" | "condo" | "other"
-type OwnRentType = "own" | "rent" | "other"
-type ExerciseCommitment = "low" | "medium" | "high"
-
-interface Application {
-  id: string
-  petId: string
-  petName: string
-  petType: string
-  petBreed: string
-  adopterName: string
-  adopterEmail: string
-  adopterPhone: string
-  status: "Pending" | "Under Review" | "Approved" | "Rejected"
-  submittedDate: string
-  priority: "High" | "Medium" | "Low"
-  notes?: string
-  notificationHistory?: {
-    timestamp: string
-    type: 'approval' | 'status_update'
-    status: string
-    messageId?: string
-    success: boolean
-  }[]
-  // Complete form data from ApplicationFormScreen
-  formData: {
-    // Personal Information
-    firstName: string
-    lastName: string
-    email: string
-    phone: string
-    dateOfBirth: string
-    // Address Information
-    address: string
-    city: string
-    state: string
-    zipCode: string
-    housingType: HousingType | ""
-    ownRent: OwnRentType | ""
-    hasYard: boolean
-    yardFenced: boolean
-    landlordsName: string
-    landlordsPhone: string
-    // Pet Experience
-    previousPets: string
-    currentPets: string
-    veterinarian: string
-    vetPhone: string
-    petExperience: string
-    // Lifestyle
-    workSchedule: string
-    hoursAlone: string
-    exerciseCommitment: ExerciseCommitment | ""
-    travelFrequency: string
-    familyMembers: string
-    allergies: boolean
-    // References
-    reference1Name: string
-    reference1Phone: string
-    reference1Relation: string
-    reference2Name: string
-    reference2Phone: string
-    reference2Relation: string
-    // Additional Information
-    whyAdopt: string
-    expectations: string
-    trainingPlan: string
-    healthCareCommitment: string
-    financialPreparation: string
-    additionalComments: string
-  }
-}
-
-export default function AdminApplicationsScreen({ navigation }: AdminApplicationsScreenProps) {
+export default function AdminApplicationsScreen({ navigation }: Props) {
   const [applications, setApplications] = useState<Application[]>([])
-  const [selectedStatus, setSelectedStatus] = useState<string>("All")
+  const [selectedStatus, setSelectedStatus] = useState("All")
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
   const [adminNotes, setAdminNotes] = useState("")
-  const [currentModalStep, setCurrentModalStep] = useState(0)
+  const [currentStep, setCurrentStep] = useState(0)
   const [isProcessing, setIsProcessing] = useState(false)
 
-  const applicationSteps = ["Personal Info", "Address", "Pet Experience", "Lifestyle", "References", "Additional", "Summary"]
+  const steps = [
+    { id: 'personal', title: 'Personal', icon: 'person' as const },
+    { id: 'address', title: 'Address', icon: 'home' as const },
+    { id: 'experience', title: 'Experience', icon: 'paw' as const },
+    { id: 'lifestyle', title: 'Lifestyle', icon: 'calendar' as const },
+    { id: 'references', title: 'References', icon: 'people' as const },
+    { id: 'additional', title: 'Additional', icon: 'document-text' as const },
+    { id: 'summary', title: 'Summary', icon: 'clipboard' as const }
+  ]
 
-  // Sample data - in real app, this would come from API
+  // Sample data
   const sampleApplications: Application[] = [
     {
       id: "app-1",
@@ -329,132 +298,6 @@ export default function AdminApplicationsScreen({ navigation }: AdminApplication
         financialPreparation: "We have pet insurance and a dedicated savings account for pet expenses.",
         additionalComments: "We have cat-proofed our home and have all necessary supplies ready."
       }
-    },
-    {
-      id: "app-3",
-      petId: "pet-3",
-      petName: "Max",
-      petType: "Dog",
-      petBreed: "German Shepherd",
-      adopterName: "Emily Davis",
-      adopterEmail: "emily.d@email.com",
-      adopterPhone: "(555) 456-7890",
-      status: "Approved",
-      submittedDate: "2024-01-12",
-      priority: "High",
-      notes: "Experienced dog owner, perfect match",
-      notificationHistory: [
-        {
-          timestamp: "2024-01-12T14:45:00Z",
-          type: 'approval',
-          status: 'Approved',
-          messageId: 'msg_0987654321',
-          success: true
-        }
-      ],
-      formData: {
-        firstName: "Emily",
-        lastName: "Davis",
-        email: "emily.d@email.com",
-        phone: "(555) 456-7890",
-        dateOfBirth: "11/08/1988",
-        address: "789 Maple Lane",
-        city: "Berkeley",
-        state: "CA",
-        zipCode: "94705",
-        housingType: "house",
-        ownRent: "own",
-        hasYard: true,
-        yardFenced: true,
-        landlordsName: "",
-        landlordsPhone: "",
-        previousPets: "German Shepherd for 12 years, Golden Retriever for 10 years",
-        currentPets: "None currently",
-        veterinarian: "Dr. Robert Martinez",
-        vetPhone: "(555) 888-9999",
-        petExperience: "20+ years with large breed dogs, experienced with training and socialization",
-        workSchedule: "Part-time veterinary technician, 3 days per week",
-        hoursAlone: "3",
-        exerciseCommitment: "high",
-        travelFrequency: "Very rarely, have reliable pet sitter when needed",
-        familyMembers: "Married with two teenagers (16 and 14) who are experienced with dogs",
-        allergies: false,
-        reference1Name: "Dr. Robert Martinez",
-        reference1Phone: "(555) 888-9999",
-        reference1Relation: "Veterinarian/Employer",
-        reference2Name: "Lisa Thompson",
-        reference2Phone: "(555) 222-3333",
-        reference2Relation: "Neighbor and friend",
-        whyAdopt: "Max needs an experienced home, and we understand German Shepherds' needs perfectly.",
-        expectations: "A loyal, intelligent companion who will be part of our active family lifestyle.",
-        trainingPlan: "Continuation of professional training, daily mental stimulation, and consistent routines.",
-        healthCareCommitment: "As a vet tech, I understand the importance of preventive care and early intervention.",
-        financialPreparation: "Stable income, pet insurance, and experience budgeting for large breed medical needs.",
-        additionalComments: "Our previous German Shepherd lived to 13, and we're prepared for the commitment."
-      }
-    },
-    {
-      id: "app-4",
-      petId: "pet-4",
-      petName: "Bella",
-      petType: "Dog",
-      petBreed: "Labrador Mix",
-      adopterName: "James Wilson",
-      adopterEmail: "j.wilson@email.com",
-      adopterPhone: "(555) 234-5678",
-      status: "Rejected",
-      submittedDate: "2024-01-10",
-      priority: "Low",
-      notes: "Housing situation not suitable for large dogs",
-      notificationHistory: [
-        {
-          timestamp: "2024-01-10T16:20:00Z",
-          type: 'status_update',
-          status: 'Rejected',
-          messageId: 'msg_1122334455',
-          success: true
-        }
-      ],
-      formData: {
-        firstName: "James",
-        lastName: "Wilson",
-        email: "j.wilson@email.com",
-        phone: "(555) 234-5678",
-        dateOfBirth: "05/12/1992",
-        address: "321 Studio Lane, Apt 4B",
-        city: "San Francisco",
-        state: "CA",
-        zipCode: "94110",
-        housingType: "apartment",
-        ownRent: "rent",
-        hasYard: false,
-        yardFenced: false,
-        landlordsName: "Property Management Co",
-        landlordsPhone: "(555) 999-0000",
-        previousPets: "None",
-        currentPets: "None",
-        veterinarian: "",
-        vetPhone: "",
-        petExperience: "Limited, but eager to learn",
-        workSchedule: "10+ hours daily in office, frequent travel for work",
-        hoursAlone: "12",
-        exerciseCommitment: "low",
-        travelFrequency: "3-4 times per month for business",
-        familyMembers: "Single, living alone",
-        allergies: false,
-        reference1Name: "Mark Johnson",
-        reference1Phone: "(555) 111-0000",
-        reference1Relation: "Brother",
-        reference2Name: "David Smith",
-        reference2Phone: "(555) 222-0000",
-        reference2Relation: "Friend",
-        whyAdopt: "I think it would be nice to have a pet for companionship",
-        expectations: "A pet that doesn't require too much attention and can be left alone",
-        trainingPlan: "I'll figure it out as I go",
-        healthCareCommitment: "I'll take care of basic needs",
-        financialPreparation: "I make decent money, should be fine",
-        additionalComments: "First time pet owner but willing to try"
-      }
     }
   ]
 
@@ -490,94 +333,62 @@ export default function AdminApplicationsScreen({ navigation }: AdminApplication
     return matchesStatus && matchesSearch
   })
 
-  const handleStatusUpdate = async (applicationId: string, newStatus: "Approved" | "Rejected" | "Under Review") => {
+  const handleStatusUpdate = async (applicationId: string, newStatus: string) => {
     const application = applications.find(app => app.id === applicationId)
     if (!application) return
 
     Alert.alert(
-      "Update Application Status",
-      `Are you sure you want to mark this application as ${newStatus}?${newStatus === 'Approved' ? '\n\nAn automatic confirmation message will be sent to the applicant.' : ''}`,
+      "Update Status",
+      `Change status to ${newStatus}?${newStatus === 'Approved' ? '\n\nConfirmation email will be sent.' : ''}`,
       [
         { text: "Cancel", style: "cancel" },
         {
           text: "Confirm",
           onPress: async () => {
             setIsProcessing(true)
-            
             try {
-              // Update the application status first
-              setApplications(prev => 
-                prev.map(app => 
-                  app.id === applicationId 
-                    ? { ...app, status: newStatus }
-                    : app
+              setApplications(prev =>
+                prev.map(app =>
+                  app.id === applicationId ? { ...app, status: newStatus } : app
                 )
               )
 
-              // Send notification based on status
-              let notificationResult
+              let notificationResult: NotificationResult
               if (newStatus === 'Approved') {
                 notificationResult = await sendApprovalNotification(application)
               } else {
                 notificationResult = await sendStatusUpdateNotification(application, newStatus)
               }
 
-              // Update notification history
-              const notificationRecord = {
+              const notificationRecord: NotificationRecord = {
                 timestamp: new Date().toISOString(),
-                type: (newStatus === 'Approved' ? 'approval' : 'status_update') as 'approval' | 'status_update',
+                type: newStatus === 'Approved' ? 'approval' : 'status_update',
                 status: newStatus,
-                messageId: notificationResult.messageId || undefined,
+                messageId: notificationResult.messageId || null,
                 success: notificationResult.success
               }
 
-              setApplications(prev => 
-                prev.map(app => 
-                  app.id === applicationId 
-                    ? { 
-                        ...app, 
-                        status: newStatus,
-                        notificationHistory: [...(app.notificationHistory || []), notificationRecord]
-                      }
-                    : app
+              setApplications(prev =>
+                prev.map(app =>
+                  app.id === applicationId ? {
+                    ...app,
+                    status: newStatus,
+                    notificationHistory: [...(app.notificationHistory || []), notificationRecord]
+                  } : app
                 )
               )
 
               setIsProcessing(false)
-
-              if (notificationResult.success) {
-                setShowDetailsModal(false)
-                Alert.alert(
-                  "Success", 
-                  `Application status updated to ${newStatus}.${newStatus === 'Approved' ? '\n\nConfirmation message sent to applicant successfully!' : notificationResult.messageId ? '\n\nNotification sent to applicant.' : ''}`,
-                  [{ text: "OK" }]
-                )
-              } else {
-                Alert.alert(
-                  "Partial Success",
-                  `Application status updated to ${newStatus}, but failed to send notification to applicant.\n\nError: ${notificationResult.error}`,
-                  [
-                    { text: "OK" },
-                    {
-                      text: "Retry Notification",
-                      onPress: async () => {
-                        const retryResult = newStatus === 'Approved' 
-                          ? await sendApprovalNotification(application)
-                          : await sendStatusUpdateNotification(application, newStatus)
-                        
-                        if (retryResult.success) {
-                          Alert.alert("Success", "Notification sent successfully!")
-                        } else {
-                          Alert.alert("Failed", "Could not send notification. Please contact the applicant manually.")
-                        }
-                      }
-                    }
-                  ]
-                )
-              }
+              setShowDetailsModal(false)
+              
+              Alert.alert(
+                "Success",
+                `Status updated to ${newStatus}${notificationResult.success ? ' and notification sent!' : ' but notification failed.'}`,
+                [{ text: "OK" }]
+              )
             } catch (error) {
               setIsProcessing(false)
-              Alert.alert("Error", "Failed to update application status. Please try again.")
+              Alert.alert("Error", "Failed to update status. Please try again.")
             }
           }
         }
@@ -588,399 +399,318 @@ export default function AdminApplicationsScreen({ navigation }: AdminApplication
   const openApplicationDetails = (application: Application) => {
     setSelectedApplication(application)
     setAdminNotes(application.notes || "")
-    setCurrentModalStep(0)
+    setCurrentStep(0)
     setShowDetailsModal(true)
   }
 
-  const renderStepIndicator = () => (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.stepIndicatorScroll}>
-      <View style={styles.stepIndicator}>
-        {applicationSteps.map((step, index) => (
+  const StepIndicator = () => (
+    <View style={styles.stepIndicator}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.stepScrollContent}>
+        {steps.map((step, index) => (
           <TouchableOpacity
-            key={index}
+            key={step.id}
             style={styles.stepItem}
-            onPress={() => setCurrentModalStep(index)}
+            onPress={() => setCurrentStep(index)}
           >
             <View style={[
               styles.stepCircle,
-              currentModalStep === index && styles.stepCircleActive,
-              currentModalStep > index && styles.stepCircleCompleted
+              currentStep === index && styles.stepCircleActive,
+              currentStep > index && styles.stepCircleCompleted
             ]}>
-              {currentModalStep > index ? (
+              {currentStep > index ? (
                 <Ionicons name="checkmark" size={16} color="white" />
               ) : (
-                <Text style={[
-                  styles.stepNumber,
-                  currentModalStep === index && styles.stepNumberActive
-                ]}>
-                  {index + 1}
-                </Text>
+                <Ionicons 
+                  name={step.icon} 
+                  size={16} 
+                  color={currentStep === index ? "white" : "#9CA3AF"} 
+                />
               )}
             </View>
             <Text style={[
               styles.stepLabel,
-              currentModalStep === index && styles.stepLabelActive
+              currentStep === index && styles.stepLabelActive
             ]}>
-              {step}
+              {step.title}
             </Text>
           </TouchableOpacity>
         ))}
-      </View>
-    </ScrollView>
-  )
-
-  const renderPersonalInfo = (formData: Application['formData']) => (
-    <View style={styles.stepContent}>
-      <Text style={styles.stepTitle}>Personal Information</Text>
-      <View style={styles.infoGrid}>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>Full Name</Text>
-          <Text style={styles.infoValue}>{formData.firstName} {formData.lastName}</Text>
-        </View>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>Email</Text>
-          <Text style={styles.infoValue}>{formData.email}</Text>
-        </View>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>Phone</Text>
-          <Text style={styles.infoValue}>{formData.phone}</Text>
-        </View>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>Date of Birth</Text>
-          <Text style={styles.infoValue}>{formData.dateOfBirth || 'Not provided'}</Text>
-        </View>
-      </View>
+      </ScrollView>
     </View>
   )
 
-  const renderAddressInfo = (formData: Application['formData']) => (
-    <View style={styles.stepContent}>
-      <Text style={styles.stepTitle}>Address Information</Text>
-      <View style={styles.infoGrid}>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>Address</Text>
-          <Text style={styles.infoValue}>{formData.address}</Text>
-        </View>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>City, State, ZIP</Text>
-          <Text style={styles.infoValue}>{formData.city}, {formData.state} {formData.zipCode}</Text>
-        </View>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>Housing Type</Text>
-          <Text style={styles.infoValue}>{formData.housingType || 'Not specified'}</Text>
-        </View>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>Own/Rent</Text>
-          <Text style={styles.infoValue}>{formData.ownRent || 'Not specified'}</Text>
-        </View>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>Has Yard</Text>
-          <Text style={styles.infoValue}>{formData.hasYard ? 'Yes' : 'No'}</Text>
-        </View>
-        {formData.hasYard && (
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Yard Fenced</Text>
-            <Text style={styles.infoValue}>{formData.yardFenced ? 'Yes' : 'No'}</Text>
-          </View>
-        )}
-        {formData.ownRent === 'rent' && (
-          <>
-            <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>Landlord Name</Text>
-              <Text style={styles.infoValue}>{formData.landlordsName || 'Not provided'}</Text>
+  const InfoField = ({ label, value, fullWidth = false }: { label: string; value: string | boolean; fullWidth?: boolean }) => (
+    <View style={[styles.infoField, fullWidth && styles.infoFieldFull]}>
+      <Text style={styles.infoLabel}>{label}</Text>
+      <Text style={styles.infoValue}>{value?.toString() || 'Not provided'}</Text>
+    </View>
+  )
+
+  const renderStepContent = () => {
+    if (!selectedApplication) return null
+
+    const { formData } = selectedApplication
+
+    switch (currentStep) {
+      case 0: // Personal
+        return (
+          <View style={styles.stepContent}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="person" size={24} color={colors.primary} />
+              <Text style={styles.sectionTitle}>Personal Information</Text>
             </View>
-            <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>Landlord Phone</Text>
-              <Text style={styles.infoValue}>{formData.landlordsPhone || 'Not provided'}</Text>
+            <View style={styles.infoGrid}>
+              <InfoField label="First Name" value={formData.firstName} />
+              <InfoField label="Last Name" value={formData.lastName} />
+              <InfoField label="Email" value={formData.email} fullWidth />
+              <InfoField label="Phone" value={formData.phone} />
+              <InfoField label="Date of Birth" value={formData.dateOfBirth} />
             </View>
-          </>
-        )}
-      </View>
-    </View>
-  )
-
-  const renderPetExperience = (formData: Application['formData']) => (
-    <View style={styles.stepContent}>
-      <Text style={styles.stepTitle}>Pet Experience</Text>
-      <View style={styles.infoGrid}>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>Veterinarian</Text>
-          <Text style={styles.infoValue}>{formData.veterinarian || 'Not provided'}</Text>
-        </View>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>Vet Phone</Text>
-          <Text style={styles.infoValue}>{formData.vetPhone || 'Not provided'}</Text>
-        </View>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>Previous Pets</Text>
-          <Text style={styles.infoValue}>{formData.previousPets || 'None mentioned'}</Text>
-        </View>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>Current Pets</Text>
-          <Text style={styles.infoValue}>{formData.currentPets || 'None mentioned'}</Text>
-        </View>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>Pet Experience</Text>
-          <Text style={styles.infoValue}>{formData.petExperience || 'Not provided'}</Text>
-        </View>
-      </View>
-    </View>
-  )
-
-  const renderLifestyle = (formData: Application['formData']) => (
-    <View style={styles.stepContent}>
-      <Text style={styles.stepTitle}>Lifestyle Information</Text>
-      <View style={styles.infoGrid}>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>Work Schedule</Text>
-          <Text style={styles.infoValue}>{formData.workSchedule || 'Not provided'}</Text>
-        </View>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>Hours Alone Daily</Text>
-          <Text style={styles.infoValue}>{formData.hoursAlone || 'Not specified'} hours</Text>
-        </View>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>Exercise Commitment</Text>
-          <Text style={styles.infoValue}>{formData.exerciseCommitment || 'Not specified'}</Text>
-        </View>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>Travel Frequency</Text>
-          <Text style={styles.infoValue}>{formData.travelFrequency || 'Not provided'}</Text>
-        </View>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>Family Members</Text>
-          <Text style={styles.infoValue}>{formData.familyMembers || 'Not provided'}</Text>
-        </View>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>Allergies</Text>
-          <Text style={styles.infoValue}>{formData.allergies ? 'Yes' : 'No'}</Text>
-        </View>
-      </View>
-    </View>
-  )
-
-  const renderReferences = (formData: Application['formData']) => (
-    <View style={styles.stepContent}>
-      <Text style={styles.stepTitle}>References</Text>
-      <View style={styles.infoGrid}>
-        <View style={styles.referenceSection}>
-          <Text style={styles.referenceSectionTitle}>Reference 1</Text>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Name</Text>
-            <Text style={styles.infoValue}>{formData.reference1Name || 'Not provided'}</Text>
           </View>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Phone</Text>
-            <Text style={styles.infoValue}>{formData.reference1Phone || 'Not provided'}</Text>
-          </View>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Relationship</Text>
-            <Text style={styles.infoValue}>{formData.reference1Relation || 'Not provided'}</Text>
-          </View>
-        </View>
-        <View style={styles.referenceSection}>
-          <Text style={styles.referenceSectionTitle}>Reference 2</Text>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Name</Text>
-            <Text style={styles.infoValue}>{formData.reference2Name || 'Not provided'}</Text>
-          </View>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Phone</Text>
-            <Text style={styles.infoValue}>{formData.reference2Phone || 'Not provided'}</Text>
-          </View>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Relationship</Text>
-            <Text style={styles.infoValue}>{formData.reference2Relation || 'Not provided'}</Text>
-          </View>
-        </View>
-      </View>
-    </View>
-  )
+        )
 
-  const renderAdditionalInfo = (formData: Application['formData']) => (
-    <View style={styles.stepContent}>
-      <Text style={styles.stepTitle}>Additional Information</Text>
-      <View style={styles.infoGrid}>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>Why Adopt This Pet?</Text>
-          <Text style={styles.infoValue}>{formData.whyAdopt || 'Not provided'}</Text>
-        </View>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>Expectations</Text>
-          <Text style={styles.infoValue}>{formData.expectations || 'Not provided'}</Text>
-        </View>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>Training Plan</Text>
-          <Text style={styles.infoValue}>{formData.trainingPlan || 'Not provided'}</Text>
-        </View>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>Healthcare Commitment</Text>
-          <Text style={styles.infoValue}>{formData.healthCareCommitment || 'Not provided'}</Text>
-        </View>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>Financial Preparation</Text>
-          <Text style={styles.infoValue}>{formData.financialPreparation || 'Not provided'}</Text>
-        </View>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>Additional Comments</Text>
-          <Text style={styles.infoValue}>{formData.additionalComments || 'None provided'}</Text>
-        </View>
-      </View>
-    </View>
-  )
-
-  const renderSummary = (application: Application) => (
-    <View style={styles.stepContent}>
-      <Text style={styles.stepTitle}>Application Summary</Text>
-      <View style={styles.summaryContainer}>
-        <View style={styles.summaryHeader}>
-          <View style={styles.summaryPetInfo}>
-            <Text style={styles.summaryPetName}>{application.petName}</Text>
-            <Text style={styles.summaryPetDetails}>{application.petBreed} • {application.petType}</Text>
+      case 1: // Address
+        return (
+          <View style={styles.stepContent}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="home" size={24} color={colors.primary} />
+              <Text style={styles.sectionTitle}>Address Information</Text>
+            </View>
+            <View style={styles.infoGrid}>
+              <InfoField label="Address" value={formData.address} fullWidth />
+              <InfoField label="City" value={formData.city} />
+              <InfoField label="State" value={formData.state} />
+              <InfoField label="ZIP Code" value={formData.zipCode} />
+              <InfoField label="Housing Type" value={formData.housingType} />
+              <InfoField label="Own/Rent" value={formData.ownRent} />
+              <InfoField label="Has Yard" value={formData.hasYard ? 'Yes' : 'No'} />
+              {formData.hasYard && (
+                <InfoField label="Yard Fenced" value={formData.yardFenced ? 'Yes' : 'No'} />
+              )}
+              {formData.ownRent === 'rent' && (
+                <>
+                  <InfoField label="Landlord Name" value={formData.landlordsName} />
+                  <InfoField label="Landlord Phone" value={formData.landlordsPhone} />
+                </>
+              )}
+            </View>
           </View>
-          <View style={[styles.statusBadge, { backgroundColor: getStatusColor(application.status) + '20' }]}>
-            <Text style={[styles.statusText, { color: getStatusColor(application.status) }]}>
-              {application.status}
-            </Text>
+        )
+
+      case 2: // Experience
+        return (
+          <View style={styles.stepContent}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="paw" size={24} color={colors.primary} />
+              <Text style={styles.sectionTitle}>Pet Experience</Text>
+            </View>
+            <View style={styles.infoGrid}>
+              <InfoField label="Veterinarian" value={formData.veterinarian} />
+              <InfoField label="Vet Phone" value={formData.vetPhone} />
+              <InfoField label="Previous Pets" value={formData.previousPets} fullWidth />
+              <InfoField label="Current Pets" value={formData.currentPets} fullWidth />
+              <InfoField label="Pet Experience" value={formData.petExperience} fullWidth />
+            </View>
           </View>
-        </View>
-        
-        <View style={styles.summarySection}>
-          <Text style={styles.summarySectionTitle}>Applicant</Text>
-          <Text style={styles.summaryText}>{application.adopterName}</Text>
-          <Text style={styles.summaryText}>{application.adopterEmail}</Text>
-          <Text style={styles.summaryText}>{application.adopterPhone}</Text>
-        </View>
+        )
 
-        <View style={styles.summarySection}>
-          <Text style={styles.summarySectionTitle}>Application Date</Text>
-          <Text style={styles.summaryText}>{new Date(application.submittedDate).toLocaleDateString()}</Text>
-        </View>
-
-        <View style={styles.summarySection}>
-          <Text style={styles.summarySectionTitle}>Priority Level</Text>
-          <View style={[styles.priorityBadge, { backgroundColor: getPriorityColor(application.priority) + '20' }]}>
-            <Text style={[styles.priorityText, { color: getPriorityColor(application.priority) }]}>
-              {application.priority}
-            </Text>
+      case 3: // Lifestyle
+        return (
+          <View style={styles.stepContent}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="calendar" size={24} color={colors.primary} />
+              <Text style={styles.sectionTitle}>Lifestyle Information</Text>
+            </View>
+            <View style={styles.infoGrid}>
+              <InfoField label="Work Schedule" value={formData.workSchedule} fullWidth />
+              <InfoField label="Hours Alone Daily" value={`${formData.hoursAlone} hours`} />
+              <InfoField label="Exercise Commitment" value={formData.exerciseCommitment} />
+              <InfoField label="Travel Frequency" value={formData.travelFrequency} fullWidth />
+              <InfoField label="Family Members" value={formData.familyMembers} fullWidth />
+              <InfoField label="Allergies" value={formData.allergies ? 'Yes' : 'No'} />
+            </View>
           </View>
-        </View>
+        )
 
-        <View style={styles.summarySection}>
-          <Text style={styles.summarySectionTitle}>Admin Notes</Text>
-          <TextInput
-            style={styles.notesInput}
-            value={adminNotes}
-            onChangeText={setAdminNotes}
-            placeholder="Add notes about this application..."
-            multiline
-            numberOfLines={4}
-            textAlignVertical="top"
-            placeholderTextColor="#9CA3AF"
-          />
-        </View>
+      case 4: // References
+        return (
+          <View style={styles.stepContent}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="people" size={24} color={colors.primary} />
+              <Text style={styles.sectionTitle}>References</Text>
+            </View>
+            
+            <View style={styles.referenceSection}>
+              <Text style={styles.referenceSectionTitle}>Reference 1</Text>
+              <View style={styles.infoGrid}>
+                <InfoField label="Name" value={formData.reference1Name} />
+                <InfoField label="Phone" value={formData.reference1Phone} />
+                <InfoField label="Relationship" value={formData.reference1Relation} fullWidth />
+              </View>
+            </View>
 
-        {application.notificationHistory && application.notificationHistory.length > 0 && (
-          <View style={styles.summarySection}>
-            <Text style={styles.summarySectionTitle}>Notification History</Text>
-            {application.notificationHistory.map((notification, index) => (
-              <View key={index} style={styles.notificationItem}>
-                <View style={styles.notificationHeader}>
-                  <Text style={styles.notificationTime}>
-                    {new Date(notification.timestamp).toLocaleString()}
+            <View style={styles.referenceSection}>
+              <Text style={styles.referenceSectionTitle}>Reference 2</Text>
+              <View style={styles.infoGrid}>
+                <InfoField label="Name" value={formData.reference2Name} />
+                <InfoField label="Phone" value={formData.reference2Phone} />
+                <InfoField label="Relationship" value={formData.reference2Relation} fullWidth />
+              </View>
+            </View>
+          </View>
+        )
+
+      case 5: // Additional
+        return (
+          <View style={styles.stepContent}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="document-text" size={24} color={colors.primary} />
+              <Text style={styles.sectionTitle}>Additional Information</Text>
+            </View>
+            <View style={styles.infoGrid}>
+              <InfoField label="Why Adopt This Pet?" value={formData.whyAdopt} fullWidth />
+              <InfoField label="Expectations" value={formData.expectations} fullWidth />
+              <InfoField label="Training Plan" value={formData.trainingPlan} fullWidth />
+              <InfoField label="Healthcare Commitment" value={formData.healthCareCommitment} fullWidth />
+              <InfoField label="Financial Preparation" value={formData.financialPreparation} fullWidth />
+              <InfoField label="Additional Comments" value={formData.additionalComments} fullWidth />
+            </View>
+          </View>
+        )
+
+      case 6: // Summary
+        return (
+          <View style={styles.stepContent}>
+            <View style={styles.sectionHeader}>
+              <Ionicons name="clipboard" size={24} color={colors.primary} />
+              <Text style={styles.sectionTitle}>Application Summary</Text>
+            </View>
+            
+            <View style={styles.summaryCard}>
+              <View style={styles.summaryHeader}>
+                <View>
+                  <Text style={styles.summaryPetName}>{selectedApplication.petName}</Text>
+                  <Text style={styles.summaryPetDetails}>
+                    {selectedApplication.petBreed} • {selectedApplication.petType}
                   </Text>
-                  <View style={[
-                    styles.notificationStatus,
-                    { backgroundColor: notification.success ? colors.success + '20' : colors.error + '20' }
-                  ]}>
-                    <Text style={[
-                      styles.notificationStatusText,
-                      { color: notification.success ? colors.success : colors.error }
-                    ]}>
-                      {notification.success ? 'Sent' : 'Failed'}
+                </View>
+                <View style={[styles.statusBadge, { backgroundColor: getStatusColor(selectedApplication.status) + '20' }]}>
+                  <Text style={[styles.statusText, { color: getStatusColor(selectedApplication.status) }]}>
+                    {selectedApplication.status}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.summaryDetails}>
+                <View style={styles.summaryRow}>
+                  <Text style={styles.summaryLabel}>Applicant:</Text>
+                  <Text style={styles.summaryValue}>{selectedApplication.adopterName}</Text>
+                </View>
+                <View style={styles.summaryRow}>
+                  <Text style={styles.summaryLabel}>Email:</Text>
+                  <Text style={styles.summaryValue}>{selectedApplication.adopterEmail}</Text>
+                </View>
+                <View style={styles.summaryRow}>
+                  <Text style={styles.summaryLabel}>Phone:</Text>
+                  <Text style={styles.summaryValue}>{selectedApplication.adopterPhone}</Text>
+                </View>
+                <View style={styles.summaryRow}>
+                  <Text style={styles.summaryLabel}>Applied:</Text>
+                  <Text style={styles.summaryValue}>
+                    {new Date(selectedApplication.submittedDate).toLocaleDateString()}
+                  </Text>
+                </View>
+                <View style={styles.summaryRow}>
+                  <Text style={styles.summaryLabel}>Priority:</Text>
+                  <View style={[styles.priorityBadge, { backgroundColor: getPriorityColor(selectedApplication.priority) + '20' }]}>
+                    <Text style={[styles.priorityText, { color: getPriorityColor(selectedApplication.priority) }]}>
+                      {selectedApplication.priority}
                     </Text>
                   </View>
                 </View>
-                <Text style={styles.notificationDescription}>
-                  {notification.type === 'approval' ? '🎉 Approval confirmation sent' : '📧 Status update notification'} 
-                  {' → '}<Text style={{ fontWeight: 'bold' }}>{notification.status}</Text>
-                </Text>
-                {notification.messageId && (
-                  <Text style={styles.notificationId}>ID: {notification.messageId}</Text>
-                )}
               </View>
-            ))}
+            </View>
+
+            <View style={styles.notesSection}>
+              <Text style={styles.notesLabel}>Admin Notes</Text>
+              <TextInput
+                style={styles.notesInput}
+                value={adminNotes}
+                onChangeText={setAdminNotes}
+                placeholder="Add notes about this application..."
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+                placeholderTextColor="#9CA3AF"
+              />
+            </View>
+
+            {selectedApplication.notificationHistory?.length > 0 && (
+              <View style={styles.notificationHistory}>
+                <Text style={styles.notesLabel}>Notification History</Text>
+                {selectedApplication.notificationHistory.map((notification: NotificationRecord, index: number) => (
+                  <View key={index} style={styles.notificationItem}>
+                    <View style={styles.notificationHeader}>
+                      <Text style={styles.notificationTime}>
+                        {new Date(notification.timestamp).toLocaleString()}
+                      </Text>
+                      <View style={[
+                        styles.notificationStatus,
+                        { backgroundColor: notification.success ? colors.success + '20' : colors.error + '20' }
+                      ]}>
+                        <Text style={[
+                          styles.notificationStatusText,
+                          { color: notification.success ? colors.success : colors.error }
+                        ]}>
+                          {notification.success ? 'Sent' : 'Failed'}
+                        </Text>
+                      </View>
+                    </View>
+                    <Text style={styles.notificationDescription}>
+                      {notification.type === 'approval' ? '🎉 Approval confirmation' : '📧 Status update'} → {notification.status}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            <View style={styles.actionButtons}>
+              <TouchableOpacity
+                style={[styles.actionButton, styles.approveButton, isProcessing && styles.actionButtonDisabled]}
+                onPress={() => handleStatusUpdate(selectedApplication.id, "Approved")}
+                disabled={isProcessing}
+              >
+                <Ionicons name="checkmark" size={16} color="white" />
+                <Text style={styles.actionButtonText}>
+                  {isProcessing ? "Processing..." : "Approve"}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.actionButton, styles.reviewButton, isProcessing && styles.actionButtonDisabled]}
+                onPress={() => handleStatusUpdate(selectedApplication.id, "Under Review")}
+                disabled={isProcessing}
+              >
+                <Ionicons name="time" size={16} color="white" />
+                <Text style={styles.actionButtonText}>
+                  {isProcessing ? "Processing..." : "Review"}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.actionButton, styles.rejectButton, isProcessing && styles.actionButtonDisabled]}
+                onPress={() => handleStatusUpdate(selectedApplication.id, "Rejected")}
+                disabled={isProcessing}
+              >
+                <Ionicons name="close" size={16} color="white" />
+                <Text style={styles.actionButtonText}>
+                  {isProcessing ? "Processing..." : "Reject"}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        )}
+        )
 
-        <View style={styles.summaryActions}>
-          <TouchableOpacity
-            style={[
-              styles.actionButton, 
-              styles.approveButton,
-              isProcessing && styles.actionButtonDisabled
-            ]}
-            onPress={() => handleStatusUpdate(application.id, "Approved")}
-            disabled={isProcessing}
-          >
-            <Ionicons name="checkmark" size={16} color="white" />
-            <Text style={styles.actionButtonText}>
-              {isProcessing ? "Processing..." : "Approve"}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.actionButton, 
-              styles.reviewButton,
-              isProcessing && styles.actionButtonDisabled
-            ]}
-            onPress={() => handleStatusUpdate(application.id, "Under Review")}
-            disabled={isProcessing}
-          >
-            <Ionicons name="time" size={16} color="white" />
-            <Text style={styles.actionButtonText}>
-              {isProcessing ? "Processing..." : "Review"}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.actionButton, 
-              styles.rejectButton,
-              isProcessing && styles.actionButtonDisabled
-            ]}
-            onPress={() => handleStatusUpdate(application.id, "Rejected")}
-            disabled={isProcessing}
-          >
-            <Ionicons name="close" size={16} color="white" />
-            <Text style={styles.actionButtonText}>
-              {isProcessing ? "Processing..." : "Reject"}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </View>
-  )
-
-  const renderModalStepContent = () => {
-    if (!selectedApplication) return null
-
-    switch (currentModalStep) {
-      case 0:
-        return renderPersonalInfo(selectedApplication.formData)
-      case 1:
-        return renderAddressInfo(selectedApplication.formData)
-      case 2:
-        return renderPetExperience(selectedApplication.formData)
-      case 3:
-        return renderLifestyle(selectedApplication.formData)
-      case 4:
-        return renderReferences(selectedApplication.formData)
-      case 5:
-        return renderAdditionalInfo(selectedApplication.formData)
-      case 6:
-        return renderSummary(selectedApplication)
       default:
-        return renderPersonalInfo(selectedApplication.formData)
+        return null
     }
   }
 
@@ -988,10 +718,7 @@ export default function AdminApplicationsScreen({ navigation }: AdminApplication
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Manage Applications</Text>
@@ -1003,7 +730,7 @@ export default function AdminApplicationsScreen({ navigation }: AdminApplication
       {/* Search and Filters */}
       <View style={styles.searchSection}>
         <View style={styles.searchContainer}>
-          <Ionicons name="search" size={20} color={colors.text + '60'} />
+          <Ionicons name="search" size={20} color="#9CA3AF" />
           <TextInput
             style={styles.searchInput}
             placeholder="Search applications..."
@@ -1012,25 +739,14 @@ export default function AdminApplicationsScreen({ navigation }: AdminApplication
             placeholderTextColor="#9CA3AF"
           />
         </View>
-
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          style={styles.filtersContainer}
-        >
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtersContainer}>
           {statusFilters.map((status) => (
             <TouchableOpacity
               key={status}
-              style={[
-                styles.filterButton,
-                selectedStatus === status && styles.filterButtonActive
-              ]}
+              style={[styles.filterButton, selectedStatus === status && styles.filterButtonActive]}
               onPress={() => setSelectedStatus(status)}
             >
-              <Text style={[
-                styles.filterButtonText,
-                selectedStatus === status && styles.filterButtonTextActive
-              ]}>
+              <Text style={[styles.filterButtonText, selectedStatus === status && styles.filterButtonTextActive]}>
                 {status}
               </Text>
             </TouchableOpacity>
@@ -1066,12 +782,16 @@ export default function AdminApplicationsScreen({ navigation }: AdminApplication
             style={styles.applicationCard}
             onPress={() => openApplicationDetails(application)}
           >
-            <View style={styles.applicationHeader}>
-              <View style={styles.applicationInfo}>
+            <View style={styles.cardHeader}>
+              <View style={styles.cardInfo}>
                 <Text style={styles.petName}>{application.petName}</Text>
                 <Text style={styles.petDetails}>{application.petBreed} • {application.petType}</Text>
+                <View style={styles.adopterInfo}>
+                  <Ionicons name="person" size={14} color="#6B7280" />
+                  <Text style={styles.adopterName}>{application.adopterName}</Text>
+                </View>
               </View>
-              <View style={styles.applicationMeta}>
+              <View style={styles.cardMeta}>
                 <View style={[styles.statusBadge, { backgroundColor: getStatusColor(application.status) + '20' }]}>
                   <Text style={[styles.statusText, { color: getStatusColor(application.status) }]}>
                     {application.status}
@@ -1082,53 +802,35 @@ export default function AdminApplicationsScreen({ navigation }: AdminApplication
                     {application.priority}
                   </Text>
                 </View>
+                <Text style={styles.applicationDate}>
+                  {new Date(application.submittedDate).toLocaleDateString()}
+                </Text>
               </View>
             </View>
-
-            <View style={styles.adopterInfo}>
-              <Ionicons name="person" size={16} color={colors.text + '80'} />
-              <Text style={styles.adopterName}>{application.adopterName}</Text>
-              <Text style={styles.applicationDate}>
-                Applied {new Date(application.submittedDate).toLocaleDateString()}
-              </Text>
-            </View>
-
-            <View style={styles.applicationActions}>
+            <View style={styles.quickActions}>
               <TouchableOpacity
-                style={[
-                  styles.actionButton, 
-                  styles.approveButton,
-                  isProcessing && styles.actionButtonDisabled
-                ]}
+                style={[styles.quickActionButton, styles.approveButton]}
                 onPress={() => handleStatusUpdate(application.id, "Approved")}
                 disabled={isProcessing}
               >
-                <Ionicons name="checkmark" size={16} color="white" />
-                <Text style={styles.actionButtonText}>Approve</Text>
+                <Ionicons name="checkmark" size={14} color="white" />
+                <Text style={styles.quickActionText}>Approve</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[
-                  styles.actionButton, 
-                  styles.reviewButton,
-                  isProcessing && styles.actionButtonDisabled
-                ]}
+                style={[styles.quickActionButton, styles.reviewButton]}
                 onPress={() => handleStatusUpdate(application.id, "Under Review")}
                 disabled={isProcessing}
               >
-                <Ionicons name="time" size={16} color="white" />
-                <Text style={styles.actionButtonText}>Review</Text>
+                <Ionicons name="time" size={14} color="white" />
+                <Text style={styles.quickActionText}>Review</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[
-                  styles.actionButton, 
-                  styles.rejectButton,
-                  isProcessing && styles.actionButtonDisabled
-                ]}
+                style={[styles.quickActionButton, styles.rejectButton]}
                 onPress={() => handleStatusUpdate(application.id, "Rejected")}
                 disabled={isProcessing}
               >
-                <Ionicons name="close" size={16} color="white" />
-                <Text style={styles.actionButtonText}>Reject</Text>
+                <Ionicons name="close" size={14} color="white" />
+                <Text style={styles.quickActionText}>Reject</Text>
               </TouchableOpacity>
             </View>
           </TouchableOpacity>
@@ -1136,51 +838,47 @@ export default function AdminApplicationsScreen({ navigation }: AdminApplication
       </ScrollView>
 
       {/* Application Details Modal */}
-      <Modal
-        visible={showDetailsModal}
-        animationType="slide"
-        presentationStyle="pageSheet"
-      >
+      <Modal visible={showDetailsModal} animationType="slide" presentationStyle="pageSheet">
         <View style={styles.modalContainer}>
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>
               Application Details
-              {isProcessing && (
-                <Text style={styles.processingText}> (Processing...)</Text>
-              )}
+              {isProcessing && <Text style={styles.processingText}> (Processing...)</Text>}
             </Text>
             <TouchableOpacity 
               onPress={() => setShowDetailsModal(false)}
               disabled={isProcessing}
             >
-              <Ionicons name="close" size={24} color={isProcessing ? colors.text + '40' : colors.text} />
+              <Ionicons name="close" size={24} color={isProcessing ? "#9CA3AF" : colors.text} />
             </TouchableOpacity>
           </View>
 
-          {renderStepIndicator()}
+          <StepIndicator />
 
-          <ScrollView style={styles.modalContent}>
-            {renderModalStepContent()}
+          <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
+            {renderStepContent()}
           </ScrollView>
 
-          {/* Navigation buttons */}
           <View style={styles.modalNavigation}>
             <TouchableOpacity
-              style={[styles.navButton, currentModalStep === 0 && styles.navButtonDisabled]}
-              onPress={() => currentModalStep > 0 && setCurrentModalStep(currentModalStep - 1)}
-              disabled={currentModalStep === 0}
+              style={[styles.navButton, currentStep === 0 && styles.navButtonDisabled]}
+              onPress={() => currentStep > 0 && setCurrentStep(currentStep - 1)}
+              disabled={currentStep === 0}
             >
-              <Ionicons name="chevron-back" size={20} color={currentModalStep === 0 ? colors.text + '40' : colors.primary} />
-              <Text style={[styles.navButtonText, currentModalStep === 0 && styles.navButtonTextDisabled]}>Previous</Text>
+              <Ionicons name="chevron-back" size={20} color={currentStep === 0 ? "#9CA3AF" : colors.primary} />
+              <Text style={[styles.navButtonText, currentStep === 0 && styles.navButtonTextDisabled]}>
+                Previous
+              </Text>
             </TouchableOpacity>
-            
             <TouchableOpacity
-              style={[styles.navButton, currentModalStep === applicationSteps.length - 1 && styles.navButtonDisabled]}
-              onPress={() => currentModalStep < applicationSteps.length - 1 && setCurrentModalStep(currentModalStep + 1)}
-              disabled={currentModalStep === applicationSteps.length - 1}
+              style={[styles.navButton, currentStep === steps.length - 1 && styles.navButtonDisabled]}
+              onPress={() => currentStep < steps.length - 1 && setCurrentStep(currentStep + 1)}
+              disabled={currentStep === steps.length - 1}
             >
-              <Text style={[styles.navButtonText, currentModalStep === applicationSteps.length - 1 && styles.navButtonTextDisabled]}>Next</Text>
-              <Ionicons name="chevron-forward" size={20} color={currentModalStep === applicationSteps.length - 1 ? colors.text + '40' : colors.primary} />
+              <Text style={[styles.navButtonText, currentStep === steps.length - 1 && styles.navButtonTextDisabled]}>
+                Next
+              </Text>
+              <Ionicons name="chevron-forward" size={20} color={currentStep === steps.length - 1 ? "#9CA3AF" : colors.primary} />
             </TouchableOpacity>
           </View>
         </View>
@@ -1206,7 +904,7 @@ const styles = StyleSheet.create({
   },
   backButton: {
     padding: spacing.sm,
-    borderRadius: 6,
+    borderRadius: 8,
   },
   headerTitle: {
     fontSize: 18,
@@ -1215,7 +913,7 @@ const styles = StyleSheet.create({
   },
   headerAction: {
     padding: spacing.sm,
-    borderRadius: 6,
+    borderRadius: 8,
   },
   searchSection: {
     paddingHorizontal: spacing.lg,
@@ -1228,7 +926,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#F9FAFB',
-    borderRadius: 8,
+    borderRadius: 12,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     marginBottom: spacing.md,
@@ -1247,7 +945,7 @@ const styles = StyleSheet.create({
   filterButton: {
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    borderRadius: 6,
+    borderRadius: 20,
     marginRight: spacing.sm,
     backgroundColor: '#F9FAFB',
     borderWidth: 1,
@@ -1276,7 +974,7 @@ const styles = StyleSheet.create({
   statCard: {
     flex: 1,
     backgroundColor: colors.surface,
-    borderRadius: 8,
+    borderRadius: 12,
     padding: spacing.md,
     alignItems: 'center',
     borderWidth: 1,
@@ -1288,7 +986,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '700',
     color: colors.primary,
-    marginBottom: 2,
+    marginBottom: 4,
   },
   statLabel: {
     fontSize: 11,
@@ -1304,19 +1002,24 @@ const styles = StyleSheet.create({
   },
   applicationCard: {
     backgroundColor: colors.surface,
-    borderRadius: 8,
+    borderRadius: 12,
     padding: spacing.lg,
     marginBottom: spacing.md,
     borderWidth: 1,
     borderColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
-  applicationHeader: {
+  cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     marginBottom: spacing.md,
   },
-  applicationInfo: {
+  cardInfo: {
     flex: 1,
     marginRight: spacing.md,
   },
@@ -1324,14 +1027,25 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: colors.text,
-    marginBottom: 2,
+    marginBottom: 4,
   },
   petDetails: {
     fontSize: 13,
     color: '#6B7280',
     fontWeight: '500',
+    marginBottom: spacing.sm,
   },
-  applicationMeta: {
+  adopterInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  adopterName: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.text,
+  },
+  cardMeta: {
     alignItems: 'flex-end',
     gap: spacing.xs,
   },
@@ -1341,7 +1055,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   statusText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '600',
     textTransform: 'uppercase',
   },
@@ -1351,41 +1065,33 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   priorityText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '600',
     textTransform: 'uppercase',
   },
-  adopterInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-    gap: spacing.sm,
-    paddingVertical: spacing.xs,
-  },
-  adopterName: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: colors.text,
-    flex: 1,
-  },
   applicationDate: {
     fontSize: 12,
-    color: '#6B7280',
+    color: '#9CA3AF',
     fontWeight: '400',
+    marginTop: 4,
   },
-  applicationActions: {
+  quickActions: {
     flexDirection: 'row',
     gap: spacing.sm,
   },
-  actionButton: {
+  quickActionButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.xs,
-    borderRadius: 6,
+    borderRadius: 8,
     gap: 4,
+  },
+  quickActionText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '600',
   },
   approveButton: {
     backgroundColor: colors.success,
@@ -1395,14 +1101,6 @@ const styles = StyleSheet.create({
   },
   rejectButton: {
     backgroundColor: colors.error,
-  },
-  actionButtonText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  actionButtonDisabled: {
-    opacity: 0.6,
   },
   modalContainer: {
     flex: 1,
@@ -1428,66 +1126,26 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     color: colors.warning,
     fontStyle: 'italic',
-    marginLeft: spacing.sm,
   },
-  modalContent: {
-    flex: 1,
-    backgroundColor: '#F8FAFB',
-  },
-  detailSection: {
-    marginBottom: spacing.lg,
-    backgroundColor: colors.surface,
-    borderRadius: 8,
-    padding: spacing.lg,
-    marginHorizontal: spacing.lg,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  detailSectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: spacing.md,
-  },
-  detailText: {
-    fontSize: 14,
-    color: colors.text,
-    marginBottom: spacing.sm,
-    lineHeight: 20,
-  },
-  notesInput: {
-    backgroundColor: '#F9FAFB',
-    borderRadius: 6,
-    padding: spacing.md,
-    fontSize: 14,
-    color: colors.text,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    height: 100,
-    textAlignVertical: 'top',
-  },
-  // Step indicator styles
-  stepIndicatorScroll: {
+  stepIndicator: {
     backgroundColor: colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
-  },
-  stepIndicator: {
-    flexDirection: 'row',
-    paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
-    minWidth: '100%',
-    backgroundColor: colors.surface,
+  },
+  stepScrollContent: {
+    paddingHorizontal: spacing.lg,
+    alignItems: 'center',
   },
   stepItem: {
     alignItems: 'center',
-    width: 80,
-    marginRight: spacing.xs,
+    marginRight: spacing.lg,
+    minWidth: 70,
   },
   stepCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: '#E5E7EB',
     justifyContent: 'center',
     alignItems: 'center',
@@ -1499,16 +1157,8 @@ const styles = StyleSheet.create({
   stepCircleCompleted: {
     backgroundColor: colors.success,
   },
-  stepNumber: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#6B7280',
-  },
-  stepNumberActive: {
-    color: 'white',
-  },
   stepLabel: {
-    fontSize: 10,
+    fontSize: 11,
     color: '#6B7280',
     textAlign: 'center',
     fontWeight: '500',
@@ -1517,29 +1167,42 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontWeight: '600',
   },
-  // Step content styles
-  stepContent: {
-    // paddingTop: 0,
-    // paddingHorizontal: spacing.md,
-    // paddingBottom: spacing.md,
+  modalContent: {
+    flex: 1,
     backgroundColor: '#F8FAFB',
   },
-  stepTitle: {
-    fontSize: 20,
-    fontWeight: '700',
+  stepContent: {
+    padding: spacing.lg,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.lg,
+    paddingBottom: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
     color: colors.text,
-    marginBottom: spacing.md,
-    textAlign: 'center',
+    marginLeft: spacing.sm,
   },
   infoGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: spacing.sm,
   },
-  infoItem: {
+  infoField: {
+    width: (width - spacing.lg * 2 - spacing.sm) / 2,
     backgroundColor: colors.surface,
-    borderRadius: 6,
-    padding: spacing.sm,
+    borderRadius: 8,
+    padding: spacing.md,
     borderWidth: 1,
     borderColor: '#E5E7EB',
+  },
+  infoFieldFull: {
+    width: '100%',
   },
   infoLabel: {
     fontSize: 12,
@@ -1556,112 +1219,96 @@ const styles = StyleSheet.create({
   },
   referenceSection: {
     backgroundColor: colors.surface,
-    borderRadius: 6,
-    padding: spacing.md,
+    borderRadius: 12,
+    padding: spacing.lg,
     marginBottom: spacing.md,
     borderWidth: 1,
     borderColor: '#E5E7EB',
   },
   referenceSectionTitle: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
     color: colors.primary,
     marginBottom: spacing.md,
   },
-  // Summary styles
-  summaryContainer: {
-    gap: spacing.md,
+  summaryCard: {
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    padding: spacing.lg,
+    marginBottom: spacing.lg,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
   summaryHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderRadius: 6,
-    padding: spacing.md,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  summaryPetInfo: {
-    flex: 1,
+    marginBottom: spacing.lg,
+    paddingBottom: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
   },
   summaryPetName: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '700',
     color: colors.text,
-    marginBottom: 2,
+    marginBottom: 4,
   },
   summaryPetDetails: {
     fontSize: 14,
     color: '#6B7280',
     fontWeight: '500',
   },
-  summarySection: {
-    backgroundColor: colors.surface,
-    borderRadius: 6,
-    padding: spacing.md,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  summarySectionTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.primary,
-    marginBottom: spacing.sm,
-  },
-  summaryText: {
-    fontSize: 14,
-    color: colors.text,
-    marginBottom: spacing.xs,
-    lineHeight: 20,
-    fontWeight: '500',
-  },
-  summaryActions: {
-    flexDirection: 'row',
+  summaryDetails: {
     gap: spacing.sm,
-    marginTop: spacing.md,
   },
-  // Modal navigation styles
-  modalNavigation: {
+  summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    backgroundColor: colors.surface,
-    borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
+    paddingVertical: spacing.xs,
   },
-  navButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F9FAFB',
-    borderWidth: 1,
-    borderColor: colors.primary,
-    borderRadius: 6,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    gap: spacing.xs,
-    minWidth: 100,
+  summaryLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#6B7280',
   },
-  navButtonDisabled: {
-    borderColor: '#E5E7EB',
-    backgroundColor: '#F3F4F6',
-  },
-  navButtonText: {
-    color: colors.primary,
+  summaryValue: {
     fontSize: 14,
     fontWeight: '600',
+    color: colors.text,
+    textAlign: 'right',
+    flex: 1,
+    marginLeft: spacing.md,
   },
-  navButtonTextDisabled: {
-    color: '#9CA3AF',
+  notesSection: {
+    marginBottom: spacing.lg,
   },
-  // Notification history styles
+  notesLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: spacing.sm,
+  },
+  notesInput: {
+    backgroundColor: colors.surface,
+    borderRadius: 8,
+    padding: spacing.md,
+    fontSize: 14,
+    color: colors.text,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    height: 100,
+    textAlignVertical: 'top',
+  },
+  notificationHistory: {
+    marginBottom: spacing.lg,
+  },
   notificationItem: {
-    backgroundColor: '#F9FAFB',
-    borderRadius: 6,
-    padding: spacing.sm,
-    marginBottom: spacing.xs,
+    backgroundColor: colors.surface,
+    borderRadius: 8,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
     borderWidth: 1,
     borderColor: '#E5E7EB',
   },
@@ -1690,12 +1337,62 @@ const styles = StyleSheet.create({
   notificationDescription: {
     fontSize: 13,
     color: colors.text,
-    marginBottom: spacing.xs,
     fontWeight: '500',
   },
-  notificationId: {
-    fontSize: 10,
+  actionButtons: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginTop: spacing.md,
+  },
+  actionButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.md,
+    borderRadius: 8,
+    gap: 6,
+  },
+  actionButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  actionButtonDisabled: {
+    opacity: 0.6,
+  },
+  modalNavigation: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    backgroundColor: colors.surface,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+  },
+  navButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F9FAFB',
+    borderWidth: 1,
+    borderColor: colors.primary,
+    borderRadius: 8,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    gap: spacing.xs,
+    minWidth: 100,
+  },
+  navButtonDisabled: {
+    borderColor: '#E5E7EB',
+    backgroundColor: '#F3F4F6',
+  },
+  navButtonText: {
+    color: colors.primary,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  navButtonTextDisabled: {
     color: '#9CA3AF',
-    fontStyle: 'italic',
   },
 })
