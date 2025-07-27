@@ -16,6 +16,7 @@ import ChatScreen from "./src/screens/ChatScreen"
 import LandingScreen from "./src/screens/LandingScreen"
 import MessagesScreen from "./src/screens/MessagesScreen"
 import ModernApplicationListScreen from "./src/screens/ModernApplicationListScreen"
+import NotificationsScreen from "./src/screens/NotificationsScreen"
 import PetLocationScreen from "./src/screens/PetLocationScreen"
 import PetProfileScreen from "./src/screens/PetProfileScreen"
 import RemindersScreen from "./src/screens/RemindersScreen"
@@ -67,6 +68,7 @@ export default function App() {
               options={{ headerShown: true, title: "Track Application" }}
             />
             <Stack.Screen name="Messages" component={MessagesScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="Notifications" component={NotificationsScreen} options={{ headerShown: false }} />
             <Stack.Screen name="AdoptionHistory" component={AdoptionHistoryScreen} options={{ headerShown: false }} />
             <Stack.Screen name="Reminders" component={RemindersScreen} options={{ headerShown: false }} />
             <Stack.Screen name="Chat" component={ChatScreen} options={{ headerShown: true, title: "Chat" }} />
