@@ -6,6 +6,7 @@ import { AuthProvider } from "./src/contexts/AuthContext"
 import { ThemeProvider } from "./src/contexts/ThemeContext"
 import AdminTabNavigator from "./src/navigation/AdminTabNavigator"
 import AdopterTabNavigator from "./src/navigation/AdopterTabNavigator"
+import AddPetScreen from "./src/screens/AddPetScreen"
 import AdoptionHistoryScreen from "./src/screens/AdoptionHistoryScreen"
 import ApplicationDetailsScreen from "./src/screens/ApplicationDetailsScreen"
 import ApplicationFormScreen from "./src/screens/ApplicationFormScreen"
@@ -94,6 +95,11 @@ export default function App() {
             <Stack.Screen 
               name="Settings" 
               component={SettingsScreen} 
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen 
+              name="AddPet" 
+              component={AddPetScreen} 
               options={{ headerShown: false }}
             />
           </Stack.Navigator>
