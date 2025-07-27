@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons"
+import Slider from '@react-native-community/slider'
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import React, { useState } from "react"
 import {
@@ -12,7 +13,6 @@ import {
   View
 } from "react-native"
 import MapView, { Circle, Marker, PROVIDER_GOOGLE } from "react-native-maps"
-import Slider from '@react-native-community/slider'
 import { colors, spacing } from "../theme/theme"
 
 // Define the type for the route params
