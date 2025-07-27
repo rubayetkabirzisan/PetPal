@@ -1,7 +1,10 @@
 import { NavigationContainer } from "@react-navigation/native"
 import { createStackNavigator } from "@react-navigation/stack"
 import { StatusBar } from "expo-status-bar"
+import React, { useEffect } from "react"
+import { LogBox } from "react-native"
 import { Provider as PaperProvider } from "react-native-paper"
+import { initializeNotifications } from "./lib/notifications"
 import { AuthProvider } from "./src/contexts/AuthContext"
 import { ThemeProvider } from "./src/contexts/ThemeContext"
 import AdminTabNavigator from "./src/navigation/AdminTabNavigator"
@@ -30,6 +33,19 @@ import { theme } from "./src/theme/theme"
 const Stack = createStackNavigator()
 
 export default function App() {
+  useEffect(() => {
+    // Suppress expected warnings in Expo Go for expo-notifications
+    // These warnings don't affect functionality, just inform about limitations
+    LogBox.ignoreLogs([
+      'expo-notifications: Android Push notifications',
+      '`expo-notifications` functionality is not fully supported in Expo Go',
+      'We recommend you instead use a development build',
+    ])
+    
+    // Initialize notifications (safe for Expo Go)
+    initializeNotifications()
+  }, [])
+
   return (
     <PaperProvider theme={theme}>
       <ThemeProvider>
