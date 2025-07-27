@@ -79,7 +79,7 @@ export default function AdopterProfileScreen() {
       title: "Settings",
       subtitle: "App preferences",
       path: "settings",
-      onPress: () => console.log("Settings feature not yet implemented"),
+      onPress: () => navigation.navigate('Settings' as never),
     },
     {
       icon: "log-out-outline",

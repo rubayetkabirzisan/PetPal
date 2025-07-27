@@ -3,6 +3,7 @@ import { createStackNavigator } from "@react-navigation/stack"
 import { StatusBar } from "expo-status-bar"
 import { Provider as PaperProvider } from "react-native-paper"
 import { AuthProvider } from "./src/contexts/AuthContext"
+import { ThemeProvider } from "./src/contexts/ThemeContext"
 import AdminTabNavigator from "./src/navigation/AdminTabNavigator"
 import AdopterTabNavigator from "./src/navigation/AdopterTabNavigator"
 import AdoptionHistoryScreen from "./src/screens/AdoptionHistoryScreen"
@@ -22,6 +23,7 @@ import PetProfileScreen from "./src/screens/PetProfileScreen"
 import RemindersScreen from "./src/screens/RemindersScreen"
 import ReportLostPetScreen from "./src/screens/ReportLostPetScreen"
 import SafeZoneScreen from "./src/screens/SafeZoneScreen"
+import SettingsScreen from "./src/screens/SettingsScreen"
 import { theme } from "./src/theme/theme"
 
 const Stack = createStackNavigator()
@@ -29,10 +31,11 @@ const Stack = createStackNavigator()
 export default function App() {
   return (
     <PaperProvider theme={theme}>
-      <AuthProvider>
-        <NavigationContainer>
-          <StatusBar style="auto" />
-          <Stack.Navigator initialRouteName="Landing" screenOptions={{ headerShown: false }}>
+      <ThemeProvider>
+        <AuthProvider>
+          <NavigationContainer>
+            <StatusBar style="auto" />
+            <Stack.Navigator initialRouteName="Landing" screenOptions={{ headerShown: false }}>
             <Stack.Screen name="Landing" component={LandingScreen} />
             <Stack.Screen name="Auth" component={AuthScreen} />
             <Stack.Screen name="AdopterTabs" component={AdopterTabNavigator} />
@@ -88,9 +91,15 @@ export default function App() {
               component={SafeZoneScreen} 
               options={{ headerShown: false }}
             />
+            <Stack.Screen 
+              name="Settings" 
+              component={SettingsScreen} 
+              options={{ headerShown: false }}
+            />
           </Stack.Navigator>
         </NavigationContainer>
       </AuthProvider>
+      </ThemeProvider>
     </PaperProvider>
   )
 }
