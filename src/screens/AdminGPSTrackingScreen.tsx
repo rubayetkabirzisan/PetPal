@@ -1,6 +1,7 @@
 "use client"
 
 import { Ionicons } from "@expo/vector-icons"
+import { StackNavigationProp } from "@react-navigation/stack"
 import { useState } from "react"
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import { colors } from "../theme/theme"
@@ -16,7 +17,7 @@ interface TrackedPet {
 }
 
 interface AdminGPSTrackingScreenProps {
-  navigation: any
+  navigation: StackNavigationProp<any>
 }
 
 export default function AdminGPSTrackingScreen({ navigation }: AdminGPSTrackingScreenProps) {
@@ -56,6 +57,30 @@ export default function AdminGPSTrackingScreen({ navigation }: AdminGPSTrackingS
       { text: "Call", onPress: () => console.log("Call owner") },
       { text: "Message", onPress: () => console.log("Send message") },
     ])
+  }
+
+  // Handle navigation to pet map screen
+  const handleViewMap = (petId: string) => {
+    // Find the pet object
+    const selectedPet = trackedPets.find(pet => pet.id === petId)
+    
+    if (!selectedPet) {
+      Alert.alert("Error", "Could not find the pet's tracking information.")
+      return
+    }
+    
+    // Navigate to PetMapScreen with pet details
+    navigation.navigate("PetMap", {
+      petId: selectedPet.id,
+      petName: selectedPet.name,
+      petType: "Pet", // Type info not available in admin view
+      lastLocation: selectedPet.lastLocation,
+      coordinates: {
+        // Mock coordinates - in a real app these would come from the pet's tracking data
+        latitude: 37.7749 + (Math.random() - 0.5) * 0.01,  // Random variation around San Francisco
+        longitude: -122.4194 + (Math.random() - 0.5) * 0.01
+      }
+    })
   }
 
   const handleEmergencyAlert = (pet: TrackedPet) => {
@@ -120,7 +145,7 @@ export default function AdminGPSTrackingScreen({ navigation }: AdminGPSTrackingS
       </View>
 
       <View style={styles.petActions}>
-        <TouchableOpacity style={styles.actionButton} onPress={() => console.log("View on map")}>
+        <TouchableOpacity style={styles.actionButton} onPress={() => handleViewMap(pet.id)}>
           <Ionicons name="map-outline" size={16} color={colors.primary} />
           <Text style={styles.actionButtonText}>View Map</Text>
         </TouchableOpacity>

@@ -1,7 +1,7 @@
 "use client"
 
 import { Ionicons } from "@expo/vector-icons"
-import { useRouter } from "expo-router"
+import { useNavigation } from "@react-navigation/native"
 import { useState } from "react"
 import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
 import { useAuth } from "../contexts/AuthContext"
@@ -11,7 +11,7 @@ interface AdopterProfileScreenProps {
 }
 
 export default function AdopterProfileScreen() {
-  const router = useRouter()
+  const navigation = useNavigation()
   const [isEditing, setIsEditing] = useState(false)
   const [profile, setProfile] = useState({
     name: "Demo User",
@@ -36,7 +36,10 @@ export default function AdopterProfileScreen() {
         style: "destructive", 
         onPress: async () => {
           await logout()
-          router.replace("/auth" as any)
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'AuthScreen' as never }],
+          })
         }
       },
     ])
@@ -48,35 +51,35 @@ export default function AdopterProfileScreen() {
       title: "Notifications",
       subtitle: "2 new notifications",
       path: "notifications",
-      onPress: () => router.push("/(tabs)/adopter/notifications/page" as any),
+      onPress: () => navigation.navigate('Notifications' as never),
     },
     {
       icon: "heart-outline",
       title: "Adoption History",
       subtitle: "View your adopted pets",
       path: "history",
-      onPress: () => router.push("/(tabs)/adopter/history/page" as any),
+      onPress: () => navigation.navigate('AdoptionHistory' as never),
     },
     {
       icon: "document-text-outline",
       title: "Applications",
       subtitle: "Track your applications",
       path: "applications",
-      onPress: () => router.push("/(tabs)/adopter/applications/page" as any),
+      onPress: () => navigation.navigate('ModernApplicationList' as never),
     },
     {
       icon: "chatbubble-outline",
       title: "Messages",
       subtitle: "Chat with shelters",
       path: "messages",
-      onPress: () => router.push("/(tabs)/adopter/messages/page" as any),
+      onPress: () => navigation.navigate('Messages' as never),
     },
     {
       icon: "settings-outline",
       title: "Settings",
       subtitle: "App preferences",
       path: "settings",
-      onPress: () => console.log("Settings feature not yet implemented"),
+      onPress: () => navigation.navigate('Settings' as never),
     },
     {
       icon: "log-out-outline",
@@ -91,7 +94,10 @@ export default function AdopterProfileScreen() {
             style: "destructive", 
             onPress: async () => {
               await logout()
-              router.replace("/auth" as any)
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'AuthScreen' as never }],
+              })
             }
           }
         ])

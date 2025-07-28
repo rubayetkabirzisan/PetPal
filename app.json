@@ -56,7 +56,6 @@
           "backgroundColor": "#FF7A47"
         }
       ],
-      "expo-maps",
       "expo-font"
     ],
     "experiments": {
