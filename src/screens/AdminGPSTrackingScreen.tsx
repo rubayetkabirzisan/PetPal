@@ -230,7 +230,19 @@ export default function AdminGPSTrackingScreen({ navigation }: AdminGPSTrackingS
       <View style={styles.emergencySection}>
         <Text style={styles.sectionTitle}>Emergency Actions</Text>
 
-        <TouchableOpacity style={styles.emergencyCard}>
+        <TouchableOpacity 
+          style={styles.emergencyCard}
+          onPress={() => {
+            Alert.alert(
+              "Broadcast Alert",
+              "Are you sure you want to broadcast an emergency alert to all registered users in the area?",
+              [
+                { text: "Cancel", style: "cancel" },
+                { text: "Send Alert", style: "destructive", onPress: () => Alert.alert("Alert Sent", "Broadcast alert has been sent to all users in the area.") }
+              ]
+            )
+          }}
+        >
           <View style={styles.emergencyIcon}>
             <Ionicons name="megaphone-outline" size={24} color={colors.error} />
           </View>
@@ -240,7 +252,19 @@ export default function AdminGPSTrackingScreen({ navigation }: AdminGPSTrackingS
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.emergencyCard}>
+        <TouchableOpacity 
+          style={styles.emergencyCard}
+          onPress={() => {
+            Alert.alert(
+              "Contact Authorities",
+              "Notify local animal control and police?",
+              [
+                { text: "Cancel", style: "cancel" },
+                { text: "Notify", style: "default", onPress: () => Alert.alert("Authorities Notified", "Local animal control and police have been notified.") }
+              ]
+            )
+          }}
+        >
           <View style={styles.emergencyIcon}>
             <Ionicons name="people-outline" size={24} color={colors.error} />
           </View>
@@ -250,7 +274,19 @@ export default function AdminGPSTrackingScreen({ navigation }: AdminGPSTrackingS
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.emergencyCard}>
+        <TouchableOpacity 
+          style={styles.emergencyCard}
+          onPress={() => {
+            Alert.alert(
+              "Coordinate Search",
+              "Organize volunteer search teams?",
+              [
+                { text: "Cancel", style: "cancel" },
+                { text: "Organize", style: "default", onPress: () => Alert.alert("Search Organized", "Volunteer search teams have been notified and organized.") }
+              ]
+            )
+          }}
+        >
           <View style={styles.emergencyIcon}>
             <Ionicons name="map-outline" size={24} color={colors.error} />
           </View>
