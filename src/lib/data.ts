@@ -1,10 +1,10 @@
 // Sample data for development and testing
 import {
-  initializeSampleData,
-  sampleApplications as libraryApplications,
-  samplePets as libraryPets,
-  sampleMessages,
-  sampleNotifications
+    initializeSampleData,
+    sampleApplications as libraryApplications,
+    samplePets as libraryPets,
+    sampleMessages,
+    sampleNotifications
 } from '../../lib/sample-data';
 
 // Pet Types and Breeds
@@ -277,7 +277,7 @@ export interface AdoptionApplication {
 
 const mockPets: Pet[] = [
   {
-    id: "1",
+    id: "mock-1",
     name: "Buddy",
     type: "Dog",
     breed: "Golden Retriever",
@@ -323,7 +323,7 @@ const mockPets: Pet[] = [
     ],
   },
   {
-    id: "2",
+    id: "mock-2",
     name: "Luna",
     type: "Cat",
     breed: "Persian",
@@ -364,7 +364,7 @@ const mockPets: Pet[] = [
     ],
   },
   {
-    id: "3",
+    id: "mock-3",
     name: "Max",
     type: "Dog",
     breed: "German Shepherd",
@@ -405,7 +405,7 @@ const mockPets: Pet[] = [
 
 const mockLostPets: LostPet[] = [
   {
-    id: "1",
+    id: "lost-1",
     name: "Charlie",
     breed: "Labrador Mix",
     type: "Dog",
@@ -425,7 +425,7 @@ const mockLostPets: LostPet[] = [
     reward: 500,
   },
   {
-    id: "2",
+    id: "lost-2",
     name: "Whiskers",
     breed: "Persian",
     type: "Cat",
@@ -444,7 +444,7 @@ const mockLostPets: LostPet[] = [
     reward: 200,
   },
   {
-    id: "3",
+    id: "lost-3",
     name: "Bella",
     breed: "Beagle",
     type: "Dog",

@@ -44,6 +44,8 @@ export default function App() {
       'expo-notifications: Android Push notifications',
       '`expo-notifications` functionality is not fully supported in Expo Go',
       'We recommend you instead use a development build',
+      'Warning: Encountered two children with the same key',
+      'Non-unique keys may cause children to be duplicated',
     ])
     
     // Initialize notifications (safe for Expo Go)
