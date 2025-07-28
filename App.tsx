@@ -21,6 +21,7 @@ import ApplicationTrackerScreen from "./src/screens/ApplicationTrackerScreen"
 import AuthScreen from "./src/screens/AuthScreen"
 import CareJournalScreen from "./src/screens/CareJournalScreen"
 import ChatScreen from "./src/screens/ChatScreen"
+import EditPetScreen from "./src/screens/EditPetScreen"
 import LandingScreen from "./src/screens/LandingScreen"
 import LostPetsScreen from "./src/screens/LostPetsScreen"
 import MessagesScreen from "./src/screens/MessagesScreen"
@@ -66,6 +67,11 @@ export default function App() {
               component={PetProfileScreen}
               options={{ headerShown: true, title: "Pet Profile" }}
             />
+           <Stack.Screen
+             name="EditPet"
+             component={EditPetScreen}
+             options={{ headerShown: true, title: "Edit Pet" }}
+           />
             <Stack.Screen
               name="ApplicationForm"
               component={ApplicationFormScreen}

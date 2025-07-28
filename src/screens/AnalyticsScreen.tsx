@@ -1,6 +1,8 @@
 import { Ionicons } from "@expo/vector-icons"
+import * as FileSystem from 'expo-file-system'
+import * as Sharing from 'expo-sharing'
 import React from "react"
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import { colors, spacing } from "../theme/theme"
 
 interface AnalyticsScreenProps {
@@ -21,6 +23,44 @@ export default function AnalyticsScreen({ navigation }: AnalyticsScreenProps) {
     { metric: "Return Rate", value: "3%", trend: "↓ 1%" },
     { metric: "Customer Satisfaction", value: "4.8/5", trend: "↑ 0.2" },
   ]
+
+  // Helper: Generate CSV string from analytics data
+  const generateCSV = () => {
+    const rows = [
+      ['Metric', 'Value'],
+      ...analyticsData.map(item => [item.title, item.value]),
+      ...recentMetrics.map(item => [item.metric, item.value])
+    ]
+    return rows.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n')
+  }
+
+  // Download handler
+  const handleDownload = async () => {
+    try {
+      const csv = generateCSV()
+      const fileUri = FileSystem.documentDirectory + 'petpal-analytics-report.csv'
+      await FileSystem.writeAsStringAsync(fileUri, csv, { encoding: FileSystem.EncodingType.UTF8 })
+      Alert.alert('Download Complete', 'Monthly report saved to your device.\n\nLocation: ' + fileUri)
+    } catch (e) {
+      Alert.alert('Error', 'Failed to download report.')
+    }
+  }
+
+  // Share handler
+  const handleShare = async () => {
+    try {
+      const csv = generateCSV()
+      const fileUri = FileSystem.cacheDirectory + 'petpal-analytics-report.csv'
+      await FileSystem.writeAsStringAsync(fileUri, csv, { encoding: FileSystem.EncodingType.UTF8 })
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(fileUri, { mimeType: 'text/csv', dialogTitle: 'Share Analytics Report' })
+      } else {
+        Alert.alert('Sharing not available on this device')
+      }
+    } catch (e) {
+      Alert.alert('Error', 'Failed to share analytics.')
+    }
+  }
 
   return (
     <View style={styles.container}>
@@ -74,13 +114,59 @@ export default function AnalyticsScreen({ navigation }: AnalyticsScreenProps) {
           </View>
         </View>
 
-        {/* Chart Placeholder */}
+        {/* Enhanced Bar Chart Visualization */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Adoption Trends</Text>
-          <View style={styles.chartPlaceholder}>
-            <Ionicons name="bar-chart" size={48} color={colors.border} />
-            <Text style={styles.chartText}>Chart visualization coming soon</Text>
-            <Text style={styles.chartSubtext}>Integration with analytics provider in development</Text>
+          <View style={[styles.chartPlaceholder, { borderStyle: 'solid', padding: spacing.lg, backgroundColor: colors.background }]}> 
+            {/* Enhanced static bar chart demo */}
+            <View style={{ width: '100%', height: 220, flexDirection: 'column', justifyContent: 'flex-end', marginBottom: spacing.lg }}>
+              {/* Y-axis grid lines and labels */}
+              <View style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 30, zIndex: 1 }}>
+                {[5, 10, 15, 20, 25].map((y, i, arr) => (
+                  <View key={y} style={{ position: 'absolute', left: 0, right: 0, top: `${(1 - y/25) * 100}%`, flexDirection: 'row', alignItems: 'center' }}>
+                    <Text style={{ width: 28, fontSize: 11, color: colors.text + '60', textAlign: 'right', marginRight: 4 }}>{y}</Text>
+                    <View style={{ flex: 1, height: 1, backgroundColor: colors.border + '80', opacity: 0.3 }} />
+                  </View>
+                ))}
+              </View>
+              {/* Bars */}
+              <View style={{ flexDirection: 'row', alignItems: 'flex-end', height: 170, marginLeft: 32, zIndex: 2 }}>
+                {[
+                  { label: 'Jan', value: 12 },
+                  { label: 'Feb', value: 18 },
+                  { label: 'Mar', value: 22 },
+                  { label: 'Apr', value: 15 },
+                  { label: 'May', value: 25 },
+                  { label: 'Jun', value: 20 },
+                ].map((item, idx, arr) => {
+                  const max = 25
+                  const barHeight = (item.value / max) * 140 + 10 // min height 10
+                  return (
+                    <View key={item.label} style={{ alignItems: 'center', flex: 1, marginHorizontal: 4 }}>
+                      <View style={{
+                        width: 28,
+                        height: barHeight,
+                        backgroundColor: idx === arr.length - 1 ? colors.primary : colors.info,
+                        borderRadius: 8,
+                        marginBottom: 6,
+                        shadowColor: colors.primary,
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.08,
+                        shadowRadius: 3,
+                        elevation: 2,
+                        justifyContent: 'flex-end',
+                        alignItems: 'center',
+                      }}>
+                        <Text style={{ fontSize: 11, color: 'white', fontWeight: '700', position: 'absolute', top: 6, left: 0, right: 0, textAlign: 'center', opacity: 0.85 }}>{item.value}</Text>
+                      </View>
+                      <Text style={{ fontSize: 13, color: colors.text + '80', fontWeight: '600', marginTop: 2 }}>{item.label}</Text>
+                    </View>
+                  )
+                })}
+              </View>
+            </View>
+            <Text style={styles.chartText}>Monthly adoptions (demo data)</Text>
+            <Text style={styles.chartSubtext}>Live analytics integration coming soon</Text>
           </View>
         </View>
 
@@ -88,11 +174,11 @@ export default function AnalyticsScreen({ navigation }: AnalyticsScreenProps) {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Reports</Text>
           <View style={styles.actionsContainer}>
-            <TouchableOpacity style={styles.actionButton}>
+            <TouchableOpacity style={styles.actionButton} onPress={handleDownload}>
               <Ionicons name="download" size={20} color={colors.primary} />
               <Text style={styles.actionText}>Download Monthly Report</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.actionButton}>
+            <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
               <Ionicons name="share" size={20} color={colors.primary} />
               <Text style={styles.actionText}>Share Analytics</Text>
             </TouchableOpacity>

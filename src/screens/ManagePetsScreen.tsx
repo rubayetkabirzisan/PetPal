@@ -70,8 +70,11 @@ export default function ManagePetsScreen({ navigation }: ManagePetsScreenProps) 
 
   const renderPetCard = (pet: Pet) => (
     <View key={pet.id} style={styles.petCard}>
-      <Image source={{ uri: pet.images[0] || "https://via.placeholder.com/80x80" }} style={styles.petImage} />
-
+      <Image 
+        source={{ uri: pet.images[0] || "https://via.placeholder.com/80x80" }} 
+        style={styles.petImage} 
+      />
+      
       <View style={styles.petInfo}>
         <View style={styles.petHeader}>
           <Text style={styles.petName}>{pet.name}</Text>
@@ -85,38 +88,50 @@ export default function ManagePetsScreen({ navigation }: ManagePetsScreenProps) 
         </Text>
         <Text style={styles.petLocation}>{pet.location}</Text>
 
-        <View style={styles.petActions}>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false} 
+          style={styles.petActionsScroll}
+          contentContainerStyle={styles.petActionsContent}
+        >
           <TouchableOpacity
-            style={styles.actionButton}
+            style={[styles.actionButton, styles.viewButton]}
             onPress={() => navigation.navigate("PetProfile", { petId: pet.id })}
+            accessibilityLabel={`View details for ${pet.name}`}
           >
-            <Ionicons name="eye-outline" size={16} color={colors.primary} />
+            <Ionicons name="eye-outline" size={16} color={colors.primary} style={styles.actionIcon} />
             <Text style={styles.actionButtonText}>View</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.actionButton}
+            style={[styles.actionButton, styles.editButton]}
             onPress={() => navigation.navigate("EditPet", { petId: pet.id })}
+            accessibilityLabel={`Edit details for ${pet.name}`}
           >
-            <Ionicons name="create-outline" size={16} color={colors.primary} />
+            <Ionicons name="create-outline" size={16} color={colors.primary} style={styles.actionIcon} />
             <Text style={styles.actionButtonText}>Edit</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.actionButton}
+            style={[styles.actionButton, styles.statusButton]}
             onPress={() => {
               setSelectedPet(pet)
               setShowStatusModal(true)
             }}
+            accessibilityLabel={`Change status for ${pet.name}`}
           >
-            <Ionicons name="swap-horizontal-outline" size={16} color={colors.primary} />
+            <Ionicons name="swap-horizontal-outline" size={16} color={colors.primary} style={styles.actionIcon} />
             <Text style={styles.actionButtonText}>Status</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.actionButton, styles.deleteButton]} onPress={() => handleDeletePet(pet)}>
-            <Ionicons name="trash-outline" size={16} color={colors.error} />
+          <TouchableOpacity 
+            style={[styles.actionButton, styles.deleteButton]} 
+            onPress={() => handleDeletePet(pet)}
+            accessibilityLabel={`Delete ${pet.name}`}
+          >
+            <Ionicons name="trash-outline" size={16} color={colors.error} style={styles.actionIcon} />
           </TouchableOpacity>
-        </View>
+        </ScrollView>
       </View>
     </View>
   )
@@ -139,10 +154,14 @@ export default function ManagePetsScreen({ navigation }: ManagePetsScreenProps) 
         </View>
 
         <View style={styles.controlsRow}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.statusFilters}>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false} 
+            contentContainerStyle={styles.statusFilters}
+          >
             {statusOptions.map((status) => (
               <TouchableOpacity
-                key={status}
+                key={`status-filter-${status}`}
                 style={[styles.statusFilter, selectedStatus === status && styles.statusFilterActive]}
                 onPress={() => setSelectedStatus(status)}
               >
@@ -154,7 +173,7 @@ export default function ManagePetsScreen({ navigation }: ManagePetsScreenProps) 
           </ScrollView>
 
           <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate("AddPet")}>
-            <Ionicons name="add" size={20} color="white" />
+            <Ionicons name="add" size={24} color="white" />
           </TouchableOpacity>
         </View>
       </View>
@@ -201,7 +220,7 @@ export default function ManagePetsScreen({ navigation }: ManagePetsScreenProps) 
               .filter((s) => s !== "All")
               .map((status) => (
                 <TouchableOpacity
-                  key={status}
+                  key={`status-option-${status}`}
                   style={[styles.statusOption, selectedPet?.status === status && styles.statusOptionActive]}
                   onPress={() => selectedPet && handleStatusChange(selectedPet, status)}
                 >
@@ -229,7 +248,7 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.border,
   },
   searchContainer: {
-    marginBottom: 16,
+    marginBottom: 12,
   },
   searchInputContainer: {
     flexDirection: "row",
@@ -241,13 +260,14 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   searchIcon: {
-    marginRight: 12,
+    marginRight: 8,
   },
   searchInput: {
     flex: 1,
     height: 48,
     fontSize: 16,
     color: colors.text,
+    paddingVertical: 12,
   },
   controlsRow: {
     flexDirection: "row",
@@ -255,16 +275,19 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   statusFilters: {
-    flex: 1,
+    flexDirection: 'row',
+    gap: 8,
+    paddingVertical: 4,
   },
   statusFilter: {
     backgroundColor: colors.background,
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 8,
-    marginRight: 8,
     borderWidth: 1,
     borderColor: colors.border,
+    minHeight: 36,
+    justifyContent: 'center',
   },
   statusFilterActive: {
     backgroundColor: colors.primary,
@@ -285,10 +308,15 @@ const styles = StyleSheet.create({
     height: 48,
     justifyContent: "center",
     alignItems: "center",
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   resultsContainer: {
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 12,
     backgroundColor: "white",
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
@@ -296,6 +324,7 @@ const styles = StyleSheet.create({
   resultsText: {
     fontSize: 14,
     color: colors.text,
+    fontWeight: '500',
   },
   petsList: {
     flex: 1,
@@ -303,7 +332,7 @@ const styles = StyleSheet.create({
   },
   petCard: {
     backgroundColor: "white",
-    borderRadius: 12,
+    borderRadius: 16,
     flexDirection: "row",
     marginBottom: 16,
     overflow: "hidden",
@@ -315,108 +344,147 @@ const styles = StyleSheet.create({
       height: 2,
     },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowRadius: 6,
+    elevation: 3,
+    minHeight: 120,
   },
   petImage: {
-    width: 80,
-    height: 80,
+    width: 110,
+    height: '100%',
+    resizeMode: 'cover',
   },
   petInfo: {
     flex: 1,
     padding: 12,
+    justifyContent: 'space-between',
   },
   petHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 8,
+    alignItems: "flex-start",
+    marginBottom: 6,
   },
   petName: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: "bold",
     color: colors.text,
+    flexShrink: 1,
+    marginRight: 8,
   },
   statusBadge: {
     borderRadius: 12,
-    paddingHorizontal: 8,
+    paddingHorizontal: 10,
     paddingVertical: 4,
+    alignSelf: 'flex-start',
   },
   statusText: {
     fontSize: 12,
     fontWeight: "600",
   },
   petDetails: {
-    fontSize: 12,
+    fontSize: 13,
     color: colors.text,
     opacity: 0.8,
     marginBottom: 4,
   },
   petLocation: {
-    fontSize: 12,
+    fontSize: 13,
     color: colors.text,
     opacity: 0.6,
-    marginBottom: 12,
+    marginBottom: 8,
   },
-  petActions: {
-    flexDirection: "row",
+  petActionsScroll: {
+    flexGrow: 0,
+  },
+  petActionsContent: {
+    flexDirection: 'row',
     gap: 8,
   },
   actionButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.background,
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    gap: 4,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    minHeight: 36,
+    justifyContent: 'center',
+    shadowColor: colors.primary + '10',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  viewButton: {
+    backgroundColor: colors.primary + '10',
+    borderWidth: 1,
+    borderColor: colors.primary + '30',
+  },
+  editButton: {
+    backgroundColor: colors.primary + '10',
+    borderWidth: 1,
+    borderColor: colors.primary + '30',
+  },
+  statusButton: {
+    backgroundColor: colors.primary + '10',
+    borderWidth: 1,
+    borderColor: colors.primary + '30',
+  },
+  deleteButton: {
+    backgroundColor: colors.error + "10",
+    borderColor: colors.error + "40",
+    borderWidth: 1,
+  },
+  actionIcon: {
+    marginRight: 4,
   },
   actionButtonText: {
     color: colors.primary,
-    fontSize: 12,
-    fontWeight: "500",
-  },
-  deleteButton: {
-    backgroundColor: colors.error + "20",
+    fontSize: 13,
+    fontWeight: "600",
+    letterSpacing: 0.1,
   },
   emptyState: {
     alignItems: "center",
     padding: 48,
+    marginTop: 40,
   },
   emptyStateTitle: {
     fontSize: 18,
     fontWeight: "bold",
     color: colors.text,
     marginTop: 16,
+    marginBottom: 4,
   },
   emptyStateText: {
-    fontSize: 14,
+    fontSize: 15,
     color: colors.text,
     opacity: 0.7,
-    marginTop: 8,
     textAlign: "center",
+    marginBottom: 16,
+    lineHeight: 22,
   },
   addPetButton: {
     backgroundColor: colors.primary,
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    marginTop: 16,
+    borderRadius: 12,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
   },
   addPetButtonText: {
     color: "white",
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "600",
   },
   modalContainer: {
     flex: 1,
     backgroundColor: "white",
+    paddingTop: 16,
   },
   modalHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     padding: 16,
+    paddingBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
@@ -424,28 +492,31 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     color: colors.text,
+    flex: 1,
+    marginRight: 16,
   },
   modalContent: {
     padding: 16,
+    paddingTop: 8,
   },
   statusOption: {
     flexDirection: "row",
     alignItems: "center",
     padding: 16,
     borderRadius: 12,
-    marginBottom: 8,
+    marginBottom: 10,
     backgroundColor: colors.background,
   },
   statusOptionActive: {
-    backgroundColor: colors.primary + "20",
+    backgroundColor: colors.primary + "15",
     borderWidth: 1,
     borderColor: colors.primary,
   },
   statusIndicator: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: 12,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    marginRight: 14,
   },
   statusOptionText: {
     flex: 1,
