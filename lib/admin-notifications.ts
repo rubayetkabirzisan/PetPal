@@ -16,6 +16,7 @@ export interface Adopter {
   adoptedPets: string[]
   joinDate: string
 }
+// Storage keys
 
 const ADOPTERS_STORAGE_KEY = "petpal_adopters"
 const NOTIFICATIONS_STORAGE_KEY = "petpal_notifications"
