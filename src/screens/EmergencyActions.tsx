@@ -732,6 +732,7 @@ const styles = StyleSheet.create({
   },
   previewSection: {
     marginTop: 8,
+    marginBottom: 24, // Add spacing below preview section to separate from modal footer
   },
   previewTitle: {
     fontSize: 16,
