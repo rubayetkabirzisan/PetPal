@@ -1,3 +1,5 @@
+
+import { colors } from "../theme/theme";
 "use client"
 
 import { Header } from '@components/header';
@@ -8,16 +10,16 @@ import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@src/contexts/ThemeContext';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    FlatList,
-    Image,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 // Extend the ApplicationTimelineEvent to allow null date
@@ -413,7 +415,7 @@ export default function ModernApplicationListScreen({ route }: { route?: any }) 
     
     return (
       <TouchableOpacity 
-        style={[styles.applicationCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}
+        style={styles.applicationCard}
         onPress={() => {
           setSelectedAppId(item.id);
           setViewMode('detail');
@@ -427,18 +429,18 @@ export default function ModernApplicationListScreen({ route }: { route?: any }) 
                 style={styles.petImage}
               />
             ) : (
-              <View style={[styles.petImagePlaceholder, { backgroundColor: theme.colors.tertiary }]}>
-                <Ionicons name="paw" size={24} color={theme.colors.onSecondary} />
+              <View style={styles.petImagePlaceholder}>
+                <Ionicons name="paw" size={24} color="#6B7280" />
               </View>
             )}
           </View>
           
           <View style={styles.applicationInfo}>
-            <Text style={[styles.petName, { color: theme.colors.onSurface }]}>{item.petName}</Text>
-            <Text style={[styles.petBreed, { color: theme.colors.outline }]}>{item.petBreed}</Text>
+            <Text style={styles.petName}>{item.petName}</Text>
+            <Text style={styles.petBreed}>{item.petBreed}</Text>
             <View style={styles.shelterRow}>
-              <Ionicons name="business-outline" size={12} color={theme.colors.outline} />
-              <Text style={[styles.shelterName, { color: theme.colors.outline }]}>{item.shelterName}</Text>
+              <Ionicons name="business-outline" size={12} color="#6B7280" />
+              <Text style={styles.shelterName}>{item.shelterName}</Text>
             </View>
           </View>
           
@@ -448,7 +450,7 @@ export default function ModernApplicationListScreen({ route }: { route?: any }) 
         </View>
         
         <View style={styles.progressSection}>
-          <Text style={[styles.currentStepText, { color: theme.colors.onSurface }]}>
+          <Text style={styles.currentStepText}>
             Current step: {item.currentStep}
           </Text>
           <View style={styles.progressBarContainer}>
@@ -456,25 +458,25 @@ export default function ModernApplicationListScreen({ route }: { route?: any }) 
             <View 
               style={[
                 styles.progressFill, 
-                { width: `${item.completionPercentage}%`, backgroundColor: theme.colors.primary }
+                { width: `${item.completionPercentage}%` }
               ]}
             />
           </View>
-          <Text style={[styles.progressText, { color: theme.colors.outline }]}>
+          <Text style={styles.progressText}>
             {item.completionPercentage}% Complete
           </Text>
         </View>
         
         <View style={styles.applicationFooter}>
           <View style={styles.dateContainer}>
-            <Ionicons name="calendar-outline" size={14} color={theme.colors.outline} />
-            <Text style={[styles.dateText, { color: theme.colors.outline }]}>
+            <Ionicons name="calendar-outline" size={14} color="#6B7280" />
+            <Text style={styles.dateText}>
               Submitted: {formatDate(item.submittedDate)}
             </Text>
           </View>
           
           <TouchableOpacity 
-            style={[styles.viewButton, { backgroundColor: theme.colors.primary }]}
+            style={styles.viewButton}
             onPress={() => {
               setSelectedAppId(item.id);
               setViewMode('detail');
@@ -491,17 +493,17 @@ export default function ModernApplicationListScreen({ route }: { route?: any }) 
   // Render empty state when no applications match the filters
   const renderEmptyState = () => (
     <View style={styles.emptyContainer}>
-      <Ionicons name="document-outline" size={64} color={theme.colors.tertiary} />
-      <Text style={[styles.emptyTitle, { color: theme.colors.onBackground }]}>
+      <Ionicons name="document-outline" size={64} color="#D1D5DB" />
+      <Text style={styles.emptyTitle}>
         No applications found
       </Text>
-      <Text style={[styles.emptyText, { color: theme.colors.outline }]}>
+      <Text style={styles.emptyText}>
         {searchTerm || statusFilter 
           ? "Try adjusting your filters to see more results" 
           : "You haven't submitted any adoption applications yet"}
       </Text>
       <TouchableOpacity
-        style={[styles.browseButton, { backgroundColor: theme.colors.primary }]}
+        style={styles.browseButton}
         onPress={() => navigation.navigate("BrowsePets")}
       >
         <Text style={styles.browseButtonText}>Browse Available Pets</Text>
@@ -512,7 +514,7 @@ export default function ModernApplicationListScreen({ route }: { route?: any }) 
   // Render the application list screen
   const renderApplicationList = () => {
     return (
-      <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <View style={styles.container}>
         <Header 
           title="My Applications" 
           showBackButton 
@@ -520,18 +522,18 @@ export default function ModernApplicationListScreen({ route }: { route?: any }) 
         />
         
         <View style={styles.filtersContainer}>
-          <View style={[styles.searchContainer, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
-            <Ionicons name="search" size={20} color={theme.colors.outline} />
+          <View style={styles.searchContainer}>
+            <Ionicons name="search" size={20} color="#6B7280" />
             <TextInput
-              style={[styles.searchInput, { color: theme.colors.onSurface }]}
+              style={styles.searchInput}
               placeholder="Search by pet name, breed, shelter..."
-              placeholderTextColor={theme.colors.outline}
+              placeholderTextColor="#9CA3AF"
               value={searchTerm}
               onChangeText={setSearchTerm}
             />
             {searchTerm !== '' && (
               <TouchableOpacity onPress={() => setSearchTerm('')}>
-                <Ionicons name="close-circle" size={20} color={theme.colors.outline} />
+                <Ionicons name="close-circle" size={20} color="#6B7280" />
               </TouchableOpacity>
             )}
           </View>
@@ -540,28 +542,25 @@ export default function ModernApplicationListScreen({ route }: { route?: any }) 
             <TouchableOpacity 
               style={[
                 styles.filterButton, 
-                { 
-                  backgroundColor: statusFilter ? theme.colors.primary + '20' : theme.colors.surface,
-                  borderColor: theme.colors.outline
-                }
+                statusFilter && styles.filterButtonActive
               ]}
               onPress={() => setShowStatusDropdown(!showStatusDropdown)}
             >
               <Text style={[
                 styles.filterButtonText, 
-                { color: statusFilter ? theme.colors.primary : theme.colors.onSurface }
+                statusFilter && styles.filterButtonTextActive
               ]}>
                 {statusFilter || "Filter by status"}
               </Text>
               <Ionicons 
                 name={showStatusDropdown ? "chevron-up" : "chevron-down"} 
                 size={16} 
-                color={statusFilter ? theme.colors.primary : theme.colors.onSurface} 
+                color={statusFilter ? "#007AFF" : "#1F2937"} 
               />
             </TouchableOpacity>
             
             {showStatusDropdown && (
-              <View style={[styles.dropdown, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
+              <View style={styles.dropdown}>
                 <TouchableOpacity 
                   style={styles.dropdownItem}
                   onPress={() => {
@@ -569,7 +568,7 @@ export default function ModernApplicationListScreen({ route }: { route?: any }) 
                     setShowStatusDropdown(false);
                   }}
                 >
-                  <Text style={[styles.dropdownText, { color: theme.colors.onSurface }]}>All</Text>
+                  <Text style={styles.dropdownText}>All</Text>
                 </TouchableOpacity>
                 {['Approved', 'Under Review', 'Pending', 'Rejected'].map(status => (
                   <TouchableOpacity 
@@ -581,7 +580,7 @@ export default function ModernApplicationListScreen({ route }: { route?: any }) 
                     }}
                   >
                     <View style={[styles.statusDot, getStatusBadgeStyle(status).container]} />
-                    <Text style={[styles.dropdownText, { color: theme.colors.onSurface }]}>{status}</Text>
+                    <Text style={styles.dropdownText}>{status}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -604,15 +603,15 @@ export default function ModernApplicationListScreen({ route }: { route?: any }) 
   // Render loading state
   const renderLoading = () => {
     return (
-      <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <View style={styles.container}>
         <Header 
           title="Application Details" 
           showBackButton 
           userType="adopter"
         />
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={theme.colors.primary} />
-          <Text style={[styles.loadingText, { color: theme.colors.onBackground }]}>
+          <ActivityIndicator size="large" color="#007AFF" />
+          <Text style={styles.loadingText}>
             Loading application details...
           </Text>
         </View>
@@ -623,7 +622,7 @@ export default function ModernApplicationListScreen({ route }: { route?: any }) 
   // Render application not found state
   const renderApplicationNotFound = () => {
     return (
-      <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <View style={styles.container}>
         <Header 
           title="Application Details" 
           showBackButton 
@@ -631,14 +630,14 @@ export default function ModernApplicationListScreen({ route }: { route?: any }) 
         />
         <View style={styles.errorContainer}>
           <Ionicons name="close-circle" size={48} color="#EF4444" />
-          <Text style={[styles.errorTitle, { color: theme.colors.onBackground }]}>
+          <Text style={styles.errorTitle}>
             Application Not Found
           </Text>
-          <Text style={[styles.errorMessage, { color: theme.colors.onBackground }]}>
+          <Text style={styles.errorMessage}>
             The application you're looking for doesn't exist or you don't have access to it.
           </Text>
           <TouchableOpacity
-            style={[styles.errorButton, { backgroundColor: theme.colors.primary }]}
+            style={styles.errorButton}
             onPress={() => setViewMode('list')}
           >
             <Text style={styles.errorButtonText}>Back to Applications</Text>
@@ -657,7 +656,7 @@ export default function ModernApplicationListScreen({ route }: { route?: any }) 
     const statusBadgeStyle = getStatusBadgeStyle(application.status);
     
     return (
-      <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <View style={styles.container}>
         <Header 
           title="Track Application" 
           showBackButton 
@@ -667,7 +666,7 @@ export default function ModernApplicationListScreen({ route }: { route?: any }) 
         
         <ScrollView contentContainerStyle={styles.scrollContent}>
           {/* Pet Info Card */}
-          <View style={[styles.card, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
+          <View style={styles.card}>
             <View style={styles.petInfoContainer}>
               <View style={styles.petImageWrapper}>
                 {application.petImage ? (
@@ -676,17 +675,17 @@ export default function ModernApplicationListScreen({ route }: { route?: any }) 
                     style={styles.petImage}
                   />
                 ) : (
-                  <View style={[styles.petImagePlaceholder, { backgroundColor: theme.colors.tertiary }]}>
-                    <Ionicons name="paw" size={24} color={theme.colors.onSecondary} />
+                  <View style={styles.petImagePlaceholder}>
+                    <Ionicons name="paw" size={24} color="#6B7280" />
                   </View>
                 )}
               </View>
 
               <View style={styles.petInfo}>
-                <Text style={[styles.petName, { color: theme.colors.onSurface }]}>
+                <Text style={styles.petName}>
                   {application.petName}
                 </Text>
-                <Text style={[styles.petBreed, { color: theme.colors.outline }]}>
+                <Text style={styles.petBreed}>
                   {application.petBreed}
                 </Text>
               </View>
@@ -700,15 +699,15 @@ export default function ModernApplicationListScreen({ route }: { route?: any }) 
 
             <View style={styles.petMetaInfo}>
               <View style={styles.metaItem}>
-                <Ionicons name="calendar-outline" size={16} color={theme.colors.onSurface} style={styles.metaIcon} />
-                <Text style={[styles.metaText, { color: theme.colors.onSurface }]}>
+                <Ionicons name="calendar-outline" size={16} color="#1F2937" style={styles.metaIcon} />
+                <Text style={styles.metaText}>
                   Applied: {formatDate(application.submittedDate)}
                 </Text>
               </View>
 
               <View style={styles.metaItem}>
-                <Ionicons name="business-outline" size={16} color={theme.colors.onSurface} style={styles.metaIcon} />
-                <Text style={[styles.metaText, { color: theme.colors.onSurface }]}>
+                <Ionicons name="business-outline" size={16} color="#1F2937" style={styles.metaIcon} />
+                <Text style={styles.metaText}>
                   {application.shelterName}
                 </Text>
               </View>
@@ -716,41 +715,33 @@ export default function ModernApplicationListScreen({ route }: { route?: any }) 
           </View>
 
           {/* Progress Overview */}
-          <View style={[styles.card, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
+          <View style={styles.card}>
             <View style={styles.progressHeader}>
-              <Text style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
+              <Text style={styles.sectionTitle}>
                 Application Progress
               </Text>
-              <Text style={[styles.progressPercentage, { color: theme.colors.onSurface }]}>
+              <Text style={styles.progressPercentage}>
                 {application.completionPercentage}% Complete
               </Text>
             </View>
 
             <View style={styles.progressBarContainer}>
-              <View 
-                style={[
-                  styles.progressBar, 
-                  { backgroundColor: theme.colors.tertiary }
-                ]} 
-              />
+              <View style={styles.progressBar} />
               <View 
                 style={[
                   styles.progressFill, 
-                  { 
-                    backgroundColor: theme.colors.primary,
-                    width: `${application.completionPercentage}%` 
-                  }
+                  { width: `${application.completionPercentage}%` }
                 ]} 
               />
             </View>
 
-            <Text style={[styles.progressText, { color: theme.colors.outline }]}>
+            <Text style={styles.progressText}>
               {steps.filter((s) => s.status === 'completed').length} of {steps.length} steps completed
             </Text>
           </View>
 
           {/* Application Steps */}
-          <Text style={[styles.sectionTitle, { color: theme.colors.onBackground, marginTop: 8 }]}>
+          <Text style={styles.sectionTitleStandalone}>
             Application Timeline
           </Text>
 
@@ -760,11 +751,7 @@ export default function ModernApplicationListScreen({ route }: { route?: any }) 
               style={[
                 styles.card, 
                 styles.timelineCard,
-                { 
-                  backgroundColor: theme.colors.surface, 
-                  borderColor: step.status === 'current' ? theme.colors.primary : theme.colors.outline,
-                  borderWidth: step.status === 'current' ? 2 : 1 
-                }
+                step.status === 'current' && styles.timelineCardActive
               ]}
             >
               <View style={styles.timelineHeader}>
@@ -772,25 +759,25 @@ export default function ModernApplicationListScreen({ route }: { route?: any }) 
                   {getStatusIcon(step.status)}
                 </View>
                 <View style={styles.timelineContent}>
-                  <Text style={[styles.timelineTitle, { color: theme.colors.onSurface }]}>
+                  <Text style={styles.timelineTitle}>
                     {step.title}
                   </Text>
-                  <Text style={[styles.timelineDescription, { color: theme.colors.onSurface }]}>
+                  <Text style={styles.timelineDescription}>
                     {step.description}
                   </Text>
 
                   {step.date && (
                     <View style={styles.timelineDateContainer}>
-                      <Ionicons name="calendar-outline" size={12} color={theme.colors.outline} />
-                      <Text style={[styles.timelineDate, { color: theme.colors.outline }]}>
+                      <Ionicons name="calendar-outline" size={12} color="#6B7280" />
+                      <Text style={styles.timelineDate}>
                         {formatDate(step.date)}
                       </Text>
                     </View>
                   )}
 
                   {step.notes && (
-                    <View style={[styles.notesContainer, { backgroundColor: theme.colors.tertiary + '30' }]}>
-                      <Text style={[styles.notesText, { color: theme.colors.onSurface }]}>
+                    <View style={styles.notesContainer}>
+                      <Text style={styles.notesText}>
                         {step.notes}
                       </Text>
                     </View>
@@ -801,26 +788,17 @@ export default function ModernApplicationListScreen({ route }: { route?: any }) 
           ))}
 
           {/* Contact Information */}
-          <View 
-            style={[
-              styles.card, 
-              styles.gradientCard,
-              { 
-                backgroundColor: theme.colors.surface, 
-                borderColor: theme.colors.outline 
-              }
-            ]}
-          >
-            <Text style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
+          <View style={styles.contactCard}>
+            <Text style={styles.sectionTitle}>
               Need Help?
             </Text>
-            <Text style={[styles.cardDescription, { color: theme.colors.outline }]}>
+            <Text style={styles.cardDescription}>
               Contact {application.shelterName} for updates
             </Text>
 
             <View style={styles.contactButtons}>
               <TouchableOpacity
-                style={[styles.contactButton, { backgroundColor: theme.colors.primary }]}
+                style={styles.contactButton}
                 onPress={() => Alert.alert('Call Shelter', `Calling ${application.shelterName}...`)}
               >
                 <Ionicons name="call-outline" size={16} color="#FFFFFF" style={styles.buttonIcon} />
@@ -828,40 +806,40 @@ export default function ModernApplicationListScreen({ route }: { route?: any }) 
               </TouchableOpacity>
               
               <TouchableOpacity
-                style={[styles.contactButton, styles.messageButton, { borderColor: theme.colors.primary }]}
+                style={styles.messageButton}
                 onPress={() => navigation.navigate('Chat', { petId: application.petId })}
               >
-                <Ionicons name="chatbubble-outline" size={16} color={theme.colors.primary} style={styles.buttonIcon} />
-                <Text style={[styles.contactButtonText, { color: theme.colors.primary }]}>Message</Text>
+                <Ionicons name="chatbubble-outline" size={16} color="#007AFF" style={styles.buttonIcon} />
+                <Text style={styles.messageButtonText}>Message</Text>
               </TouchableOpacity>
             </View>
           </View>
 
           {/* Status-specific alerts */}
           {application.status === 'Approved' && (
-            <View style={[styles.alert, { backgroundColor: '#D1FAE5', borderColor: '#10B981' }]}>
+            <View style={styles.alertSuccess}>
               <Ionicons name="checkmark-circle" size={20} color="#047857" style={styles.alertIcon} />
-              <Text style={[styles.alertText, { color: '#047857' }]}>
+              <Text style={styles.alertTextSuccess}>
                 Congratulations! Your application has been approved. The shelter will contact you soon to arrange the adoption.
               </Text>
             </View>
           )}
 
           {application.status === 'Rejected' && (
-            <View style={[styles.alert, { backgroundColor: '#FEE2E2', borderColor: '#EF4444' }]}>
+            <View style={styles.alertError}>
               <Ionicons name="close-circle" size={20} color="#B91C1C" style={styles.alertIcon} />
-              <Text style={[styles.alertText, { color: '#B91C1C' }]}>
+              <Text style={styles.alertTextError}>
                 Your application was not approved at this time. Please contact the shelter for more information about future opportunities.
               </Text>
             </View>
           )}
 
           {application.notes && (
-            <View style={[styles.card, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outline }]}>
-              <Text style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
+            <View style={styles.card}>
+              <Text style={styles.sectionTitle}>
                 Additional Notes
               </Text>
-              <Text style={[styles.notesText, { color: theme.colors.onSurface, marginTop: 8 }]}>
+              <Text style={styles.additionalNotes}>
                 {application.notes}
               </Text>
             </View>
@@ -888,6 +866,7 @@ const styles = StyleSheet.create({
   // Base styles
   container: {
     flex: 1,
+    backgroundColor: colors.surface,
   },
   
   // List view styles
@@ -896,21 +875,25 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 8,
     alignItems: 'center',
+    backgroundColor: colors.surface,
   },
   searchContainer: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
+    borderColor: colors.border,
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
+    backgroundColor: colors.surface,
   },
   searchInput: {
     flex: 1,
     fontSize: 14,
     marginLeft: 8,
     padding: 0,
+    color: colors.text,
   },
   filterDropdown: {
     position: 'relative',
@@ -921,14 +904,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     borderWidth: 1,
+    borderColor: colors.border,
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
     minWidth: 140,
+    backgroundColor: colors.surface,
+  },
+  filterButtonActive: {
+    backgroundColor: colors.info + '20',
+    borderColor: colors.primary,
   },
   filterButtonText: {
     fontSize: 14,
     marginRight: 4,
+    color: colors.text,
+  },
+  filterButtonTextActive: {
+    color: colors.primary,
   },
   dropdown: {
     position: 'absolute',
@@ -936,6 +929,7 @@ const styles = StyleSheet.create({
     right: 0,
     width: 160,
     borderWidth: 1,
+    borderColor: colors.border,
     borderRadius: 8,
     marginTop: 4,
     zIndex: 2,
@@ -944,6 +938,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
+    backgroundColor: colors.surface,
   },
   dropdownItem: {
     flexDirection: 'row',
@@ -951,10 +946,11 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 12,
     borderBottomWidth: 0.5,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: colors.border,
   },
   dropdownText: {
     fontSize: 14,
+    color: colors.text,
   },
   statusDot: {
     width: 8,
@@ -970,8 +966,10 @@ const styles = StyleSheet.create({
   applicationCard: {
     borderRadius: 12,
     borderWidth: 1,
+    borderColor: colors.border,
     overflow: 'hidden',
     marginBottom: 16,
+    backgroundColor: colors.surface,
   },
   applicationHeader: {
     flexDirection: 'row',
@@ -992,10 +990,21 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: colors.background,
   },
   applicationInfo: {
     flex: 1,
     justifyContent: 'center',
+  },
+  petName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: colors.text,
+  },
+  petBreed: {
+    fontSize: 14,
+    marginTop: 2,
+    color: colors.textSecondary,
   },
   shelterRow: {
     flexDirection: 'row',
@@ -1005,6 +1014,7 @@ const styles = StyleSheet.create({
   },
   shelterName: {
     fontSize: 12,
+    color: colors.textSecondary,
   },
   statusBadge: {
     borderRadius: 12,
@@ -1023,6 +1033,7 @@ const styles = StyleSheet.create({
   currentStepText: {
     fontSize: 13,
     marginBottom: 6,
+    color: '#1F2937',
   },
   progressBarContainer: {
     height: 6,
@@ -1034,15 +1045,17 @@ const styles = StyleSheet.create({
   progressBar: {
     height: '100%',
     width: '100%',
-    backgroundColor: '#E5E7EB',
+    backgroundColor: colors.border,
     position: 'absolute',
   },
   progressFill: {
     height: '100%',
     position: 'absolute',
+    backgroundColor: colors.primary,
   },
   progressText: {
     fontSize: 12,
+    color: '#6B7280',
   },
   applicationFooter: {
     flexDirection: 'row',
@@ -1059,6 +1072,7 @@ const styles = StyleSheet.create({
   },
   dateText: {
     fontSize: 12,
+    color: '#6B7280',
   },
   viewButton: {
     flexDirection: 'row',
@@ -1067,9 +1081,10 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 12,
     gap: 4,
+    backgroundColor: colors.primary,
   },
   viewButtonText: {
-    color: 'white',
+    color: colors.surface,
     fontSize: 12,
     fontWeight: '500',
   },
@@ -1086,19 +1101,22 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginTop: 16,
     marginBottom: 8,
+    color: colors.text,
   },
   emptyText: {
     fontSize: 14,
     textAlign: 'center',
     marginBottom: 24,
+    color: colors.textSecondary,
   },
   browseButton: {
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 8,
+    backgroundColor: colors.primary,
   },
   browseButtonText: {
-    color: 'white',
+    color: colors.surface,
     fontWeight: '500',
   },
   
@@ -1112,14 +1130,26 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
+    borderColor: colors.border,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 2,
+    backgroundColor: colors.surface,
   },
-  gradientCard: {
-    backgroundColor: '#FFF5F0',
+  contactCard: {
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+    backgroundColor: colors.background,
   },
   petInfoContainer: {
     flexDirection: 'row',
@@ -1130,19 +1160,11 @@ const styles = StyleSheet.create({
     height: 60,
     borderRadius: 30,
     overflow: 'hidden',
-    backgroundColor: '#F3F4F6',
+    backgroundColor: colors.background,
   },
   petInfo: {
     flex: 1,
     marginLeft: 12,
-  },
-  petName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  petBreed: {
-    fontSize: 14,
-    marginTop: 2,
   },
   petMetaInfo: {
     marginTop: 12,
@@ -1157,6 +1179,7 @@ const styles = StyleSheet.create({
   },
   metaText: {
     fontSize: 14,
+    color: colors.text,
   },
   progressHeader: {
     flexDirection: 'row',
@@ -1168,17 +1191,31 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 8,
+    color: colors.text,
+  },
+  sectionTitleStandalone: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
+    marginTop: 8,
+    color: colors.text,
   },
   cardDescription: {
     fontSize: 14,
     marginBottom: 16,
+    color: colors.textSecondary,
   },
   progressPercentage: {
     fontSize: 14,
     fontWeight: '500',
+    color: colors.text,
   },
   timelineCard: {
     padding: 12,
+  },
+  timelineCardActive: {
+    borderColor: '#007AFF',
+    borderWidth: 2,
   },
   timelineHeader: {
     flexDirection: 'row',
@@ -1194,10 +1231,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     marginBottom: 4,
+    color: colors.text,
   },
   timelineDescription: {
     fontSize: 14,
     marginBottom: 8,
+    color: colors.text,
   },
   timelineDateContainer: {
     flexDirection: 'row',
@@ -1207,13 +1246,21 @@ const styles = StyleSheet.create({
   timelineDate: {
     fontSize: 12,
     marginLeft: 4,
+    color: colors.textSecondary,
   },
   notesContainer: {
     padding: 8,
     borderRadius: 6,
+    backgroundColor: colors.background,
   },
   notesText: {
     fontSize: 13,
+    color: colors.text,
+  },
+  additionalNotes: {
+    fontSize: 13,
+    color: colors.text,
+    marginTop: 8,
   },
   contactButtons: {
     flexDirection: 'row',
@@ -1227,33 +1274,63 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 10,
     borderRadius: 8,
+    backgroundColor: colors.primary,
   },
   messageButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    borderRadius: 8,
     backgroundColor: 'transparent',
     borderWidth: 1,
+    borderColor: colors.primary,
   },
   buttonIcon: {
     marginRight: 6,
   },
   contactButtonText: {
-    color: 'white',
+    color: colors.surface,
     fontWeight: '500',
     fontSize: 14,
   },
-  alert: {
+  messageButtonText: {
+    color: colors.primary,
+    fontWeight: '500',
+    fontSize: 14,
+  },
+  alertSuccess: {
     flexDirection: 'row',
     padding: 12,
     borderRadius: 8,
     borderWidth: 1,
     marginBottom: 16,
+    backgroundColor: colors.success + '20',
+    borderColor: colors.success,
+  },
+  alertError: {
+    flexDirection: 'row',
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    marginBottom: 16,
+    backgroundColor: colors.error + '20',
+    borderColor: colors.error,
   },
   alertIcon: {
     marginRight: 8,
     marginTop: 2,
   },
-  alertText: {
+  alertTextSuccess: {
     flex: 1,
     fontSize: 14,
+    color: colors.success,
+  },
+  alertTextError: {
+    flex: 1,
+    fontSize: 14,
+    color: colors.error,
   },
   bottomPadding: {
     height: 40,
@@ -1264,10 +1341,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: colors.surface,
   },
   loadingText: {
     marginTop: 16,
     fontSize: 16,
+    color: colors.text,
   },
   
   // Error state styles
@@ -1276,25 +1355,29 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
+    backgroundColor: colors.surface,
   },
   errorTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     marginTop: 16,
     marginBottom: 8,
+    color: colors.text,
   },
   errorMessage: {
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 24,
+    color: colors.text,
   },
   errorButton: {
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 8,
+    backgroundColor: colors.primary,
   },
   errorButtonText: {
-    color: 'white',
+    color: colors.surface,
     fontWeight: '600',
     fontSize: 16,
   },
