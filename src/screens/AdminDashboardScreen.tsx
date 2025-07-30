@@ -46,7 +46,7 @@ export default function AdminDashboardScreen({ navigation }: AdminDashboardScree
       {/* Welcome Header */}
       <View style={styles.header}>
         <Text style={styles.welcomeText}>Welcome back!</Text>
-        <Text style={styles.headerTitle}>Admin Dashboard</Text>
+        <Text style={styles.headerTitle}>Shelter Care</Text>
       </View>
 
       {/* Stats Grid */}
