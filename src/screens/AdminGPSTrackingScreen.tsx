@@ -5,6 +5,7 @@ import { StackNavigationProp } from "@react-navigation/stack"
 import { useState } from "react"
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import { colors } from "../theme/theme"
+import EmergencyActions from "./EmergencyActions"
 
 interface TrackedPet {
   id: string
@@ -172,143 +173,30 @@ export default function AdminGPSTrackingScreen({ navigation }: AdminGPSTrackingS
   const alertCount = trackedPets.filter((p) => p.status === "Alert").length
   const lostCount = trackedPets.filter((p) => p.status === "Lost").length
 
-  return (
-    <ScrollView style={styles.container}>
-      {/* Overview Stats */}
-      <View style={styles.statsContainer}>
-        <View style={styles.statCard}>
-          <View style={[styles.statIcon, { backgroundColor: colors.success + "20" }]}>
-            <Ionicons name="shield-checkmark-outline" size={24} color={colors.success} />
-          </View>
-          <Text style={styles.statNumber}>{safeCount}</Text>
-          <Text style={styles.statLabel}>Safe</Text>
-        </View>
-
-        <View style={styles.statCard}>
-          <View style={[styles.statIcon, { backgroundColor: colors.warning + "20" }]}>
-            <Ionicons name="warning-outline" size={24} color={colors.warning} />
-          </View>
-          <Text style={styles.statNumber}>{alertCount}</Text>
-          <Text style={styles.statLabel}>Alerts</Text>
-        </View>
-
-        <View style={styles.statCard}>
-          <View style={[styles.statIcon, { backgroundColor: colors.error + "20" }]}>
-            <Ionicons name="alert-circle-outline" size={24} color={colors.error} />
-          </View>
-          <Text style={styles.statNumber}>{lostCount}</Text>
-          <Text style={styles.statLabel}>Lost</Text>
-        </View>
-      </View>
-
-      {/* System Status */}
-      <View style={styles.systemStatus}>
-        <Text style={styles.sectionTitle}>System Status</Text>
-        <View style={styles.statusCard}>
-          <View style={styles.statusItem}>
-            <Ionicons name="wifi-outline" size={20} color={colors.success} />
-            <Text style={styles.systemStatusText}>GPS Network: Online</Text>
-          </View>
-          <View style={styles.statusItem}>
-            <Ionicons name="server-outline" size={20} color={colors.success} />
-            <Text style={styles.systemStatusText}>Tracking Server: Active</Text>
-          </View>
-          <View style={styles.statusItem}>
-            <Ionicons name="notifications-outline" size={20} color={colors.success} />
-            <Text style={styles.systemStatusText}>Alert System: Operational</Text>
-          </View>
-        </View>
-      </View>
-
-      {/* Tracked Pets */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Tracked Pets ({trackedPets.length})</Text>
-        {trackedPets.map(renderPetCard)}
-      </View>
-
-      {/* Emergency Actions */}
-      <View style={styles.emergencySection}>
-        <Text style={styles.sectionTitle}>Emergency Actions</Text>
-
-        <TouchableOpacity 
-          style={styles.emergencyCard}
-          onPress={() => {
-            Alert.alert(
-              "Broadcast Alert",
-              "Are you sure you want to broadcast an emergency alert to all registered users in the area?",
-              [
-                { text: "Cancel", style: "cancel" },
-                { text: "Send Alert", style: "destructive", onPress: () => Alert.alert("Alert Sent", "Broadcast alert has been sent to all users in the area.") }
-              ]
-            )
-          }}
-        >
-          <View style={styles.emergencyIcon}>
-            <Ionicons name="megaphone-outline" size={24} color={colors.error} />
-          </View>
-          <View style={styles.emergencyInfo}>
-            <Text style={styles.emergencyTitle}>Broadcast Alert</Text>
-            <Text style={styles.emergencyDescription}>Send alert to all registered users in the area</Text>
-          </View>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={styles.emergencyCard}
-          onPress={() => {
-            Alert.alert(
-              "Contact Authorities",
-              "Notify local animal control and police?",
-              [
-                { text: "Cancel", style: "cancel" },
-                { text: "Notify", style: "default", onPress: () => Alert.alert("Authorities Notified", "Local animal control and police have been notified.") }
-              ]
-            )
-          }}
-        >
-          <View style={styles.emergencyIcon}>
-            <Ionicons name="people-outline" size={24} color={colors.error} />
-          </View>
-          <View style={styles.emergencyInfo}>
-            <Text style={styles.emergencyTitle}>Contact Authorities</Text>
-            <Text style={styles.emergencyDescription}>Notify local animal control and police</Text>
-          </View>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={styles.emergencyCard}
-          onPress={() => {
-            Alert.alert(
-              "Coordinate Search",
-              "Organize volunteer search teams?",
-              [
-                { text: "Cancel", style: "cancel" },
-                { text: "Organize", style: "default", onPress: () => Alert.alert("Search Organized", "Volunteer search teams have been notified and organized.") }
-              ]
-            )
-          }}
-        >
-          <View style={styles.emergencyIcon}>
-            <Ionicons name="map-outline" size={24} color={colors.error} />
-          </View>
-          <View style={styles.emergencyInfo}>
-            <Text style={styles.emergencyTitle}>Coordinate Search</Text>
-            <Text style={styles.emergencyDescription}>Organize volunteer search teams</Text>
-          </View>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
-  )
-}
-
+// Styles for tracked pets, system status, and pet cards
 const styles = StyleSheet.create({
+  systemStatus: {
+    backgroundColor: "white",
+    borderRadius: 12,
+    padding: 16,
+    margin: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: colors.text,
+    marginBottom: 16,
+  },
   container: {
     flex: 1,
     backgroundColor: colors.background,
   },
   statsContainer: {
     flexDirection: "row",
-    padding: 16,
-    gap: 12,
+    justifyContent: "space-between",
+    margin: 16,
   },
   statCard: {
     flex: 1,
@@ -316,19 +204,20 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     alignItems: "center",
+    marginHorizontal: 4,
     borderWidth: 1,
     borderColor: colors.border,
   },
   statIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 8,
   },
   statNumber: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: "bold",
     color: colors.text,
     marginBottom: 4,
@@ -337,15 +226,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.text,
     opacity: 0.7,
-  },
-  systemStatus: {
-    margin: 16,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: colors.text,
-    marginBottom: 16,
   },
   statusCard: {
     backgroundColor: "white",
@@ -460,41 +340,69 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "500",
   },
-  emergencySection: {
-    margin: 16,
-    marginBottom: 32,
-  },
-  emergencyCard: {
-    backgroundColor: "white",
-    borderRadius: 12,
-    padding: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: colors.error,
-  },
-  emergencyIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.error + "20",
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 16,
-  },
-  emergencyInfo: {
-    flex: 1,
-  },
-  emergencyTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: colors.text,
-  },
-  emergencyDescription: {
-    fontSize: 12,
-    color: colors.text,
-    opacity: 0.7,
-    marginTop: 2,
-  },
-})
+});
+
+  return (
+    <ScrollView style={styles.container}>
+      {/* Overview Stats */}
+      <View style={styles.statsContainer}>
+        <View style={styles.statCard}>
+          <View style={[styles.statIcon, { backgroundColor: colors.success + "20" }]}> 
+            <Ionicons name="shield-checkmark-outline" size={24} color={colors.success} />
+          </View>
+          <Text style={styles.statNumber}>{safeCount}</Text>
+          <Text style={styles.statLabel}>Safe</Text>
+        </View>
+
+        <View style={styles.statCard}>
+          <View style={[styles.statIcon, { backgroundColor: colors.warning + "20" }]}> 
+            <Ionicons name="warning-outline" size={24} color={colors.warning} />
+          </View>
+          <Text style={styles.statNumber}>{alertCount}</Text>
+          <Text style={styles.statLabel}>Alerts</Text>
+        </View>
+
+        <View style={styles.statCard}>
+          <View style={[styles.statIcon, { backgroundColor: colors.error + "20" }]}> 
+            <Ionicons name="alert-circle-outline" size={24} color={colors.error} />
+          </View>
+          <Text style={styles.statNumber}>{lostCount}</Text>
+          <Text style={styles.statLabel}>Lost</Text>
+        </View>
+      </View>
+
+      {/* System Status */}
+      <View style={styles.systemStatus}>
+        <Text style={styles.sectionTitle}>System Status</Text>
+        <View style={styles.statusCard}>
+          <View style={styles.statusItem}>
+            <Ionicons name="wifi-outline" size={20} color={colors.success} />
+            <Text style={styles.systemStatusText}>GPS Network: Online</Text>
+          </View>
+          <View style={styles.statusItem}>
+            <Ionicons name="server-outline" size={20} color={colors.success} />
+            <Text style={styles.systemStatusText}>Tracking Server: Active</Text>
+          </View>
+          <View style={styles.statusItem}>
+            <Ionicons name="notifications-outline" size={20} color={colors.success} />
+            <Text style={styles.systemStatusText}>Alert System: Operational</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Tracked Pets */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Tracked Pets ({trackedPets.length})</Text>
+        {trackedPets.map(renderPetCard)}
+      </View>
+      {/* Emergency Actions */}
+      <EmergencyActions 
+        trackedPets={trackedPets}
+        onEmergencyAction={(action, details) => {
+          console.log('Emergency action taken:', action, details);
+          // Handle the emergency action (API calls, notifications, etc.)
+        }}
+      />
+    </ScrollView>
+  );
+}
