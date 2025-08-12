@@ -2,7 +2,6 @@
 import { colors } from "../theme/theme";
 "use client"
 
-import { Header } from '@components/header';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@hooks/useAuth';
 import { ApplicationTimelineEvent, Pet } from '@lib/data';
@@ -21,6 +20,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import NavigationHeader from "../../components/NavigationHeader";
 
 // Extend the ApplicationTimelineEvent to allow null date
 interface ExtendedTimelineEvent extends Omit<ApplicationTimelineEvent, 'date'> {
@@ -515,10 +515,9 @@ export default function ModernApplicationListScreen({ route }: { route?: any }) 
   const renderApplicationList = () => {
     return (
       <View style={styles.container}>
-        <Header 
+        <NavigationHeader 
           title="My Applications" 
-          showBackButton 
-          userType="adopter"
+          showBackButton={true} 
         />
         
         <View style={styles.filtersContainer}>
@@ -604,10 +603,9 @@ export default function ModernApplicationListScreen({ route }: { route?: any }) 
   const renderLoading = () => {
     return (
       <View style={styles.container}>
-        <Header 
+        <NavigationHeader 
           title="Application Details" 
-          showBackButton 
-          userType="adopter"
+          showBackButton={true} 
         />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#007AFF" />
@@ -623,10 +621,9 @@ export default function ModernApplicationListScreen({ route }: { route?: any }) 
   const renderApplicationNotFound = () => {
     return (
       <View style={styles.container}>
-        <Header 
+        <NavigationHeader 
           title="Application Details" 
-          showBackButton 
-          userType="adopter"
+          showBackButton={true} 
         />
         <View style={styles.errorContainer}>
           <Ionicons name="close-circle" size={48} color="#EF4444" />
@@ -657,11 +654,9 @@ export default function ModernApplicationListScreen({ route }: { route?: any }) 
     
     return (
       <View style={styles.container}>
-        <Header 
+        <NavigationHeader 
           title="Track Application" 
-          showBackButton 
-          userType="adopter"
-          backHref="."
+          showBackButton={true}
         />
         
         <ScrollView contentContainerStyle={styles.scrollContent}>

@@ -2,6 +2,7 @@ import { Feather } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
+import NavigationHeader from "../../components/NavigationHeader";
 import { useAuth } from "../../hooks/useAuth";
 
 // Use the type directly from the imported module
@@ -107,19 +108,11 @@ export default function AdoptionHistoryScreen({ navigation }: AdoptionHistoryScr
 
   return (
     <View style={styles.container}>
-      {/* Simple Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Feather name="arrow-left" size={24} color="#8B4513" />
-        </TouchableOpacity>
-        <View style={styles.headerTitleContainer}>
-          <Text style={styles.headerTitle}>Adoption History</Text>
-          <Text style={styles.headerSubtitle}>{`${adoptedPets.length} pets in your family`}</Text>
-        </View>
-        <TouchableOpacity style={styles.notificationButton}>
-          <Feather name="bell" size={24} color="#8B4513" />
-        </TouchableOpacity>
-      </View>
+      {/* NavigationHeader */}
+      <NavigationHeader 
+        title="Adoption History" 
+        showBackButton={true} 
+      />
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer}>
         {adoptedPets.length === 0 ? (

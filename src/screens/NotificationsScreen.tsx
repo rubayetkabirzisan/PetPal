@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons"
 import { useNavigation } from "@react-navigation/native"
 import React from "react"
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import NavigationHeader from "../../components/NavigationHeader"
 import { colors, spacing } from "../theme/theme"
 
 interface Notification {
@@ -84,18 +85,10 @@ export default function NotificationsScreen() {
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Notifications</Text>
-        <TouchableOpacity style={styles.markAllButton}>
-          <Text style={styles.markAllText}>Mark All Read</Text>
-        </TouchableOpacity>
-      </View>
+      <NavigationHeader 
+        title="Notifications" 
+        showBackButton={true} 
+      />
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {notifications.map((notification) => (

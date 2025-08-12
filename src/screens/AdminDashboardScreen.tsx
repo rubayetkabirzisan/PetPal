@@ -44,7 +44,7 @@ export default function AdminDashboardScreen({ navigation }: AdminDashboardScree
 
   return (
     <View style={{ flex: 1 }}>
-      <NavigationHeader title="Admin Dashboard" />
+      <NavigationHeader title="Shelter Dashboard" />
       <ScrollView style={styles.container}>
       {/* Welcome Header */}
       <View style={styles.header}>
