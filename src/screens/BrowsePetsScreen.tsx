@@ -3,6 +3,7 @@
 import { Ionicons } from "@expo/vector-icons"
 import React, { useEffect, useState } from "react"
 import { FlatList, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
+import NavigationHeader from "../../components/NavigationHeader"
 import { getPets, type Pet } from "../lib/data"
 import { colors, spacing } from "../theme/theme"
 
@@ -133,6 +134,7 @@ export default function BrowsePetsScreen({ navigation }: BrowsePetsScreenProps) 
 
   return (
     <View style={styles.container}>
+      <NavigationHeader title="Browse Pets" showBackButton={true} />
       <View style={styles.searchContainer}>
         <View style={styles.searchInputContainer}>
           <Ionicons name="search-outline" size={20} color={colors.text} style={styles.searchIcon} />

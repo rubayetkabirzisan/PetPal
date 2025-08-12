@@ -5,30 +5,31 @@ import DateTimePicker from '@react-native-community/datetimepicker'
 import * as ImagePicker from "expo-image-picker"
 import React, { useEffect, useState } from "react"
 import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  Image,
-  Keyboard,
-  Linking,
-  Modal,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View
+    ActivityIndicator,
+    Alert,
+    FlatList,
+    Image,
+    Keyboard,
+    Linking,
+    Modal,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View
 } from "react-native"
+import NavigationHeader from "../../components/NavigationHeader"
 import { useDateTimePicker } from "../../hooks/useDateTimePicker"
 import { getLostPets, initializeLostPetsData, reportSighting, type LostPet } from "../../lib/lost-pets"
 import { validateSightingForm } from "../../utils/formValidation"
 import {
-  ImageInfo,
-  enforceMaxPhotos,
-  getImageCountString,
-  prepareImagesForSubmission,
-  processImagePickerResult
+    ImageInfo,
+    enforceMaxPhotos,
+    getImageCountString,
+    prepareImagesForSubmission,
+    processImagePickerResult
 } from "../../utils/imageUtils"
 import { colors, spacing } from "../theme/theme"
 
@@ -907,6 +908,7 @@ export default function LostPetsScreen({ navigation }: LostPetsScreenProps) {
 
   return (
     <View style={styles.container}>
+      <NavigationHeader title="Lost Pets" />
       <View style={styles.header}>
         <View style={styles.tabContainer}>
           <TouchableOpacity

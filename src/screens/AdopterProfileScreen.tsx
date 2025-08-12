@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons"
 import { useNavigation } from "@react-navigation/native"
 import { useState } from "react"
 import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
+import NavigationHeader from "../../components/NavigationHeader"
 import { useAuth } from "../contexts/AuthContext"
 import { colors } from "../theme/theme"
 
@@ -106,7 +107,9 @@ export default function AdopterProfileScreen() {
   ]
 
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.containerWrapper}>
+      <NavigationHeader title="Profile" />
+      <ScrollView style={styles.container}>
       {/* Profile Header */}
       <View style={styles.profileHeader}>
         <View style={styles.avatarContainer}>
@@ -244,10 +247,15 @@ export default function AdopterProfileScreen() {
         ))}
       </View>
     </ScrollView>
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
+  containerWrapper: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
   container: {
     flex: 1,
     backgroundColor: colors.background,

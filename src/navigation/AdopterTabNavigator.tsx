@@ -39,17 +39,18 @@ export default function AdopterTabNavigator() {
           backgroundColor: colors.surface,
           borderTopColor: colors.border,
         },
+        headerShown: false,
         headerStyle: {
           backgroundColor: colors.surface,
         },
         headerTintColor: colors.text,
       })}
     >
-      <Tab.Screen name="Dashboard" component={AdopterDashboardScreen} options={{ title: "Home" }} />
-      <Tab.Screen name="Browse" component={BrowsePetsScreen} options={{ title: "Browse" }} />
-      <Tab.Screen name="LostPets" component={LostPetsScreen} options={{ title: "Lost Pets" }} />
-      <Tab.Screen name="Tracking" component={GPSTrackingScreen} options={{ title: "Tracking" }} />
-      <Tab.Screen name="Profile" component={AdopterProfileScreen} options={{ title: "Profile" }} />
+      <Tab.Screen name="Dashboard" component={AdopterDashboardScreen} options={{ title: "Home", headerShown: false }} />
+      <Tab.Screen name="Browse" component={BrowsePetsScreen} options={{ title: "Browse", headerShown: false }} />
+      <Tab.Screen name="LostPets" component={LostPetsScreen} options={{ title: "Lost Pets", headerShown: false }} />
+      <Tab.Screen name="Tracking" component={GPSTrackingScreen} options={{ title: "Tracking", headerShown: false }} />
+      <Tab.Screen name="Profile" component={AdopterProfileScreen} options={{ title: "Profile", headerShown: false }} />
     </Tab.Navigator>
   )
 }

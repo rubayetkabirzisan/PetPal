@@ -4,7 +4,7 @@ import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-import { Header } from "@/components/header";
+import NavigationHeader from "@/components/NavigationHeader";
 import { Navigation } from "@/components/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { getAdoptionHistory, type AdoptionHistoryEntry } from "@/lib/adoption-history";
@@ -228,7 +228,7 @@ export default function AdopterDashboard() {
 
   return (
     <View style={styles.container}>
-      <Header title="Browse Pets" subtitle="Find Your Perfect Match" showNotifications={true} userType="adopter" />
+      <NavigationHeader title="Browse Pets" />
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer}>
         {/* Quick Actions - First Row */}

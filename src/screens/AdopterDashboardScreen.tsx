@@ -3,6 +3,7 @@
 import { Ionicons } from "@expo/vector-icons"
 import { useEffect, useState } from "react"
 import { Dimensions, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
+import NavigationHeader from "../../components/NavigationHeader"
 import { getPets, type Pet } from "../lib/data"
 import { colors, spacing } from "../theme/theme"
 
@@ -338,12 +339,14 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
   )
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {renderQuickActions()}
-      {renderCareJournalSection()}
-      {renderAIMatchingCard()}
-      {renderGPSAlertsCard()}
-      {renderSearchAndFilters()}
+    <View style={styles.container}>
+      <NavigationHeader title="Home" />
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        {renderQuickActions()}
+        {renderCareJournalSection()}
+        {renderAIMatchingCard()}
+        {renderGPSAlertsCard()}
+        {renderSearchAndFilters()}
 
       <View style={styles.petsContainer}>
         {filteredPets.map((pet, index) => renderPetCard(pet, index))}
@@ -357,11 +360,16 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
         </View>
       )}
     </ScrollView>
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  scrollView: {
     flex: 1,
     backgroundColor: colors.background,
   },

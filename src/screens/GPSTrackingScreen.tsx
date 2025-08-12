@@ -3,6 +3,7 @@
 import { Ionicons } from "@expo/vector-icons"
 import { useEffect, useState } from "react"
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import NavigationHeader from "../../components/NavigationHeader"
 import { colors, spacing } from "../theme/theme"
 
 interface TrackedPet {
@@ -170,8 +171,8 @@ export default function GPSTrackingScreen({ navigation }: GPSTrackingScreenProps
 
   return (
     <View style={styles.container}>
+      <NavigationHeader title="GPS Tracking" />
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>GPS Tracking</Text>
         <Text style={styles.headerSubtitle}>Monitor your pets' location and safety</Text>
       </View>
 
