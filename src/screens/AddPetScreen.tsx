@@ -14,6 +14,7 @@ import {
     TouchableOpacity,
     View
 } from "react-native"
+import NavigationHeader from "../../components/NavigationHeader"
 import { addPet } from "../../lib/data"
 import { useAuth } from "../contexts/AuthContext"
 import { colors, spacing } from "../theme/theme"
@@ -231,18 +232,9 @@ export default function AddPetScreen({ navigation: navProp }: AddPetScreenProps)
   ]
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Add New Pet</Text>
-        <View style={styles.headerRight} />
-      </View>
+    <View style={{ flex: 1 }}>
+      <NavigationHeader title="Add New Pet" showBackButton={true} />
+      <View style={styles.container}>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Basic Information */}
@@ -621,6 +613,7 @@ export default function AddPetScreen({ navigation: navProp }: AddPetScreenProps)
           </TouchableOpacity>
         </View>
       </ScrollView>
+    </View>
     </View>
   )
 }

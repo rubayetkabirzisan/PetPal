@@ -3,6 +3,7 @@
 import { Ionicons } from "@expo/vector-icons"
 import { useState } from "react"
 import { Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
+import NavigationHeader from "../../components/NavigationHeader"
 import { colors } from "../theme/theme"
 
 interface LostPet {
@@ -180,7 +181,9 @@ export default function AdminLostPetsScreen({ navigation }: AdminLostPetsScreenP
   )
 
   return (
-    <View style={styles.container}>
+    <View style={{ flex: 1 }}>
+      <NavigationHeader title="Lost Pets" />
+      <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.searchContainer}>
@@ -236,20 +239,16 @@ export default function AdminLostPetsScreen({ navigation }: AdminLostPetsScreenP
 
       {/* Pet List */}
       <ScrollView style={styles.petsList} showsVerticalScrollIndicator={false}>
-        {filteredPets.map(renderLostPetCard)}
+                {filteredPets.map(renderLostPetCard)}
 
         {filteredPets.length === 0 && (
           <View style={styles.emptyState}>
-            <Ionicons name="search-outline" size={64} color={colors.border} />
-            <Text style={styles.emptyStateTitle}>No reports found</Text>
-            <Text style={styles.emptyStateText}>
-              {searchQuery || selectedStatus !== "All"
-                ? "Try adjusting your search or filters"
-                : "No lost pet reports at this time"}
-            </Text>
+            <Ionicons name="search-outline" size={48} color={colors.text + "40"} />
+            <Text style={styles.emptyStateText}>No lost pets found</Text>
           </View>
         )}
       </ScrollView>
+    </View>
     </View>
   )
 }

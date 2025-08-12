@@ -19,6 +19,7 @@ import {
     View,
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
+import NavigationHeader from "../../components/NavigationHeader";
 import { catBreeds, dogBreeds, getPetById, petTypes, type Pet } from "../lib/data";
 import { borderRadius, colors, spacing } from "../theme/theme";
 
@@ -382,59 +383,47 @@ export default function EditPetScreen(props: any) {
   if (!pet) return <ErrorScreen />;
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.container} 
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
-      <Animated.View style={[
-        styles.container, 
-        { 
-          opacity: fadeAnim,
-          transform: [{ translateY: slideAnim }]
-        }
-      ]}>
-        <ScrollView 
-          contentContainerStyle={styles.scrollContainer}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
-          {/* Header */}
-          <View style={styles.header}>
-            <TouchableOpacity 
-              style={styles.backButton}
-              onPress={() => navigation.goBack()}
-            >
-              <Ionicons name="arrow-back" size={24} color={colors.primary} />
-            </TouchableOpacity>
-            <View style={styles.headerContent}>
-              <Ionicons name="paw" size={28} color={colors.primary} />
-              <Text style={styles.title}>Edit Pet Profile</Text>
-            </View>
-            <View style={styles.headerRight} />
-          </View>
-
-          {/* Image Section */}
-          <View style={styles.imageSection}>
-            <TouchableOpacity 
-              style={styles.imageContainer}
-              onPress={handleImagePicker}
-              activeOpacity={0.8}
-            >
-              <Image
-                source={{ 
-                  uri: form.images?.[0] || pet.images?.[0] || 
-                  "https://via.placeholder.com/150x150" 
-                }}
-                style={styles.image}
-              />
-              <View style={styles.imageOverlay}>
-                <View style={styles.imageEditButton}>
-                  <Ionicons name="camera" size={20} color="white" />
-                </View>
+    <View style={{ flex: 1 }}>
+      <NavigationHeader title={`Edit ${pet.name}`} showBackButton={true} />
+      <KeyboardAvoidingView 
+        style={styles.container} 
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <Animated.View style={[
+          styles.container, 
+          { 
+            opacity: fadeAnim,
+            transform: [{ translateY: slideAnim }]
+          }
+        ]}>
+          <ScrollView 
+            contentContainerStyle={styles.scrollContainer}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={styles.formContent}>
+              {/* Image Section */}
+              <View style={styles.imageSection}>
+                <TouchableOpacity 
+                  style={styles.imageContainer}
+                  onPress={handleImagePicker}
+                  activeOpacity={0.8}
+                >
+                  <Image
+                    source={{ 
+                      uri: form.images?.[0] || pet.images?.[0] || 
+                      "https://via.placeholder.com/150x150" 
+                    }}
+                    style={styles.image}
+                  />
+                  <View style={styles.imageOverlay}>
+                    <View style={styles.imageEditButton}>
+                      <Ionicons name="camera" size={20} color="white" />
+                    </View>
+                  </View>
+                </TouchableOpacity>
+                <Text style={styles.imageHint}>Tap to change photo</Text>
               </View>
-            </TouchableOpacity>
-            <Text style={styles.imageHint}>Tap to change photo</Text>
-          </View>
 
           {/* Basic Information */}
           <FormSection icon="information-circle" title="Basic Information">
@@ -722,17 +711,19 @@ export default function EditPetScreen(props: any) {
               </Text>
             </TouchableOpacity>
           </View>
-        </ScrollView>
 
-        {/* Map Picker Modal */}
-        <MapPicker
-          visible={showMap}
-          onClose={() => setShowMap(false)}
-          onSave={(location) => handleChange("location", location)}
-          initialLocation={form.location}
-        />
-      </Animated.View>
-    </KeyboardAvoidingView>
+          {/* Map Picker Modal */}
+          <MapPicker
+            visible={showMap}
+            onClose={() => setShowMap(false)}
+            onSave={(location) => handleChange("location", location)}
+            initialLocation={form.location}
+          />
+            </View>
+          </ScrollView>
+        </Animated.View>
+      </KeyboardAvoidingView>
+    </View>
   );
 }
 
@@ -743,6 +734,9 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     paddingBottom: spacing.xxl,
+  },
+  formContent: {
+    padding: spacing.lg,
   },
   loadingContainer: {
     flex: 1,

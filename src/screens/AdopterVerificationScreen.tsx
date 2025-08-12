@@ -3,6 +3,7 @@
 import { Ionicons } from "@expo/vector-icons"
 import { useState } from "react"
 import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
+import NavigationHeader from "../../components/NavigationHeader"
 import { colors } from "../theme/theme"
 
 interface VerificationRequest {
@@ -202,7 +203,9 @@ export default function AdopterVerificationScreen({ navigation }: AdopterVerific
   const rejectedCount = verificationRequests.filter((r) => r.status === "Rejected").length
 
   return (
-    <View style={styles.container}>
+    <View style={{ flex: 1 }}>
+      <NavigationHeader title="Adopter Verification" />
+      <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.searchContainer}>
@@ -272,6 +275,7 @@ export default function AdopterVerificationScreen({ navigation }: AdopterVerific
           </View>
         )}
       </ScrollView>
+    </View>
     </View>
   )
 }

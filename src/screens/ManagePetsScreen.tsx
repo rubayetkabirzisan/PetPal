@@ -3,6 +3,7 @@
 import { Ionicons } from "@expo/vector-icons"
 import { useState } from "react"
 import { Alert, Image, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
+import NavigationHeader from "../../components/NavigationHeader"
 import { getPets, type Pet } from "../lib/data"
 import { colors } from "../theme/theme"
 
@@ -137,7 +138,9 @@ export default function ManagePetsScreen({ navigation }: ManagePetsScreenProps) 
   )
 
   return (
-    <View style={styles.container}>
+    <View style={{ flex: 1 }}>
+      <NavigationHeader title="Manage Pets" />
+      <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.searchContainer}>
@@ -232,6 +235,7 @@ export default function ManagePetsScreen({ navigation }: ManagePetsScreenProps) 
           </View>
         </View>
       </Modal>
+    </View>
     </View>
   )
 }

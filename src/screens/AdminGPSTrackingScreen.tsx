@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons"
 import { StackNavigationProp } from "@react-navigation/stack"
 import { useState } from "react"
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import NavigationHeader from "../../components/NavigationHeader"
 import { colors } from "../theme/theme"
 import EmergencyActions from "./EmergencyActions"
 
@@ -343,7 +344,9 @@ const styles = StyleSheet.create({
 });
 
   return (
-    <ScrollView style={styles.container}>
+    <View style={{ flex: 1 }}>
+      <NavigationHeader title="GPS Tracking" />
+      <ScrollView style={styles.container}>
       {/* Overview Stats */}
       <View style={styles.statsContainer}>
         <View style={styles.statCard}>
@@ -404,5 +407,6 @@ const styles = StyleSheet.create({
         }}
       />
     </ScrollView>
+    </View>
   );
 }

@@ -39,17 +39,18 @@ export default function AdminTabNavigator() {
           backgroundColor: colors.surface,
           borderTopColor: colors.border,
         },
+        headerShown: false, // Hide headers to use custom NavigationHeader component
         headerStyle: {
           backgroundColor: colors.surface,
         },
         headerTintColor: colors.text,
       })}
     >
-      <Tab.Screen name="Dashboard" component={AdminDashboardScreen} options={{ title: "Home" }} />
-      <Tab.Screen name="Pets" component={ManagePetsScreen} options={{ title: "Pets" }} />
-      <Tab.Screen name="LostPets" component={AdminLostPetsScreen} options={{ title: "Lost Pets" }} />
-      <Tab.Screen name="GPS" component={AdminGPSTrackingScreen} options={{ title: "GPS" }} />
-      <Tab.Screen name="Verify" component={AdopterVerificationScreen} options={{ title: "Verify" }} />
+      <Tab.Screen name="Dashboard" component={AdminDashboardScreen} options={{ title: "Home", headerShown: false }} />
+      <Tab.Screen name="Pets" component={ManagePetsScreen} options={{ title: "Pets", headerShown: false }} />
+      <Tab.Screen name="LostPets" component={AdminLostPetsScreen} options={{ title: "Lost Pets", headerShown: false }} />
+      <Tab.Screen name="GPS" component={AdminGPSTrackingScreen} options={{ title: "GPS", headerShown: false }} />
+      <Tab.Screen name="Verify" component={AdopterVerificationScreen} options={{ title: "Verify", headerShown: false }} />
     </Tab.Navigator>
   )
 }

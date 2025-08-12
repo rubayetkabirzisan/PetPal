@@ -3,6 +3,7 @@
 import { Ionicons } from "@expo/vector-icons"
 import { useEffect, useState } from "react"
 import { Alert, Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import NavigationHeader from "../../components/NavigationHeader"
 import { useAuth } from "../contexts/AuthContext"
 import { getPetById, type Pet } from "../lib/data"
 import { colors } from "../theme/theme"
@@ -70,14 +71,9 @@ export default function PetProfileScreen({ navigation, route }: PetProfileScreen
   const petImages = pet.images || ["https://via.placeholder.com/400x300"]
 
   return (
-    <View style={styles.container}>
-      {/* Back Button - Fixed at the top */}
-      <TouchableOpacity 
-        style={styles.backButton} 
-        onPress={() => navigation.goBack()}
-      >
-        <Ionicons name="arrow-back" size={24} color="white" />
-      </TouchableOpacity>
+    <View style={{ flex: 1 }}>
+      <NavigationHeader title={pet.name} showBackButton={true} />
+      <View style={styles.container}>
       
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Image Carousel */}
@@ -272,6 +268,7 @@ export default function PetProfileScreen({ navigation, route }: PetProfileScreen
           <Text style={styles.adoptButtonText}>Apply for Adoption</Text>
         </TouchableOpacity>
       </View>
+    </View>
     </View>
   )
 }

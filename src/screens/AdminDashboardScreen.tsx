@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons"
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import NavigationHeader from "../../components/NavigationHeader"
 import { colors } from "../theme/theme"
 
 interface AdminDashboardScreenProps {
@@ -42,7 +43,9 @@ export default function AdminDashboardScreen({ navigation }: AdminDashboardScree
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <View style={{ flex: 1 }}>
+      <NavigationHeader title="Admin Dashboard" />
+      <ScrollView style={styles.container}>
       {/* Welcome Header */}
       <View style={styles.header}>
         <Text style={styles.welcomeText}>Welcome back!</Text>
@@ -129,6 +132,7 @@ export default function AdminDashboardScreen({ navigation }: AdminDashboardScree
         </View>
       </View>
     </ScrollView>
+    </View>
   )
 }
 

@@ -16,6 +16,7 @@ import {
     TouchableOpacity,
     View
 } from "react-native"
+import NavigationHeader from "../../components/NavigationHeader"
 import { reportLostPet } from "../../lib/lost-pets"
 import { colors, spacing } from "../theme/theme"
 
@@ -211,13 +212,15 @@ export default function ReportLostPetScreen({ navigation }: ReportLostPetScreenP
   )
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.container} 
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      keyboardVerticalOffset={100}
-    >
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        <View style={styles.content}>
+    <View style={{ flex: 1 }}>
+      <NavigationHeader title="Report Lost Pet" showBackButton={true} />
+      <KeyboardAvoidingView 
+        style={styles.container} 
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={100}
+      >
+        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+          <View style={styles.content}>
           <Text style={styles.title}>Report a Lost Pet</Text>
           <Text style={styles.subtitle}>
             Please provide as much information as possible to help us find your pet
@@ -388,6 +391,7 @@ export default function ReportLostPetScreen({ navigation }: ReportLostPetScreenP
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
+    </View>
   )
 }
 

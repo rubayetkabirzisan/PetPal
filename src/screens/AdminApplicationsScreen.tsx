@@ -1,16 +1,17 @@
 import { Ionicons } from "@expo/vector-icons"
 import React, { useEffect, useState } from "react"
 import {
-    Alert,
-    Dimensions,
-    Modal,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  Alert,
+  Dimensions,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from "react-native"
+import NavigationHeader from "../../components/NavigationHeader"
 import { colors, spacing } from "../theme/theme"
 
 const { width } = Dimensions.get('window')
@@ -717,15 +718,10 @@ export default function AdminApplicationsScreen({ navigation }: Props) {
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Manage Applications</Text>
-        <TouchableOpacity style={styles.headerAction}>
-          <Ionicons name="filter" size={24} color={colors.primary} />
-        </TouchableOpacity>
-      </View>
+      <NavigationHeader 
+        title="Manage Applications" 
+        showBackButton={true} 
+      />
 
       {/* Search and Filters */}
       <View style={styles.searchSection}>
