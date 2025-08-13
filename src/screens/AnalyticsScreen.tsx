@@ -3,6 +3,7 @@ import * as FileSystem from 'expo-file-system'
 import * as Sharing from 'expo-sharing'
 import React from "react"
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import NavigationHeader from "../../components/NavigationHeader"
 import { colors, spacing } from "../theme/theme"
 
 interface AnalyticsScreenProps {
@@ -65,16 +66,10 @@ export default function AnalyticsScreen({ navigation }: AnalyticsScreenProps) {
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Analytics</Text>
-        <View style={styles.headerRight} />
-      </View>
+      <NavigationHeader 
+        title="Analytics" 
+        showBackButton={true}
+      />
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Overview Cards */}

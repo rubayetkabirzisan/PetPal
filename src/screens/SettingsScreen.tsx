@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons"
 import { useNavigation } from "@react-navigation/native"
 import React, { useEffect, useState } from "react"
 import { Alert, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from "react-native"
+import NavigationHeader from "../../components/NavigationHeader"
 import { clearUserNotifications } from "../../lib/notifications"
 import { clearUserPreferences, getUserPreferences, saveUserPreferences, UserPreferences } from "../../lib/preferences"
 import { useAuth } from "../contexts/AuthContext"
@@ -371,16 +372,10 @@ export default function SettingsScreen() {
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Settings</Text>
-        <View style={styles.headerRight} />
-      </View>
+      <NavigationHeader 
+        title="Settings" 
+        showBackButton={true} 
+      />
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {sections.map((section) => (
