@@ -3,11 +3,11 @@ import { useNavigation } from "@react-navigation/native"
 import { useRouter } from "expo-router"
 import React, { useEffect, useState } from "react"
 import {
-    Platform,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from "react-native"
 import { useAuth } from "../src/contexts/AuthContext"
 import { useTheme } from "../src/contexts/ThemeContext"
@@ -24,7 +24,7 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
   showBackButton = false,
   backButtonAction,
 }) => {
-  const navigation = useNavigation()
+  const navigation = useNavigation<any>() // Use any type for now to allow nested navigation
   const router = useRouter()
   const { user } = useAuth()
   const { theme } = useTheme()
@@ -47,21 +47,13 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
   }
 
   const handleProfilePress = () => {
-    // Use navigation for screens instead of router for paths
-    if (isAdmin) {
-      navigation.navigate('AdminProfile' as never);
-    } else {
-      navigation.navigate('AdopterProfile' as never);
-    }
+    // Navigate to the Profile screen in the AdopterTabs navigator
+    navigation.navigate("AdopterTabs", { screen: "Profile" });
   }
 
   const handleNotificationsPress = () => {
-    // Use navigation for screens instead of router for paths
-    if (isAdmin) {
-      navigation.navigate('AdminNotifications' as never);
-    } else {
-      navigation.navigate('AdopterNotifications' as never);
-    }
+    // Navigate to the Notifications screen which is registered in App.tsx
+    navigation.navigate('Notifications');
   }
 
   return (
