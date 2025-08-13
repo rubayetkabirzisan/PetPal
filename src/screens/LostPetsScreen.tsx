@@ -1,35 +1,37 @@
 "use client"
 
-import { Ionicons } from "@expo/vector-icons"
+import { Ionicons, MaterialIcons } from "@expo/vector-icons"
 import DateTimePicker from '@react-native-community/datetimepicker'
 import * as ImagePicker from "expo-image-picker"
-import React, { useEffect, useState } from "react"
+import * as Location from 'expo-location'
+import React, { useEffect, useRef, useState } from "react"
 import {
-    ActivityIndicator,
-    Alert,
-    FlatList,
-    Image,
-    Keyboard,
-    Linking,
-    Modal,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    View
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Image,
+  Keyboard,
+  Linking,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View
 } from "react-native"
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps'
 import NavigationHeader from "../../components/NavigationHeader"
 import { useDateTimePicker } from "../../hooks/useDateTimePicker"
 import { getLostPets, initializeLostPetsData, reportSighting, type LostPet } from "../../lib/lost-pets"
 import { validateSightingForm } from "../../utils/formValidation"
 import {
-    ImageInfo,
-    enforceMaxPhotos,
-    getImageCountString,
-    prepareImagesForSubmission,
-    processImagePickerResult
+  ImageInfo,
+  enforceMaxPhotos,
+  getImageCountString,
+  prepareImagesForSubmission,
+  processImagePickerResult
 } from "../../utils/imageUtils"
 import { colors, spacing } from "../theme/theme"
 
@@ -51,6 +53,10 @@ interface SightingFormData {
   reporterPhone: string;
   reporterEmail: string;
   photos: ImageInfo[];
+  coordinates: {
+    latitude: number;
+    longitude: number;
+  } | null;
 }
 
 export default function LostPetsScreen({ navigation }: LostPetsScreenProps) {
@@ -75,12 +81,23 @@ export default function LostPetsScreen({ navigation }: LostPetsScreenProps) {
     reporterName: '',
     reporterPhone: '',
     reporterEmail: '',
-    photos: []
+    photos: [],
+    coordinates: null
   })
   const dateTimePicker = useDateTimePicker(new Date())
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isImagePickerLoading, setIsImagePickerLoading] = useState(false)
+  const [showMap, setShowMap] = useState(false)
+  const [mapRegion, setMapRegion] = useState({
+    latitude: 30.2672,
+    longitude: -97.7431, // Default to Austin, TX as fallback
+    latitudeDelta: 0.005,
+    longitudeDelta: 0.005
+  })
+  const [locationPermissionDenied, setLocationPermissionDenied] = useState(false)
+  const [isLoadingLocation, setIsLoadingLocation] = useState(false)
+  const mapRef = useRef<MapView>(null)
   const MAX_PHOTOS = 4
 
   useEffect(() => {
@@ -98,6 +115,25 @@ export default function LostPetsScreen({ navigation }: LostPetsScreenProps) {
     }
     loadData()
   }, [])
+  
+  // Handle map initialization when the map is shown
+  useEffect(() => {
+    if (showMap && mapRef.current) {
+      // First timeout is to ensure the map has fully rendered
+      setTimeout(() => {
+        // Reset any existing coordinates to ensure fresh detection
+        setSightingForm(prev => ({
+          ...prev,
+          coordinates: null
+        }));
+        
+        // Get the current location with a slight delay
+        setTimeout(() => {
+          getCurrentLocation();
+        }, 500);
+      }, 300);
+    }
+  }, [showMap])
 
   const applyFilters = (pets: LostPet[]): LostPet[] => {
     return pets.filter(pet => {
@@ -176,7 +212,8 @@ export default function LostPetsScreen({ navigation }: LostPetsScreenProps) {
       reporterName: '',
       reporterPhone: '',
       reporterEmail: '',
-      photos: []
+      photos: [],
+      coordinates: null
     });
     
     // Clear any previous errors
@@ -267,6 +304,186 @@ export default function LostPetsScreen({ navigation }: LostPetsScreenProps) {
     }
   };
   
+  // Handle map marker placement
+  const handleMapPress = (event: any) => {
+    const { coordinate } = event.nativeEvent;
+    
+    // Animate to the tapped position
+    if (mapRef.current) {
+      mapRef.current.animateToRegion({
+        latitude: coordinate.latitude,
+        longitude: coordinate.longitude,
+        latitudeDelta: 0.005,
+        longitudeDelta: 0.005
+      }, 300);
+    }
+    
+    setMapRegion(prev => ({
+      ...prev,
+      latitude: coordinate.latitude,
+      longitude: coordinate.longitude
+    }));
+    
+    setSightingForm(prev => ({
+      ...prev,
+      coordinates: {
+        latitude: coordinate.latitude,
+        longitude: coordinate.longitude
+      }
+    }));
+    
+    // Try to get the address from the coordinates
+    (async () => {
+      try {
+        const addressResponse = await Location.reverseGeocodeAsync({
+          latitude: coordinate.latitude,
+          longitude: coordinate.longitude
+        });
+        
+        if (addressResponse && addressResponse.length > 0) {
+          const address = addressResponse[0];
+          const locationString = [
+            address.street,
+            address.city,
+            address.region,
+            address.postalCode
+          ].filter(Boolean).join(', ');
+          
+          if (locationString) {
+            handleFormChange('location', locationString);
+          } else {
+            handleFormChange('location', `${coordinate.latitude.toFixed(6)}, ${coordinate.longitude.toFixed(6)}`);
+          }
+        } else {
+          handleFormChange('location', `${coordinate.latitude.toFixed(6)}, ${coordinate.longitude.toFixed(6)}`);
+        }
+      } catch (error) {
+        console.error("Error getting address:", error);
+        handleFormChange('location', `${coordinate.latitude.toFixed(6)}, ${coordinate.longitude.toFixed(6)}`);
+      }
+    })();
+  };
+  
+  // Get user's current location with improved accuracy
+  const getCurrentLocation = async () => {
+    setIsLoadingLocation(true);
+    try {
+      // Request location permissions with improved error handling
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      
+      if (status !== 'granted') {
+        setLocationPermissionDenied(true);
+        Alert.alert(
+          "Permission Denied",
+          "Location permission is needed to show your current location on the map."
+        );
+        return;
+      }
+      
+      // Get current position with higher accuracy
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High
+      });
+      
+      const { latitude, longitude } = location.coords;
+      console.log("Current location detected:", latitude, longitude);
+      
+      // Update map region with current location (better zoom level for street details)
+      const newRegion = {
+        latitude,
+        longitude,
+        latitudeDelta: 0.005,  // Zoomed in to show streets clearly
+        longitudeDelta: 0.005
+      };
+      
+      setMapRegion(newRegion);
+      
+      // Animate map to new location with slightly longer duration for smoother transition
+      if (mapRef.current) {
+        mapRef.current.animateToRegion(newRegion, 1500);
+      }
+      
+      // Update form with coordinates immediately
+      setSightingForm(prev => ({
+        ...prev,
+        coordinates: {
+          latitude,
+          longitude
+        }
+      }));
+      
+      // Try to get a readable address for the location field
+      try {
+        const addressResponse = await Location.reverseGeocodeAsync({
+          latitude,
+          longitude
+        });
+        
+        if (addressResponse && addressResponse.length > 0) {
+          const address = addressResponse[0];
+          const locationString = [
+            address.street,
+            address.city,
+            address.region,
+            address.postalCode
+          ].filter(Boolean).join(', ');
+          
+          if (locationString) {
+            handleFormChange('location', locationString);
+          } else {
+            // Fall back to coordinates with labeled format
+            handleFormChange('location', `Location: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`);
+          }
+        } else {
+          // No address found, use coordinates with labeled format
+          handleFormChange('location', `Location: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`);
+        }
+      } catch (geocodeError) {
+        console.error("Error getting address:", geocodeError);
+        // Fall back to coordinates if reverse geocoding fails
+        handleFormChange('location', `Location: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`);
+      }
+    } catch (error) {
+      console.error("Error getting location:", error);
+      Alert.alert(
+        "Location Error",
+        "Unable to get your current location. Please check your device settings and make sure location services are enabled."
+      );
+    } finally {
+      setIsLoadingLocation(false);
+    }
+  };
+
+  // Toggle map view with enhanced initialization
+  const toggleMapView = () => {
+    const newState = !showMap;
+    setShowMap(newState);
+    
+    // Get current location when map is opened
+    if (newState) {
+      console.log("Opening map view, will request location");
+      
+      // Reset map region to default first to ensure fresh state
+      setMapRegion({
+        latitude: 30.2672,
+        longitude: -97.7431, // Default to Austin, TX as fallback
+        latitudeDelta: 0.005,
+        longitudeDelta: 0.005
+      });
+      
+      // Reset coordinates in form to ensure we detect fresh location
+      setSightingForm(prev => ({
+        ...prev,
+        coordinates: null
+      }));
+      
+      // Short timeout to ensure map is rendered before trying to get location
+      setTimeout(() => {
+        getCurrentLocation();
+      }, 800); // Slightly longer timeout for better initialization
+    }
+  };
+  
   // Check if form is valid
   const validateForm = () => {
     const { valid, errors } = validateSightingForm({
@@ -305,10 +522,15 @@ export default function LostPetsScreen({ navigation }: LostPetsScreenProps) {
       // Prepare photos for submission
       const photoUris = prepareImagesForSubmission(sightingForm.photos);
       
+      // Prepare location text with coordinates if available
+      const locationText = sightingForm.coordinates 
+        ? `${sightingForm.location} (${sightingForm.coordinates.latitude.toFixed(6)}, ${sightingForm.coordinates.longitude.toFixed(6)})`
+        : sightingForm.location;
+        
       // Submit the report
       await reportSighting({
         petId: currentPet.id,
-        location: sightingForm.location,
+        location: locationText,
         date: dateTimePicker.getDateTimeString(),
         time: dateTimePicker.getFormattedTime(),
         description: sightingForm.description,
@@ -320,7 +542,7 @@ export default function LostPetsScreen({ navigation }: LostPetsScreenProps) {
       // Show success message
       Alert.alert(
         "Sighting Reported",
-        `Thank you for reporting a sighting of ${currentPet.name} at ${sightingForm.location}. The owner has been notified.`,
+        `Thank you for reporting a sighting of ${currentPet.name} at ${locationText}. The owner has been notified.`,
         [{ text: "OK", onPress: () => {
           setSightingModalVisible(false);
           // Reset form
@@ -331,7 +553,8 @@ export default function LostPetsScreen({ navigation }: LostPetsScreenProps) {
             reporterName: '',
             reporterPhone: '',
             reporterEmail: '',
-            photos: []
+            photos: [],
+            coordinates: null
           });
           setFormErrors({});
         }}]
@@ -491,18 +714,112 @@ export default function LostPetsScreen({ navigation }: LostPetsScreenProps) {
                   
                   <View style={styles.formGroup}>
                     <Text style={styles.formLabel}>Location Seen *</Text>
-                    <TextInput
-                      style={[
-                        styles.formInput,
-                        formErrors.location ? styles.inputError : null
-                      ]}
-                      placeholder="Address or area"
-                      placeholderTextColor={colors.textSecondary}
-                      value={sightingForm.location}
-                      onChangeText={(text) => handleFormChange('location', text)}
-                    />
+                    <View style={styles.locationInputContainer}>
+                      <TextInput
+                        style={[
+                          styles.formInput,
+                          styles.formLocationInput,
+                          formErrors.location ? styles.inputError : null
+                        ]}
+                        placeholder="Address or area"
+                        placeholderTextColor={colors.textSecondary}
+                        value={sightingForm.location}
+                        onChangeText={(text) => handleFormChange('location', text)}
+                      />
+                      <TouchableOpacity 
+                        style={styles.mapButton}
+                        onPress={toggleMapView}
+                      >
+                        <MaterialIcons 
+                          name="map" 
+                          size={24} 
+                          color={colors.primary} 
+                        />
+                      </TouchableOpacity>
+                    </View>
                     {formErrors.location && (
                       <Text style={styles.errorMessage}>{formErrors.location}</Text>
+                    )}
+                    
+                    {/* Map for selecting location */}
+                    {showMap && (
+                      <View style={styles.mapContainer}>
+                        <MapView
+                          ref={mapRef}
+                          style={styles.map}
+                          provider={PROVIDER_GOOGLE}
+                          initialRegion={{
+                            ...mapRegion,
+                            latitudeDelta: 0.01,  // Slightly wider initial view
+                            longitudeDelta: 0.01
+                          }}
+                          onRegionChangeComplete={(region) => setMapRegion(region)}
+                          onPress={handleMapPress}
+                          showsUserLocation={true}
+                          followsUserLocation={true}
+                          zoomEnabled={true}
+                          zoomControlEnabled={true}
+                          scrollEnabled={true}
+                          rotateEnabled={true}
+                          pitchEnabled={true}
+                          moveOnMarkerPress={true}
+                          loadingEnabled={true}
+                          loadingIndicatorColor={colors.primary}
+                          loadingBackgroundColor="rgba(255, 255, 255, 0.7)"
+                          mapType="standard"
+                        >
+                          {sightingForm.coordinates && (
+                            <Marker
+                              coordinate={{
+                                latitude: sightingForm.coordinates.latitude,
+                                longitude: sightingForm.coordinates.longitude
+                              }}
+                              title="Pet sighting location"
+                              description="Exact location where pet was seen"
+                              pinColor={colors.primary}
+                              tracksViewChanges={false}
+                            >
+                              <View>
+                                <View style={styles.markerContainer}>
+                                  <Ionicons name="location" size={36} color={colors.primary} />
+                                  <View style={styles.markerDot} />
+                                </View>
+                              </View>
+                            </Marker>
+                          )}
+                        </MapView>
+                        {isLoadingLocation && (
+                          <View style={styles.mapLoadingOverlay}>
+                            <ActivityIndicator size="large" color={colors.primary} />
+                            <Text style={styles.mapLoadingText}>Getting your location...</Text>
+                            <Text style={styles.mapLoadingSubText}>Please wait while map content loads</Text>
+                            <Text style={styles.mapLoadingSubText}>Make sure location services are enabled</Text>
+                          </View>
+                        )}
+                        <View style={styles.mapOverlay}>
+                          <Text style={styles.mapInstructions}>
+                            Tap on the map to mark the exact location where you saw the pet
+                          </Text>
+                          <View style={styles.mapButtonRow}>
+                            <TouchableOpacity 
+                              style={styles.locationButton}
+                              onPress={getCurrentLocation}
+                              disabled={isLoadingLocation}
+                            >
+                              <Ionicons name="locate" size={18} color={colors.primary} />
+                              <Text style={styles.locationButtonText}>Use My Location</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity 
+                              style={styles.confirmLocationButton}
+                              onPress={toggleMapView}
+                            >
+                              <Text style={styles.confirmLocationText}>
+                                {sightingForm.coordinates ? "Confirm Location" : "Cancel"}
+                              </Text>
+                            </TouchableOpacity>
+                          </View>
+                        </View>
+                      </View>
                     )}
                   </View>
                   
@@ -1021,6 +1338,130 @@ export default function LostPetsScreen({ navigation }: LostPetsScreenProps) {
 }
 
 const styles = StyleSheet.create({
+  // Map related styles
+  locationInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  formLocationInput: {
+    flex: 1,
+    marginRight: spacing.xs,
+  },
+  markerContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  markerDot: {
+    width: 12,
+    height: 12,
+    backgroundColor: colors.primary,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: 'white',
+    position: 'absolute',
+    bottom: 12,
+  },
+  mapButton: {
+    backgroundColor: `${colors.primary}10`,
+    padding: spacing.sm,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.primary,
+  },
+  mapContainer: {
+    height: 400, // Increased height for better visibility
+    marginTop: spacing.sm,
+    borderRadius: 8,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: colors.primary,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  map: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#f9f9f9',
+  },
+  mapOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: spacing.md,
+    paddingBottom: spacing.lg,
+    backgroundColor: 'rgba(255,255,255,0.85)',
+  },
+  mapInstructions: {
+    fontSize: 14,
+    color: colors.text,
+    textAlign: 'center',
+    marginBottom: spacing.sm,
+  },
+  mapLoadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255,255,255,0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 5,
+  },
+  mapLoadingText: {
+    color: colors.text,
+    marginTop: spacing.sm,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  mapLoadingSubText: {
+    color: colors.textSecondary,
+    marginTop: spacing.xs,
+    fontSize: 12,
+  },
+  mapButtonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: spacing.sm,
+  },
+  locationButton: {
+    flexDirection: 'row',
+    backgroundColor: colors.background,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: colors.primary,
+    flex: 0.45,
+  },
+  locationButtonText: {
+    color: colors.primary,
+    fontSize: 14,
+    fontWeight: '500',
+    marginLeft: spacing.xs,
+  },
+  confirmLocationButton: {
+    backgroundColor: colors.primary,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 0.45,
+  },
+  confirmLocationText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  
   // Form error styles
   inputError: {
     borderColor: colors.error,
