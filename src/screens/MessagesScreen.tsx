@@ -3,6 +3,7 @@
 import { Feather } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import NavigationHeader from '../../components/NavigationHeader';
 
 interface SimpleHeaderProps {
   title: string;
@@ -145,11 +146,9 @@ export default function MessagesScreen({ navigation }: MessagesScreenProps) {
 
   return (
     <View style={styles.container}>
-      <SimpleHeader
+      <NavigationHeader
         title="Messages"
-        subtitle={`${unreadCount} unread messages`}
         showBackButton={true}
-        navigation={navigation}
       />
 
       <View style={styles.content}>

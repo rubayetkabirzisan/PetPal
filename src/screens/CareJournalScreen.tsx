@@ -3,17 +3,17 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Modal,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Alert,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
-import { Header } from '../../components/header';
+import NavigationHeader from '../../components/NavigationHeader';
 
 // Define the CareEntry type
 interface CareEntry {
@@ -267,11 +267,8 @@ export default function CareJournalScreen({ route, navigation }: CareJournalScre
 
   return (
     <View style={styles.container}>
-      <Header 
+      <NavigationHeader 
         title="Care Journal" 
-        subtitle={`${entries.length} entries recorded`}
-        showNotifications={true}
-        userType="adopter"
         showBackButton={true}
       />
 
