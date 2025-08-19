@@ -34,7 +34,7 @@ import ReportLostPetScreen from "./src/screens/ReportLostPetScreen"
 import SafeZoneScreen from "./src/screens/SafeZoneScreen"
 import SettingsScreen from "./src/screens/SettingsScreen"
 import { theme } from "./src/theme/theme"
-
+import RootNavigator from './src/navigation/RootNavigation';
 const Stack = createStackNavigator()
 
 export default function App() {
