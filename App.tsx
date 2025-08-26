@@ -102,7 +102,7 @@ export default function App() {
             <Stack.Screen name="Notifications" component={NotificationsScreen} options={{ headerShown: false }} />
             <Stack.Screen name="AdoptionHistory" component={AdoptionHistoryScreen} options={{ headerShown: false }} />
             <Stack.Screen name="Reminders" component={RemindersScreen} options={{ headerShown: false }} />
-            <Stack.Screen name="Chat" component={ChatScreen} options={{ headerShown: true, title: "Chat" }} />
+            <Stack.Screen name="Chat" component={ChatScreen} options={{ headerShown: false }} />
             <Stack.Screen name="CareJournal" component={CareJournalScreen} options={{ headerShown: false }} />
             <Stack.Screen 
               name="ReportLostPet" 
