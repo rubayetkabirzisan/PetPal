@@ -51,14 +51,10 @@
     "react-native-vector-icons": "^10.2.0",
     "react-native-web": "~0.20.0",
     "react-native-webview": "13.13.5",
-<<<<<<< HEAD
-    "tailwindcss": "^3.4.17"
-=======
     "tailwindcss": "^3.4.17",
     "react-native-maps": "1.20.1",
     "expo-sharing": "~13.1.5",
     "expo-linear-gradient": "~14.1.5"
->>>>>>> 15a812b2c84873741dae28ef01d37b90871d2666
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
