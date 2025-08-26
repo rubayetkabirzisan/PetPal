@@ -92,6 +92,111 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
     }
   }
 
+  const handleScheduleVisit = () => {
+    // Navigate to schedule visit screen or show modal
+    if (navigation) {
+      // For now, we'll add a message to the chat to show functionality
+      const visitMessage: Message = {
+        id: Date.now().toString(),
+        text: "I'd like to schedule a visit to meet the pet. What times are available?",
+        sender: "user",
+        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      }
+      setMessages((prev) => [...prev, visitMessage])
+      
+      // Simulate shelter response
+      setTimeout(() => {
+        const response: Message = {
+          id: (Date.now() + 1).toString(),
+          text: "Great! We're available for visits Monday-Friday 10am-6pm, and weekends 9am-5pm. What day works best for you?",
+          sender: "shelter",
+          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          senderName: "Sarah - Happy Paws Shelter",
+        }
+        setMessages((prev) => [...prev, response])
+      }, 1500)
+    }
+  }
+
+  const handleViewApplication = () => {
+    // Navigate to application screen or show current application status
+    if (navigation) {
+      // For demo purposes, add a message about application status
+      const appMessage: Message = {
+        id: Date.now().toString(),
+        text: "Can you tell me the status of my adoption application?",
+        sender: "user",
+        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      }
+      setMessages((prev) => [...prev, appMessage])
+      
+      // Simulate shelter response
+      setTimeout(() => {
+        const response: Message = {
+          id: (Date.now() + 1).toString(),
+          text: "Your application is currently under review. We should have an update for you within 2-3 business days. Thank you for your patience!",
+          sender: "shelter",
+          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          senderName: "Sarah - Happy Paws Shelter",
+        }
+        setMessages((prev) => [...prev, response])
+      }, 1500)
+    }
+  }
+
+  const handleViewPet = () => {
+    // Navigate to pet profile screen
+    if (navigation) {
+      // Navigate to the pet profile screen
+      navigation.navigate('PetProfile', { 
+        petId: route?.params?.petId || 'buddy-001',
+        petName: route?.params?.petName || 'Buddy'
+      })
+    }
+  }
+
+  const handleVoiceCall = () => {
+    // Start voice call functionality
+    const callMessage: Message = {
+      id: Date.now().toString(),
+      text: "📞 Voice call initiated with Happy Paws Shelter",
+      sender: "user",
+      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    }
+    setMessages((prev) => [...prev, callMessage])
+    
+    // In a real app, this would integrate with calling services like Twilio, Agora, etc.
+    console.log("Starting voice call with shelter...")
+  }
+
+  const handleVideoCall = () => {
+    // Start video call functionality
+    const videoCallMessage: Message = {
+      id: Date.now().toString(),
+      text: "📹 Video call initiated with Happy Paws Shelter",
+      sender: "user",
+      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    }
+    setMessages((prev) => [...prev, videoCallMessage])
+    
+    // In a real app, this would integrate with video calling services
+    console.log("Starting video call with shelter...")
+  }
+
+  const handleAttachFile = () => {
+    // Handle file attachment - photos, documents, etc.
+    const attachMessage: Message = {
+      id: Date.now().toString(),
+      text: "📎 File attachment feature - you can upload photos, documents, or medical records here",
+      sender: "user",
+      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    }
+    setMessages((prev) => [...prev, attachMessage])
+    
+    // In a real app, this would open file picker or camera
+    console.log("Opening file attachment options...")
+  }
+
   const renderMessage = (message: Message) => (
     <View
       key={message.id}
@@ -129,10 +234,10 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
             <Text style={styles.statusText}>Online</Text>
           </View>
           <View style={styles.callActions}>
-            <TouchableOpacity style={styles.callButton} onPress={() => console.log("Voice call")}>
+            <TouchableOpacity style={styles.callButton} onPress={() => handleVoiceCall()}>
               <Ionicons name="call-outline" size={18} color={colors.primary} />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.videoCallButton} onPress={() => console.log("Video call")}>
+            <TouchableOpacity style={styles.videoCallButton} onPress={() => handleVideoCall()}>
               <Ionicons name="videocam-outline" size={18} color={colors.primary} />
             </TouchableOpacity>
           </View>
@@ -159,7 +264,7 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
             multiline
             maxLength={500}
           />
-          <TouchableOpacity style={styles.attachButton} onPress={() => console.log("Attach file")}>
+          <TouchableOpacity style={styles.attachButton} onPress={() => handleAttachFile()}>
             <Ionicons name="attach-outline" size={20} color={colors.text} />
           </TouchableOpacity>
         </View>
@@ -175,17 +280,26 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
 
       {/* Quick Actions */}
       <View style={styles.quickActions}>
-        <TouchableOpacity style={styles.quickAction}>
+        <TouchableOpacity 
+          style={styles.quickAction}
+          onPress={() => handleScheduleVisit()}
+        >
           <Ionicons name="calendar-outline" size={16} color={colors.primary} />
           <Text style={styles.quickActionText}>Schedule Visit</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.quickAction}>
+        <TouchableOpacity 
+          style={styles.quickAction}
+          onPress={() => handleViewApplication()}
+        >
           <Ionicons name="document-text-outline" size={16} color={colors.primary} />
           <Text style={styles.quickActionText}>Application</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.quickAction}>
+        <TouchableOpacity 
+          style={styles.quickAction}
+          onPress={() => handleViewPet()}
+        >
           <Ionicons name="heart-outline" size={16} color={colors.primary} />
           <Text style={styles.quickActionText}>View Pet</Text>
         </TouchableOpacity>
