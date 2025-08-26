@@ -39,7 +39,7 @@ export default function AdopterProfileScreen() {
           await logout()
           navigation.reset({
             index: 0,
-            routes: [{ name: 'AuthScreen' as never }],
+            routes: [{ name: 'Auth' as never }],
           })
         }
       },
@@ -97,7 +97,7 @@ export default function AdopterProfileScreen() {
               await logout()
               navigation.reset({
                 index: 0,
-                routes: [{ name: 'AuthScreen' as never }],
+                routes: [{ name: 'Auth' as never }],
               })
             }
           }
