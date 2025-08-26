@@ -61,7 +61,7 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
       <View style={styles.headerContent}>
         {showBackButton ? (
           <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
-            {/* <Ionicons name="arrow-back" size={24} color="white" /> */}
+            <Ionicons name="arrow-back" size={24} color="white" />
           </TouchableOpacity>
         ) : (
           // Empty view for spacing when back button is not shown

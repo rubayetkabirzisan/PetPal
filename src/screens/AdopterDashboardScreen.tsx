@@ -60,7 +60,7 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
         <TouchableOpacity 
           key="messages" 
           style={styles.quickActionCard}
-          onPress={() => navigation.navigate("Messages")}
+          onPress={() => navigation.getParent()?.navigate("Messages")}
         >
           <Ionicons name="chatbubble-outline" size={24} color={colors.primary} />
           <Text style={styles.quickActionNumber}>5</Text>
@@ -146,7 +146,7 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
             </View>
             <TouchableOpacity 
               style={styles.viewAllButton}
-              onPress={() => navigation.navigate("CareJournal")}
+              onPress={() => navigation.getParent()?.navigate("CareJournal")}
             >
               <Text style={styles.viewAllButtonText}>View All</Text>
             </TouchableOpacity>
@@ -156,7 +156,7 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
           <TouchableOpacity 
             key={entry.id}
             style={styles.journalEntryCard}
-            onPress={() => navigation.navigate("CareJournal", { 
+            onPress={() => navigation.getParent()?.navigate("CareJournal", { 
               entryId: entry.id 
             })}
           >
@@ -194,7 +194,7 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
         
         <TouchableOpacity 
           style={styles.addJournalEntryButton}
-          onPress={() => navigation.navigate("CareJournal", { 
+          onPress={() => navigation.getParent()?.navigate("CareJournal", { 
             action: "add" 
           })}
         >
@@ -207,15 +207,22 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
   };
 
   const renderAIMatchingCard = () => (
-    <TouchableOpacity style={styles.aiMatchingCard}>
+    <TouchableOpacity 
+      style={styles.aiMatchingCard}
+      onPress={() => navigation.navigate('AiPetScreen')}
+    >
       <View style={styles.aiMatchingContent}>
-        <View>
-          <Text style={styles.aiMatchingTitle}>AI Pet Matching</Text>
-          <Text style={styles.aiMatchingSubtitle}>Find your perfect companion with AI</Text>
+        <View style={styles.aiMatchingIconContainer}>
+          <Ionicons name="sparkles" size={24} color="white" />
         </View>
-        <View style={styles.aiMatchingButton}>
-          <Ionicons name="sparkles" size={20} color={colors.primary} />
-          <Text style={styles.aiMatchingButtonText}>Try Now</Text>
+        <View style={styles.aiMatchingInfo}>
+          <Text style={styles.aiMatchingTitle}>AI Pet Matching</Text>
+          <Text style={styles.aiMatchingSubtitle}>
+            Find your perfect companion with smart matching
+          </Text>
+        </View>
+        <View style={styles.aiMatchingAction}>
+          <Ionicons name="chevron-forward" size={20} color="white" />
         </View>
       </View>
     </TouchableOpacity>
@@ -286,7 +293,7 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
     <TouchableOpacity
       key={`${pet.id}-${index}`} // Add index to ensure uniqueness
       style={styles.petCard}
-      onPress={() => navigation.navigate("PetProfile", { petId: pet.id })}
+      onPress={() => navigation.getParent()?.navigate("PetProfile", { petId: pet.id })}
     >
       <Image source={{ uri: pet.images[0] || "https://via.placeholder.com/120x120" }} style={styles.petImage} />
       <View style={styles.petInfo}>
@@ -328,7 +335,7 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
           <Text style={styles.adoptionFee}>${pet.adoptionFee} adoption fee</Text>
           <TouchableOpacity
             style={styles.viewButton}
-            onPress={() => navigation.navigate("PetProfile", { petId: pet.id })}
+            onPress={() => navigation.getParent()?.navigate("PetProfile", { petId: pet.id })}
           >
             <Ionicons name="eye-outline" size={16} color="white" />
             <Text style={styles.viewButtonText}>View</Text>
@@ -520,40 +527,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.text,
     marginTop: spacing.xs,
-  },
-  aiMatchingCard: {
-    margin: spacing.md,
-    backgroundColor: colors.primary,
-    borderRadius: 12,
-    padding: spacing.md,
-  },
-  aiMatchingContent: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  aiMatchingTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "white",
-  },
-  aiMatchingSubtitle: {
-    fontSize: 14,
-    color: "rgba(255, 255, 255, 0.9)",
-    marginTop: spacing.xs,
-  },
-  aiMatchingButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "white",
-    borderRadius: 8,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.sm,
-    gap: spacing.xs,
-  },
-  aiMatchingButtonText: {
-    color: colors.primary,
-    fontWeight: "600",
   },
   gpsAlertsCard: {
     margin: spacing.md,
@@ -764,5 +737,42 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.textSecondary,
     marginTop: spacing.sm,
+  },
+  // AI Matching Card Styles
+  aiMatchingCard: {
+    margin: spacing.md,
+    backgroundColor: colors.primary,
+    borderRadius: 12,
+    padding: spacing.md,
+  },
+  aiMatchingContent: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  aiMatchingIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: spacing.sm,
+  },
+  aiMatchingInfo: {
+    flex: 1,
+  },
+  aiMatchingTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "white",
+  },
+  aiMatchingSubtitle: {
+    fontSize: 12,
+    color: "rgba(255, 255, 255, 0.8)",
+    marginTop: 2,
+  },
+  aiMatchingAction: {
+    justifyContent: "center",
+    alignItems: "center",
   },
 })

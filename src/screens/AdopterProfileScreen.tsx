@@ -1,47 +1,76 @@
-"use client"
+import React, { useState, useEffect } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { 
+  Alert, 
+  ScrollView, 
+  StyleSheet, 
+  Text, 
+  TextInput, 
+  TouchableOpacity, 
+  View, 
+  ActivityIndicator 
+} from 'react-native';
+import NavigationHeader from '../../components/NavigationHeader';
+import { useAuth, User } from '../contexts/AuthContext';
+import { colors } from '../theme/theme';
+import ProfileService from '../services/profileService';
 
-import { Ionicons } from "@expo/vector-icons"
-import { useNavigation } from "@react-navigation/native"
-import { useState, useEffect } from "react"
-import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, ActivityIndicator } from "react-native"
-import NavigationHeader from "../../components/NavigationHeader"
-import { useAuth } from "../contexts/AuthContext"
-import { colors } from "../theme/theme"
-// import ProfileService from "../services/profileService"
-import ProfileService from "../services/profileService"
+// Define types
+type RootStackParamList = {
+  AuthScreen: undefined;
+  Notifications: undefined;
+  AdoptionHistory: undefined;
+  ModernApplicationList: undefined;
+  Messages: undefined;
+  Settings: undefined;
+};
 
-interface AdopterProfileScreenProps {
+interface ProfileData {
+  name: string;
+  email: string;
+  phone: string;
+  location: string;
+  bio: string;
 }
 
-export default function AdopterProfileScreen() {
-  const navigation = useNavigation()
-  const [isEditing, setIsEditing] = useState(false)
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [profile, setProfile] = useState({
+interface MenuItem {
+  icon: keyof typeof Ionicons.glyphMap;
+  title: string;
+  subtitle: string;
+  path: string;
+  onPress: () => void;
+}
+
+const AdopterProfileScreen: React.FC = () => {
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [saving, setSaving] = useState<boolean>(false);
+  const [profile, setProfile] = useState<ProfileData>({
     name: "",
     email: "",
     phone: "",
     location: "",
     bio: "",
-  })
+  });
 
-  const { user, logout } = useAuth()
+  const { user, logout } = useAuth();
 
   // Load profile data on component mount
   useEffect(() => {
-    loadProfile()
-  }, [user])
+    loadProfile();
+  }, [user]);
 
-  const loadProfile = async () => {
+  const loadProfile = async (): Promise<void> => {
     if (!user?.uid) {
-      setLoading(false)
-      return
+      setLoading(false);
+      return;
     }
 
     try {
-      setLoading(true)
-      const userProfile = await ProfileService.fetchUserProfile(user.uid)
+      setLoading(true);
+      const userProfile = await ProfileService.fetchUserProfile(user.uid);
       
       if (userProfile) {
         setProfile({
@@ -50,7 +79,7 @@ export default function AdopterProfileScreen() {
           phone: userProfile.phone || "",
           location: userProfile.location || "",
           bio: userProfile.bio || "",
-        })
+        });
       } else {
         // If no profile exists, use auth data as default
         setProfile({
@@ -59,98 +88,98 @@ export default function AdopterProfileScreen() {
           phone: "",
           location: "",
           bio: "",
-        })
+        });
       }
     } catch (error) {
-      console.error('Failed to load profile:', error)
-      Alert.alert("Error", "Failed to load profile data")
+      console.error('Failed to load profile:', error);
+      Alert.alert("Error", "Failed to load profile data");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  const handleSave = async () => {
+  const handleSave = async (): Promise<void> => {
     if (!user?.uid) {
-      Alert.alert("Error", "User not authenticated")
-      return
+      Alert.alert("Error", "User not authenticated");
+      return;
     }
 
     // Validate required fields
     if (!profile.name.trim()) {
-      Alert.alert("Error", "Name is required")
-      return
+      Alert.alert("Error", "Name is required");
+      return;
     }
 
     if (!profile.email.trim()) {
-      Alert.alert("Error", "Email is required")
-      return
+      Alert.alert("Error", "Email is required");
+      return;
     }
 
     try {
-      setSaving(true)
-      await ProfileService.saveUserProfile(user.uid, profile)
-      setIsEditing(false)
-      Alert.alert("Success", "Profile updated successfully!")
+      setSaving(true);
+      await ProfileService.saveUserProfile(user.uid, profile);
+      setIsEditing(false);
+      Alert.alert("Success", "Profile updated successfully!");
     } catch (error) {
-      console.error('Failed to save profile:', error)
-      Alert.alert("Error", "Failed to update profile. Please try again.")
+      console.error('Failed to save profile:', error);
+      Alert.alert("Error", "Failed to update profile. Please try again.");
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
-  const handleLogout = () => {
+  const handleLogout = (): void => {
     Alert.alert("Sign Out", "Are you sure you want to sign out?", [
       { text: "Cancel", style: "cancel" },
       { 
         text: "Sign Out", 
         style: "destructive", 
         onPress: async () => {
-          await logout()
+          await logout();
           navigation.reset({
             index: 0,
-            routes: [{ name: 'AuthScreen' as never }],
-          })
+            routes: [{ name: 'AuthScreen' }],
+          });
         }
       },
-    ])
-  }
+    ]);
+  };
 
-  const menuItems = [
+  const menuItems: MenuItem[] = [
     {
       icon: "notifications-outline",
       title: "Notifications",
       subtitle: "2 new notifications",
       path: "notifications",
-      onPress: () => navigation.navigate('Notifications' as never),
+      onPress: () => navigation.navigate('Notifications'),
     },
     {
       icon: "heart-outline",
       title: "Adoption History",
       subtitle: "View your adopted pets",
       path: "history",
-      onPress: () => navigation.navigate('AdoptionHistory' as never),
+      onPress: () => navigation.navigate('AdoptionHistory'),
     },
     {
       icon: "document-text-outline",
       title: "Applications",
       subtitle: "Track your applications",
       path: "applications",
-      onPress: () => navigation.navigate('ModernApplicationList' as never),
+      onPress: () => navigation.navigate('ModernApplicationList'),
     },
     {
       icon: "chatbubble-outline",
       title: "Messages",
       subtitle: "Chat with shelters",
       path: "messages",
-      onPress: () => navigation.navigate('Messages' as never),
+      onPress: () => navigation.navigate('Messages'),
     },
     {
       icon: "settings-outline",
       title: "Settings",
       subtitle: "App preferences",
       path: "settings",
-      onPress: () => navigation.navigate('Settings' as never),
+      onPress: () => navigation.navigate('Settings'),
     },
     {
       icon: "log-out-outline",
@@ -164,17 +193,17 @@ export default function AdopterProfileScreen() {
             text: "Log Out", 
             style: "destructive", 
             onPress: async () => {
-              await logout()
+              await logout();
               navigation.reset({
                 index: 0,
-                routes: [{ name: 'AuthScreen' as never }],
-              })
+                routes: [{ name: 'AuthScreen' }],
+              });
             }
           }
-        ])
+        ]);
       },
     },
-  ]
+  ];
 
   if (loading) {
     return (
@@ -185,172 +214,172 @@ export default function AdopterProfileScreen() {
           <Text style={styles.loadingText}>Loading profile...</Text>
         </View>
       </View>
-    )
+    );
   }
 
   return (
     <View style={styles.containerWrapper}>
       <NavigationHeader title="Profile" />
       <ScrollView style={styles.container}>
-      {/* Profile Header */}
-      <View style={styles.profileHeader}>
-        <View style={styles.avatarContainer}>
-          <View style={styles.avatar}>
-            <Ionicons name="person" size={40} color="white" />
+        {/* Profile Header */}
+        <View style={styles.profileHeader}>
+          <View style={styles.avatarContainer}>
+            <View style={styles.avatar}>
+              <Ionicons name="person" size={40} color="white" />
+            </View>
           </View>
+          <Text style={styles.profileName}>{profile.name || "No Name"}</Text>
+          <Text style={styles.profileType}>Pet Adopter</Text>
         </View>
-        <Text style={styles.profileName}>{profile.name || "No Name"}</Text>
-        <Text style={styles.profileType}>Pet Adopter</Text>
-      </View>
 
-      {/* Profile Details */}
-      <View style={styles.profileDetails}>
-        {isEditing ? (
-          <View style={styles.editForm}>
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Name *</Text>
-              <TextInput
-                style={styles.textInput}
-                value={profile.name}
-                onChangeText={(text) => setProfile({ ...profile, name: text })}
-                placeholder="Enter your name"
-              />
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Email *</Text>
-              <TextInput
-                style={styles.textInput}
-                value={profile.email}
-                onChangeText={(text) => setProfile({ ...profile, email: text })}
-                keyboardType="email-address"
-                placeholder="Enter your email"
-              />
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Phone</Text>
-              <TextInput
-                style={styles.textInput}
-                value={profile.phone}
-                onChangeText={(text) => setProfile({ ...profile, phone: text })}
-                keyboardType="phone-pad"
-                placeholder="Enter your phone number"
-              />
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Location</Text>
-              <TextInput
-                style={styles.textInput}
-                value={profile.location}
-                onChangeText={(text) => setProfile({ ...profile, location: text })}
-                placeholder="Enter your location"
-              />
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Bio</Text>
-              <TextInput
-                style={[styles.textInput, styles.textArea]}
-                value={profile.bio}
-                onChangeText={(text) => setProfile({ ...profile, bio: text })}
-                multiline
-                numberOfLines={4}
-                placeholder="Tell us about yourself and your experience with pets"
-              />
-            </View>
-
-            <View style={styles.editButtons}>
-              <TouchableOpacity 
-                style={styles.cancelButton} 
-                onPress={() => setIsEditing(false)}
-                disabled={saving}
-              >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={[styles.saveButton, saving && styles.disabledButton]} 
-                onPress={handleSave}
-                disabled={saving}
-              >
-                {saving ? (
-                  <ActivityIndicator size="small" color="white" />
-                ) : (
-                  <Text style={styles.saveButtonText}>Save Changes</Text>
-                )}
-              </TouchableOpacity>
-            </View>
-          </View>
-        ) : (
-          <View style={styles.profileInfo}>
-            <View style={styles.infoItem}>
-              <Ionicons name="mail-outline" size={16} color={colors.text} />
-              <Text style={styles.infoText}>{profile.email || "No email provided"}</Text>
-            </View>
-
-            <View style={styles.infoItem}>
-              <Ionicons name="call-outline" size={16} color={colors.text} />
-              <Text style={styles.infoText}>{profile.phone || "No phone provided"}</Text>
-            </View>
-
-            <View style={styles.infoItem}>
-              <Ionicons name="location-outline" size={16} color={colors.text} />
-              <Text style={styles.infoText}>{profile.location || "No location provided"}</Text>
-            </View>
-
-            <View style={styles.bioSection}>
-              <Text style={styles.bioText}>
-                {profile.bio || "No bio provided. Edit your profile to add a bio."}
-              </Text>
-            </View>
-
-            <TouchableOpacity style={styles.editButton} onPress={() => setIsEditing(true)}>
-              <Ionicons name="create-outline" size={16} color={colors.primary} />
-              <Text style={styles.editButtonText}>Edit Profile</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
-
-      {/* Menu Items */}
-      <View style={styles.menuContainer}>
-        {menuItems.map((item, index) => (
-          <TouchableOpacity 
-            key={index} 
-            style={[styles.menuItem, item.title === "Log Out" ? { borderColor: colors.error } : {}]} 
-            onPress={item.onPress}
-          >
-            <View style={styles.menuItemLeft}>
-              <View style={[styles.menuIcon, item.title === "Log Out" ? { backgroundColor: "#FFF1F0" } : {}]}>
-                <Ionicons 
-                  name={item.icon as any} 
-                  size={20} 
-                  color={item.title === "Log Out" ? colors.error : colors.primary} 
+        {/* Profile Details */}
+        <View style={styles.profileDetails}>
+          {isEditing ? (
+            <View style={styles.editForm}>
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Name *</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={profile.name}
+                  onChangeText={(text) => setProfile({ ...profile, name: text })}
+                  placeholder="Enter your name"
                 />
               </View>
-              <View style={styles.menuItemInfo}>
-                <Text style={[
-                  styles.menuItemTitle, 
-                  item.title === "Log Out" ? { color: colors.error } : {}
-                ]}>
-                  {item.title}
-                </Text>
-                <Text style={styles.menuItemSubtitle}>{item.subtitle}</Text>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Email *</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={profile.email}
+                  onChangeText={(text) => setProfile({ ...profile, email: text })}
+                  keyboardType="email-address"
+                  placeholder="Enter your email"
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Phone</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={profile.phone}
+                  onChangeText={(text) => setProfile({ ...profile, phone: text })}
+                  keyboardType="phone-pad"
+                  placeholder="Enter your phone number"
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Location</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={profile.location}
+                  onChangeText={(text) => setProfile({ ...profile, location: text })}
+                  placeholder="Enter your location"
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Bio</Text>
+                <TextInput
+                  style={[styles.textInput, styles.textArea]}
+                  value={profile.bio}
+                  onChangeText={(text) => setProfile({ ...profile, bio: text })}
+                  multiline
+                  numberOfLines={4}
+                  placeholder="Tell us about yourself and your experience with pets"
+                />
+              </View>
+
+              <View style={styles.editButtons}>
+                <TouchableOpacity 
+                  style={styles.cancelButton} 
+                  onPress={() => setIsEditing(false)}
+                  disabled={saving}
+                >
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={[styles.saveButton, saving && styles.disabledButton]} 
+                  onPress={handleSave}
+                  disabled={saving}
+                >
+                  {saving ? (
+                    <ActivityIndicator size="small" color="white" />
+                  ) : (
+                    <Text style={styles.saveButtonText}>Save Changes</Text>
+                  )}
+                </TouchableOpacity>
               </View>
             </View>
-            <Ionicons 
-              name="chevron-forward" 
-              size={16} 
-              color={item.title === "Log Out" ? colors.error : colors.text} 
-            />
-          </TouchableOpacity>
-        ))}
-      </View>
-    </ScrollView>
+          ) : (
+            <View style={styles.profileInfo}>
+              <View style={styles.infoItem}>
+                <Ionicons name="mail-outline" size={16} color={colors.text} />
+                <Text style={styles.infoText}>{profile.email || "No email provided"}</Text>
+              </View>
+
+              <View style={styles.infoItem}>
+                <Ionicons name="call-outline" size={16} color={colors.text} />
+                <Text style={styles.infoText}>{profile.phone || "No phone provided"}</Text>
+              </View>
+
+              <View style={styles.infoItem}>
+                <Ionicons name="location-outline" size={16} color={colors.text} />
+                <Text style={styles.infoText}>{profile.location || "No location provided"}</Text>
+              </View>
+
+              <View style={styles.bioSection}>
+                <Text style={styles.bioText}>
+                  {profile.bio || "No bio provided. Edit your profile to add a bio."}
+                </Text>
+              </View>
+
+              <TouchableOpacity style={styles.editButton} onPress={() => setIsEditing(true)}>
+                <Ionicons name="create-outline" size={16} color={colors.primary} />
+                <Text style={styles.editButtonText}>Edit Profile</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+
+        {/* Menu Items */}
+        <View style={styles.menuContainer}>
+          {menuItems.map((item, index) => (
+            <TouchableOpacity 
+              key={index} 
+              style={[styles.menuItem, item.title === "Log Out" ? { borderColor: colors.error } : {}]} 
+              onPress={item.onPress}
+            >
+              <View style={styles.menuItemLeft}>
+                <View style={[styles.menuIcon, item.title === "Log Out" ? { backgroundColor: "#FFF1F0" } : {}]}>
+                  <Ionicons 
+                    name={item.icon} 
+                    size={20} 
+                    color={item.title === "Log Out" ? colors.error : colors.primary} 
+                  />
+                </View>
+                <View style={styles.menuItemInfo}>
+                  <Text style={[
+                    styles.menuItemTitle, 
+                    item.title === "Log Out" ? { color: colors.error } : {}
+                  ]}>
+                    {item.title}
+                  </Text>
+                  <Text style={styles.menuItemSubtitle}>{item.subtitle}</Text>
+                </View>
+              </View>
+              <Ionicons 
+                name="chevron-forward" 
+                size={16} 
+                color={item.title === "Log Out" ? colors.error : colors.text} 
+              />
+            </TouchableOpacity>
+          ))}
+        </View>
+      </ScrollView>
     </View>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   containerWrapper: {
@@ -544,24 +573,6 @@ const styles = StyleSheet.create({
     opacity: 0.7,
     marginTop: 2,
   },
-  logoutContainer: {
-    margin: 16,
-    marginBottom: 32,
-  },
-  logoutButton: {
-    backgroundColor: "white",
-    borderRadius: 12,
-    padding: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    borderWidth: 1,
-    borderColor: colors.error,
-  },
-  logoutButtonText: {
-    color: colors.error,
-    fontSize: 16,
-    fontWeight: "600",
-  },
-})
+});
+
+export default AdopterProfileScreen;

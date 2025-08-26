@@ -1,6 +1,7 @@
 import { createStackNavigator } from "@react-navigation/stack"
 import { colors } from "../theme/theme"
 
+import AiPetScreen from "../screens/AiPetScreen"
 import ApplicationDetailsScreen from "../screens/ApplicationDetailsScreen"
 import ApplicationFormScreen from "../screens/ApplicationFormScreen"
 import ApplicationListScreen from "../screens/ApplicationListScreen"
@@ -22,6 +23,7 @@ export default function AdopterStackNavigator() {
       }}
     >
       <Stack.Screen name="AdopterTabs" component={AdopterTabNavigator} />
+      <Stack.Screen name="AiPetScreen" component={AiPetScreen} />
       <Stack.Screen name="PetProfile" component={PetProfileScreen} />
       <Stack.Screen name="Messages" component={MessagesScreen} />
       <Stack.Screen name="Chat" component={ChatScreen} />

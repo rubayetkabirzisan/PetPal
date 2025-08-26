@@ -3,15 +3,16 @@
 import { Ionicons } from "@expo/vector-icons"
 import { useState } from "react"
 import {
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native"
+import NavigationHeader from "../../components/NavigationHeader"
 import { colors } from "../theme/theme"
 
 interface Message {
@@ -113,32 +114,38 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
   )
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : "height"}>
-      {/* Chat Header */}
-      <View style={styles.chatHeader}>
-        <View style={styles.shelterInfo}>
-          <View style={styles.shelterAvatar}>
-            <Ionicons name="business-outline" size={20} color={colors.primary} />
+    <View style={styles.container}>
+      <NavigationHeader 
+        title="Happy Paws Shelter" 
+        showBackButton={true}
+        backButtonAction={() => navigation?.goBack()}
+      />
+      
+      <KeyboardAvoidingView style={styles.keyboardContainer} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+        {/* Quick Status Bar */}
+        <View style={styles.statusBar}>
+          <View style={styles.statusInfo}>
+            <View style={styles.onlineIndicator} />
+            <Text style={styles.statusText}>Online</Text>
           </View>
-          <View>
-            <Text style={styles.shelterName}>Happy Paws Shelter</Text>
-            <Text style={styles.shelterStatus}>Online</Text>
+          <View style={styles.callActions}>
+            <TouchableOpacity style={styles.callButton} onPress={() => console.log("Voice call")}>
+              <Ionicons name="call-outline" size={18} color={colors.primary} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.videoCallButton} onPress={() => console.log("Video call")}>
+              <Ionicons name="videocam-outline" size={18} color={colors.primary} />
+            </TouchableOpacity>
           </View>
         </View>
 
-        <TouchableOpacity style={styles.callButton}>
-          <Ionicons name="call-outline" size={20} color={colors.primary} />
-        </TouchableOpacity>
-      </View>
-
-      {/* Messages */}
-      <ScrollView
-        style={styles.messagesContainer}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.messagesContent}
-      >
-        {messages.map(renderMessage)}
-      </ScrollView>
+        {/* Messages */}
+        <ScrollView
+          style={styles.messagesContainer}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.messagesContent}
+        >
+          {messages.map(renderMessage)}
+        </ScrollView>
 
       {/* Input Area */}
       <View style={styles.inputContainer}>
@@ -183,7 +190,8 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
           <Text style={styles.quickActionText}>View Pet</Text>
         </TouchableOpacity>
       </View>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </View>
   )
 }
 
@@ -192,42 +200,52 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  chatHeader: {
+  keyboardContainer: {
+    flex: 1,
+  },
+  statusBar: {
     backgroundColor: "white",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
-  shelterInfo: {
+  statusInfo: {
     flexDirection: "row",
     alignItems: "center",
   },
-  shelterAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  onlineIndicator: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.success,
+    marginRight: 8,
+  },
+  statusText: {
+    fontSize: 12,
+    color: colors.success,
+    fontWeight: "500",
+  },
+  callActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  callButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: colors.background,
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 12,
   },
-  shelterName: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: colors.text,
-  },
-  shelterStatus: {
-    fontSize: 12,
-    color: colors.success,
-    marginTop: 2,
-  },
-  callButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  videoCallButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: colors.background,
     justifyContent: "center",
     alignItems: "center",

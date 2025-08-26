@@ -13,6 +13,7 @@ import AddPetScreen from "./src/screens/AddPetScreen"
 import AdminApplicationsScreen from "./src/screens/AdminApplicationsScreen"
 import AdminLostPetsScreen from "./src/screens/AdminLostPetsScreen"
 import AdoptionHistoryScreen from "./src/screens/AdoptionHistoryScreen"
+import AiPetScreen from "./src/screens/AiPetScreen"
 import AnalyticsScreen from "./src/screens/AnalyticsScreen"
 import ApplicationDetailsScreen from "./src/screens/ApplicationDetailsScreen"
 import ApplicationFormScreen from "./src/screens/ApplicationFormScreen"
@@ -101,7 +102,7 @@ export default function App() {
             <Stack.Screen name="Notifications" component={NotificationsScreen} options={{ headerShown: false }} />
             <Stack.Screen name="AdoptionHistory" component={AdoptionHistoryScreen} options={{ headerShown: false }} />
             <Stack.Screen name="Reminders" component={RemindersScreen} options={{ headerShown: false }} />
-            <Stack.Screen name="Chat" component={ChatScreen} options={{ headerShown: true, title: "Chat" }} />
+            <Stack.Screen name="Chat" component={ChatScreen} options={{ headerShown: false }} />
             <Stack.Screen name="CareJournal" component={CareJournalScreen} options={{ headerShown: false }} />
             <Stack.Screen 
               name="ReportLostPet" 
@@ -121,6 +122,11 @@ export default function App() {
             <Stack.Screen 
               name="Settings" 
               component={SettingsScreen} 
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen 
+              name="AiPetScreen" 
+              component={AiPetScreen} 
               options={{ headerShown: false }}
             />
             <Stack.Screen 
