@@ -1,10 +1,10 @@
 // Sample data for development and testing
 import {
-  initializeSampleData,
-  sampleApplications as libraryApplications,
-  samplePets as libraryPets,
-  sampleMessages,
-  sampleNotifications
+    initializeSampleData,
+    sampleApplications as libraryApplications,
+    samplePets as libraryPets,
+    sampleMessages,
+    sampleNotifications
 } from '../../lib/sample-data';
 
 // Pet Types and Breeds
@@ -205,6 +205,7 @@ export interface Pet {
   id: string
   name: string
   type: string
+  species: string // Added for AI matching
   breed: string
   age: string
   gender: string
@@ -215,12 +216,15 @@ export interface Pet {
   description: string
   personality: string[]
   images: string[]
+  imageUrl: string // Added for AI matching
   vaccinated: boolean
   neutered: boolean
   microchipped: boolean
   goodWithKids: boolean
   goodWithPets: boolean
   energyLevel: string
+  activityLevel: string // Added for AI matching
+  hypoallergenic: boolean // Added for AI matching
   adoptionFee: number
   status: string
   dateAdded: string
@@ -280,6 +284,7 @@ const mockPets: Pet[] = [
     id: "1",
     name: "Buddy",
     type: "Dog",
+    species: "Dog",
     breed: "Golden Retriever",
     age: "3 years",
     gender: "Male",
@@ -294,12 +299,15 @@ const mockPets: Pet[] = [
       "https://images.unsplash.com/photo-1552053831-71594a27632d?w=400&h=300&fit=crop",
       "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400&h=300&fit=crop",
     ],
+    imageUrl: "https://images.unsplash.com/photo-1552053831-71594a27632d?w=400&h=300&fit=crop",
     vaccinated: true,
     neutered: true,
     microchipped: true,
     goodWithKids: true,
     goodWithPets: true,
     energyLevel: "High",
+    activityLevel: "high",
+    hypoallergenic: false,
     adoptionFee: 250,
     status: "Available",
     dateAdded: "2024-01-15",
@@ -326,6 +334,7 @@ const mockPets: Pet[] = [
     id: "2",
     name: "Luna",
     type: "Cat",
+    species: "Cat",
     breed: "Persian",
     age: "2 years",
     gender: "Female",
@@ -340,12 +349,15 @@ const mockPets: Pet[] = [
       "https://images.unsplash.com/photo-1574158622682-e40e69881006?w=400&h=300&fit=crop",
       "https://images.unsplash.com/photo-1596854407944-bf87f6fdd49e?w=400&h=300&fit=crop",
     ],
+    imageUrl: "https://images.unsplash.com/photo-1574158622682-e40e69881006?w=400&h=300&fit=crop",
     vaccinated: true,
     neutered: true,
     microchipped: false,
     goodWithKids: true,
     goodWithPets: false,
     energyLevel: "Low",
+    activityLevel: "low",
+    hypoallergenic: true,
     adoptionFee: 150,
     status: "Available",
     dateAdded: "2024-01-12",
@@ -367,6 +379,7 @@ const mockPets: Pet[] = [
     id: "3",
     name: "Max",
     type: "Dog",
+    species: "Dog",
     breed: "German Shepherd",
     age: "5 years",
     gender: "Male",
@@ -378,12 +391,15 @@ const mockPets: Pet[] = [
       "Max is a loyal and intelligent German Shepherd. He's well-trained and would make an excellent guard dog and family companion.",
     personality: ["Loyal", "Intelligent", "Protective", "Trainable"],
     images: ["https://images.unsplash.com/photo-1589941013453-ec89f33b5e95?w=400&h=300&fit=crop"],
+    imageUrl: "https://images.unsplash.com/photo-1589941013453-ec89f33b5e95?w=400&h=300&fit=crop",
     vaccinated: true,
     neutered: true,
     microchipped: true,
     goodWithKids: true,
     goodWithPets: true,
     energyLevel: "Medium",
+    activityLevel: "medium",
+    hypoallergenic: false,
     adoptionFee: 300,
     status: "Available",
     dateAdded: "2024-01-08",
@@ -566,8 +582,16 @@ const mockApplications: AdoptionApplication[] = [
 ]
 
 export const getPets = (filters?: any): Pet[] => {
-  // Combine mock pets with library pets
-  const allPets = [...mockPets, ...libraryPets];
+  // Combine mock pets with library pets, adding missing fields to library pets
+  const enhancedLibraryPets = libraryPets.map(pet => ({
+    ...pet,
+    species: pet.type || "Unknown",
+    imageUrl: pet.images?.[0] || "",
+    activityLevel: pet.energyLevel?.toLowerCase() || "medium",
+    hypoallergenic: false // Default value
+  })) as Pet[];
+  
+  const allPets = [...mockPets, ...enhancedLibraryPets];
   
   // If no filters, return all pets
   if (!filters) return allPets;
@@ -596,9 +620,20 @@ export const getPetById = (id: string): Pet | undefined => {
   const mockPet = mockPets.find((pet) => pet.id === id);
   if (mockPet) return mockPet;
   
-  // Then check in library pets (from sample-data)
+  // Then check in library pets (from sample-data) and add missing fields
   const libraryPet = libraryPets.find((pet) => pet.id === id);
-  return libraryPet;
+  if (libraryPet) {
+    // Add missing fields for compatibility with AI matching
+    return {
+      ...libraryPet,
+      species: libraryPet.type || "Unknown",
+      imageUrl: libraryPet.images?.[0] || "",
+      activityLevel: libraryPet.energyLevel?.toLowerCase() || "medium",
+      hypoallergenic: false // Default value
+    } as Pet;
+  }
+  
+  return undefined;
 }
 
 export const getLostPets = (): LostPet[] => {
