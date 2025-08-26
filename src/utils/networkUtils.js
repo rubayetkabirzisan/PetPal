@@ -10,7 +10,7 @@ export const getBaseURL = () => {
       return 'http://10.0.2.2:5000/api';
     } else {
       // iOS simulator or physical device on same network
-      return 'http://localhost:5000/api';
+      return 'http://localhost:5000/';
     }
   } else {
     // Production environment - replace with your deployed backend URL

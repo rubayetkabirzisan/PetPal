@@ -12,11 +12,10 @@ import {
   ActivityIndicator 
 } from 'react-native';
 import NavigationHeader from '../../components/NavigationHeader';
-import { useAuth, User } from '../contexts/AuthContext';
+// import { useAuth } from '../contexts/AuthContext';
 import { colors } from '../theme/theme';
-import ProfileService from '../services/profileService';
+import axios from 'axios';
 
-// Define types
 type RootStackParamList = {
   AuthScreen: undefined;
   Notifications: undefined;
@@ -34,14 +33,6 @@ interface ProfileData {
   bio: string;
 }
 
-interface MenuItem {
-  icon: keyof typeof Ionicons.glyphMap;
-  title: string;
-  subtitle: string;
-  path: string;
-  onPress: () => void;
-}
-
 const AdopterProfileScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -55,41 +46,29 @@ const AdopterProfileScreen: React.FC = () => {
     bio: "",
   });
 
-  const { user, logout } = useAuth();
+  // const { user, logout } = useAuth();
+
+  // Load profile data on component mount
+ const userId = "user_1756224008759"; // <-- put the UID from your database here
 
   // Load profile data on component mount
   useEffect(() => {
     loadProfile();
-  }, [user]);
+  }, []);
 
   const loadProfile = async (): Promise<void> => {
-    if (!user?.uid) {
-      setLoading(false);
-      return;
-    }
-
     try {
       setLoading(true);
-      const userProfile = await ProfileService.fetchUserProfile(user.uid);
-      
-      if (userProfile) {
-        setProfile({
-          name: userProfile.name || "",
-          email: userProfile.email || user.email || "",
-          phone: userProfile.phone || "",
-          location: userProfile.location || "",
-          bio: userProfile.bio || "",
-        });
-      } else {
-        // If no profile exists, use auth data as default
-        setProfile({
-          name: user.displayName || "",
-          email: user.email || "",
-          phone: "",
-          location: "",
-          bio: "",
-        });
-      }
+      const response = await axios.get(`http://192.168.31.136:5000/api/profile/view/${userId}`);
+      const userProfile = response.data;
+
+      setProfile({
+        name: userProfile.name || "",
+        email: userProfile.email || "",
+        phone: userProfile.phone || "",
+        location: userProfile.location || "",
+        bio: userProfile.bio || "",
+      });
     } catch (error) {
       console.error('Failed to load profile:', error);
       Alert.alert("Error", "Failed to load profile data");
@@ -98,13 +77,8 @@ const AdopterProfileScreen: React.FC = () => {
     }
   };
 
-  const handleSave = async (): Promise<void> => {
-    if (!user?.uid) {
-      Alert.alert("Error", "User not authenticated");
-      return;
-    }
 
-    // Validate required fields
+  const handleSave = async (): Promise<void> => {
     if (!profile.name.trim()) {
       Alert.alert("Error", "Name is required");
       return;
@@ -117,7 +91,7 @@ const AdopterProfileScreen: React.FC = () => {
 
     try {
       setSaving(true);
-      await ProfileService.saveUserProfile(user.uid, profile);
+      await axios.put(`http://192.168.31.136:5000/api/profile/update/${userId}`, profile);
       setIsEditing(false);
       Alert.alert("Success", "Profile updated successfully!");
     } catch (error) {
@@ -127,6 +101,7 @@ const AdopterProfileScreen: React.FC = () => {
       setSaving(false);
     }
   };
+
 
   const handleLogout = (): void => {
     Alert.alert("Sign Out", "Are you sure you want to sign out?", [

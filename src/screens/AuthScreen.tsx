@@ -13,7 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native"
-import { useAuth } from "../contexts/AuthContext"
+// import { useAuth } from "../contexts/AuthContext"
 import { colors, spacing } from "../theme/theme"
 
 interface AuthScreenProps {
@@ -21,6 +21,8 @@ interface AuthScreenProps {
   route: any
 }
 
+
+const API_BASE = "http://192.168.31.136:5000/api/users";
 export default function AuthScreen({ navigation, route }: AuthScreenProps) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -33,108 +35,98 @@ export default function AuthScreen({ navigation, route }: AuthScreenProps) {
   const [location, setLocation] = useState("")
   const [bio, setBio] = useState("")
   
-  const { login } = useAuth()
+  // const { login } = useAuth()
 
   const userType = route.params?.userType || "adopter"
 
   const handleAuth = async () => {
-    if (isLogin) {
-      // Handle login
-      if (!email || !password) {
-        Alert.alert("Error", "Please fill in all fields")
-        return
-      }
-
-      setLoading(true)
-      try {
-        const success = await login(email, password, userType)
-        if (success) {
-          if (userType === "adopter") {
-            navigation.navigate("AdopterTabs")
-          } else {
-            navigation.navigate("AdminTabs")
-          }
-        } else {
-          Alert.alert("Error", "Invalid credentials")
-        }
-      } catch (error) {
-        Alert.alert("Error", "Authentication failed")
-      } finally {
-        setLoading(false)
-      }
-    } else {
-      // Handle sign-up
-      handleSignUp()
-    }
-  }
-
-  const handleSignUp = async () => {
-    // Validate required fields
-    if (!name || !email || !password) {
-      Alert.alert("Error", "Please fill in all required fields (Name, Email, Password)")
-      return
-    }
-
-    // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(email)) {
-      Alert.alert("Error", "Please enter a valid email address")
-      return
-    }
-
-    // Password validation
-    if (password.length < 6) {
-      Alert.alert("Error", "Password must be at least 6 characters long")
+  if (isLogin) {
+    // LOGIN
+    if (!email || !password) {
+      Alert.alert("Error", "Please fill in all fields")
       return
     }
 
     setLoading(true)
     try {
-      // Generate a unique ID (in a real app, this would come from Firebase or your backend)
-      const uid = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-      
-      // Create user object
-      const userData = {
-        uid,
-        name,
-        email,
-        phone: phone || "",
-        location: location || "",
-        bio: bio || "",
-        userType,
-        createdAt: new Date().toISOString()
-      }
+      const res = await fetch(`${API_BASE}/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, userType })
+      })
 
-      // In a real app, you would save this to your database
-      console.log("Creating user:", userData)
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      Alert.alert(
-        "Account Created",
-        "Your account has been created successfully! Please log in with your credentials.",
-        [
-          {
-            text: "OK",
-            onPress: () => {
-              // Clear form and switch to login
-              setName("")
-              setPhone("")
-              setLocation("")
-              setBio("")
-              setPassword("")
-              setIsLogin(true)
-            }
-          }
-        ]
-      )
-    } catch (error) {
-      Alert.alert("Error", "Failed to create account. Please try again.")
+      const data = await res.json()
+      if (res.ok) {
+        Alert.alert("Success", "Login successful!")
+
+        // Navigate by user type
+        if (data.user.userType === "adopter") {
+          navigation.navigate("AdopterTabs")
+        } else {
+          navigation.navigate("AdminTabs")
+        }
+      } else {
+        Alert.alert("Error", data.message || "Login failed")
+      }
+    } catch (err) {
+      Alert.alert("Error", "Something went wrong. Try again.")
     } finally {
       setLoading(false)
     }
+  } else {
+    // SIGNUP
+    handleSignUp()
   }
+}
+
+const handleSignUp = async () => {
+  if (!name || !email || !password) {
+    Alert.alert("Error", "Please fill in all required fields (Name, Email, Password)")
+    return
+  }
+
+  setLoading(true)
+  try {
+    const res = await fetch(`${API_BASE}/signup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name,
+        email,
+        password,
+        phone,
+        location,
+        bio,
+        userType,
+      })
+    })
+
+    const data = await res.json()
+    if (res.ok) {
+      Alert.alert("Success", "Account created! Please log in.", [
+        {
+          text: "OK",
+          onPress: () => {
+            // Reset form and switch to login mode
+            setName("")
+            setPhone("")
+            setLocation("")
+            setBio("")
+            setPassword("")
+            setIsLogin(true)
+          }
+        }
+      ])
+    } else {
+      Alert.alert("Error", data.message || "Signup failed")
+    }
+  } catch (err) {
+    Alert.alert("Error", "Something went wrong. Try again.")
+  } finally {
+    setLoading(false)
+  }
+}
+
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : "height"}>
