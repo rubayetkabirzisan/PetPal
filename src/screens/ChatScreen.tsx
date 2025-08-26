@@ -128,9 +128,14 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
             <View style={styles.onlineIndicator} />
             <Text style={styles.statusText}>Online</Text>
           </View>
-          <TouchableOpacity style={styles.callButton}>
-            <Ionicons name="call-outline" size={20} color={colors.primary} />
-          </TouchableOpacity>
+          <View style={styles.callActions}>
+            <TouchableOpacity style={styles.callButton} onPress={() => console.log("Voice call")}>
+              <Ionicons name="call-outline" size={18} color={colors.primary} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.videoCallButton} onPress={() => console.log("Video call")}>
+              <Ionicons name="videocam-outline" size={18} color={colors.primary} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Messages */}
@@ -224,7 +229,20 @@ const styles = StyleSheet.create({
     color: colors.success,
     fontWeight: "500",
   },
+  callActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
   callButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: colors.background,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  videoCallButton: {
     width: 32,
     height: 32,
     borderRadius: 16,
