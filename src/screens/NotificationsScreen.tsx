@@ -1,9 +1,10 @@
-import { Ionicons } from "@expo/vector-icons"
-import { useNavigation } from "@react-navigation/native"
-import React from "react"
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
-import NavigationHeader from "../../components/NavigationHeader"
-import { colors, spacing } from "../theme/theme"
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import React, { useEffect, useState } from "react";
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import NavigationHeader from "../../components/NavigationHeader";
+import { colors, spacing } from "../theme/theme";
+import axios from 'axios';  // Add Axios for API calls
 
 interface Notification {
   id: string;
@@ -16,41 +17,18 @@ interface Notification {
 
 export default function NotificationsScreen() {
   const navigation = useNavigation();
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  const notifications: Notification[] = [
-    {
-      id: '1',
-      title: 'Application Update',
-      message: 'Your application for Buddy has been approved! Please contact the shelter to arrange pickup.',
-      time: '2 hours ago',
-      type: 'application',
-      read: false
-    },
-    {
-      id: '2',
-      title: 'New Message',
-      message: 'Happy Paws Shelter sent you a message about Max.',
-      time: '1 day ago',
-      type: 'message',
-      read: false
-    },
-    {
-      id: '3',
-      title: 'Reminder',
-      message: 'Don\'t forget to schedule a vet appointment for Luna within 7 days of adoption.',
-      time: '2 days ago',
-      type: 'reminder',
-      read: true
-    },
-    {
-      id: '4',
-      title: 'App Update',
-      message: 'New features available! Check out our improved pet matching system.',
-      time: '1 week ago',
-      type: 'update',
-      read: true
-    }
-  ];
+  useEffect(() => {
+    // Fetch notifications from backend when component mounts
+    axios.get('http://192.168.31.136:5000/api/notifications/viewAll')
+      .then((response) => {
+        setNotifications(response.data);  // Update state with fetched notifications
+      })
+      .catch((error) => {
+        console.error('Error fetching notifications:', error);
+      });
+  }, []);
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
@@ -82,13 +60,26 @@ export default function NotificationsScreen() {
     }
   };
 
+  const markAsRead = () => {
+  const notificationId = '68ab43ec74bbc731f0b09f6a';  // Hardcoded notification ID
+  axios.patch(`http://192.168.31.136:5000/api/notifications/markRead/${notificationId}`)
+    .then((response) => {
+      // Update the notification state locally
+      setNotifications((prevNotifications) =>
+        prevNotifications.map((notif) =>
+          notif.id === notificationId ? { ...notif, read: true } : notif
+        )
+      );
+    })
+    .catch((error) => {
+      console.error('Error marking notification as read:', error);
+    });
+};
+
   return (
     <View style={styles.container}>
       {/* Header */}
-      <NavigationHeader 
-        title="Notifications" 
-        showBackButton={true} 
-      />
+      <NavigationHeader title="Notifications" showBackButton={true} />
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {notifications.map((notification) => (
@@ -98,6 +89,7 @@ export default function NotificationsScreen() {
               styles.notificationItem,
               !notification.read && styles.unreadNotification
             ]}
+            onPress={() => markAsRead(notification.id)}  // Mark as read on press
           >
             <View style={styles.notificationLeft}>
               <View style={[

@@ -15,86 +15,33 @@ import {
 } from 'react-native';
 import NavigationHeader from '../../components/NavigationHeader';
 
-// Define the CareEntry type
+// --- Types ---
 interface CareEntry {
   id: string;
   petId: string;
-  type: "medical" | "feeding" | "grooming" | "exercise" | "training" | "vet_visit" | "general" | "other";
+  petName: string;
+  type: string;
   title: string;
   description: string;
   date: string;
-  petName: string;
   createdAt: string;
   updatedAt: string;
 }
 
-// Mock functions to simulate the functionality from the web version
-const getCareEntries = (): CareEntry[] => {
-  return [
-    {
-      id: "ce-001",
-      petId: "p-001",
-      petName: "Buddy",
-      type: "medical" as CareEntry["type"],
-      title: "Vaccination",
-      description: "Rabies and distemper boosters",
-      date: "2025-06-05",
-      createdAt: "2025-06-05T10:30:00Z",
-      updatedAt: "2025-06-05T10:30:00Z"
-    },
-    {
-      id: "ce-002",
-      petId: "p-002",
-      petName: "Max",
-      type: "grooming" as CareEntry["type"],
-      title: "Nail Trimming",
-      description: "Regular nail maintenance",
-      date: "2025-06-20",
-      createdAt: "2025-06-20T14:45:00Z",
-      updatedAt: "2025-06-22T11:30:00Z"
-    }
-  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-};
-
-const getCareEntry = (id: string): CareEntry | undefined => {
-  return getCareEntries().find(entry => entry.id === id);
-};
-
-const addCareEntry = (entry: Omit<CareEntry, 'id' | 'petId' | 'createdAt' | 'updatedAt'>): void => {
-  console.log('Adding care entry:', entry);
-  // In a real app, this would save to storage
-};
-
-const updateCareEntry = (id: string, entry: Partial<CareEntry>): void => {
-  console.log('Updating care entry:', id, entry);
-  // In a real app, this would update in storage
-};
-
-const deleteCareEntry = (id: string): void => {
-  console.log('Deleting care entry:', id);
-  // In a real app, this would delete from storage
-};
-
-const getAdoptedPets = (userId: string): any[] => {
-  return [
-    { id: "p-001", name: "Buddy", breed: "Golden Retriever" },
-    { id: "p-002", name: "Max", breed: "German Shepherd" }
-  ];
-};
+interface Pet {
+  id: string;
+  name: string;
+  breed: string;
+}
 
 interface CareJournalScreenProps {
-  route: {
-    params?: {
-      entryId?: string;
-      action?: string;
-    };
-  };
+  route: any;
   navigation: any;
 }
 
 export default function CareJournalScreen({ route, navigation }: CareJournalScreenProps) {
   const [entries, setEntries] = useState<CareEntry[]>([]);
-  const [adoptedPets, setAdoptedPets] = useState<any[]>([]);
+  const [adoptedPets, setAdoptedPets] = useState<Pet[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingEntry, setEditingEntry] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -102,6 +49,7 @@ export default function CareJournalScreen({ route, navigation }: CareJournalScre
   const [showTypeModal, setShowTypeModal] = useState(false);
   const [showPetModal, setShowPetModal] = useState(false);
   const [formData, setFormData] = useState({
+    petId: "",
     petName: "",
     type: "general" as CareEntry["type"],
     title: "",
@@ -109,16 +57,15 @@ export default function CareJournalScreen({ route, navigation }: CareJournalScre
     date: new Date().toISOString().split("T")[0],
   });
 
-  // Mock user authentication
-  const user = { id: "demo-user" };
-  const userId = user?.id || "demo-user";
-  const { entryId, action } = route.params || {};
+  // Get userId from route params or context (replace with real auth logic)
+  const userId = route.params?.userId || "68ab3bb680ee4a94653cf6ea";
+  const { action} = route.params || {};
+  const entryId = route.params || "68ab3bb680ee4a94653cf6ea";
 
   useEffect(() => {
     navigation.setOptions({
       headerShown: false,
     });
-    
     loadData();
   }, [navigation]);
 
@@ -134,52 +81,75 @@ export default function CareJournalScreen({ route, navigation }: CareJournalScre
     }
   }, [action]);
 
+  // --- Load Data ---
   const loadData = async () => {
     try {
-      // Load care entries
-      const careEntries = getCareEntries();
+      // Get care entries for this user
+      const careEntriesResponse = await fetch(`http://192.168.31.136:5000/api/careEntries/viewAll`);
+      const careEntries = await careEntriesResponse.json();
       setEntries(careEntries);
-      
-      // Load adopted pets
-      const pets = getAdoptedPets(userId);
+
+      // Get adopted pets for this user
+      const petsResponse = await fetch(`http://192.168.31.136:5000/api/pets/view`);
+      const pets = await petsResponse.json();
       setAdoptedPets(pets);
     } catch (error) {
       console.error('Failed to load data:', error);
+      Alert.alert('Error', 'Failed to load care journal data.');
     } finally {
       setIsLoading(false);
       setIsInitialLoading(false);
     }
   };
 
-  const handleSubmit = () => {
-    if (!formData.petName || !formData.title || !formData.description) {
-      Alert.alert("Missing Information", "Please fill in all required fields.");
+  // --- Submit (Add/Edit) ---
+  const handleSubmit = async () => {
+    if (!formData.petId || !formData.title.trim() || !formData.description.trim()) {
+      Alert.alert('Missing Information', 'Please fill in all required fields.');
       return;
     }
 
     setIsLoading(true);
 
     try {
+      const payload = {
+        ...formData,
+        userId,
+      };
+
       if (editingEntry) {
-        updateCareEntry(editingEntry, formData);
+        // Edit existing entry
+        await fetch(`http://192.168.31.136:5000/api/careEntries/update/${editingEntry}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
       } else {
-        addCareEntry(formData);
+        // Create new entry
+        await fetch('http://192.168.31.136:5000/api/careEntries/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
       }
 
       loadData();
       resetForm();
     } catch (error) {
-      console.error("Error saving entry:", error);
-      Alert.alert("Error", "Failed to save the care entry.");
+      console.error('Error saving entry:', error);
+      Alert.alert('Error', 'Failed to save the care entry.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleEdit = (entryId: string) => {
-    const entry = getCareEntry(entryId);
-    if (entry) {
+  // --- Edit ---
+  const handleEdit = async (entryId: string) => {
+    try {
+      const response = await fetch(`http://192.168.31.136:5000/api/careEntries/viewById/${entryId}`);
+      const entry = await response.json();
       setFormData({
+        petId: entry.petId,
         petName: entry.petName,
         type: entry.type,
         title: entry.title,
@@ -188,32 +158,42 @@ export default function CareJournalScreen({ route, navigation }: CareJournalScre
       });
       setEditingEntry(entryId);
       setShowAddForm(true);
+    } catch (error) {
+      console.error('Failed to fetch care entry:', error);
+      Alert.alert('Error', 'Failed to fetch entry for editing.');
     }
   };
 
-  const handleDelete = (entryId: string) => {
+  // --- Delete ---
+  const handleDelete = async (entryId: string) => {
     Alert.alert(
-      "Delete Entry",
-      "Are you sure you want to delete this care journal entry?",
+      'Delete Entry',
+      'Are you sure you want to delete this care journal entry?',
       [
-        { 
-          text: "Cancel", 
-          style: "cancel" 
-        },
-        { 
-          text: "Delete", 
-          onPress: () => {
-            deleteCareEntry(entryId);
-            loadData();
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          onPress: async () => {
+            try {
+              await fetch(`http://192.168.31.136:5000/api/careEntries/delete/${entryId}`, {
+                method: 'DELETE',
+              });
+              loadData();
+            } catch (error) {
+              console.error('Error deleting entry:', error);
+              Alert.alert('Error', 'Failed to delete the care entry.');
+            }
           },
-          style: "destructive"
+          style: 'destructive'
         }
       ]
     );
   };
 
+  // --- Reset Form ---
   const resetForm = () => {
     setFormData({
+      petId: "",
       petName: "",
       type: "general",
       title: "",
@@ -224,6 +204,7 @@ export default function CareJournalScreen({ route, navigation }: CareJournalScre
     setEditingEntry(null);
   };
 
+  // --- Helpers ---
   const getTypeIcon = (type: CareEntry["type"]) => {
     switch (type) {
       case "medical": return "medkit";
@@ -267,8 +248,8 @@ export default function CareJournalScreen({ route, navigation }: CareJournalScre
 
   return (
     <View style={styles.container}>
-      <NavigationHeader 
-        title="Care Journal" 
+      <NavigationHeader
+        title="Care Journal"
         showBackButton={true}
       />
 
@@ -277,6 +258,7 @@ export default function CareJournalScreen({ route, navigation }: CareJournalScre
         <TouchableOpacity
           style={styles.addButton}
           onPress={() => setShowAddForm(true)}
+          accessibilityLabel="Add Care Entry"
         >
           <Ionicons name="add" size={20} color="white" />
           <Text style={styles.addButtonText}>Add Care Entry</Text>
@@ -295,7 +277,7 @@ export default function CareJournalScreen({ route, navigation }: CareJournalScre
                 <Text style={styles.formTitle}>
                   {editingEntry ? "Edit Entry" : "Add New Entry"}
                 </Text>
-                <TouchableOpacity onPress={resetForm}>
+                <TouchableOpacity onPress={resetForm} accessibilityLabel="Close Form">
                   <Ionicons name="close" size={24} color="#8B4513" />
                 </TouchableOpacity>
               </View>
@@ -307,6 +289,7 @@ export default function CareJournalScreen({ route, navigation }: CareJournalScre
                   <TouchableOpacity
                     style={styles.formSelect}
                     onPress={() => setShowPetModal(true)}
+                    accessibilityLabel="Select Pet"
                   >
                     <Text style={styles.formSelectText}>
                       {formData.petName || "Select a pet"}
@@ -321,6 +304,7 @@ export default function CareJournalScreen({ route, navigation }: CareJournalScre
                   <TouchableOpacity
                     style={styles.formSelect}
                     onPress={() => setShowTypeModal(true)}
+                    accessibilityLabel="Select Entry Type"
                   >
                     <Text style={styles.formSelectText}>
                       {formData.type.charAt(0).toUpperCase() + formData.type.slice(1).replace('_', ' ')}
@@ -359,9 +343,9 @@ export default function CareJournalScreen({ route, navigation }: CareJournalScre
                   <TouchableOpacity
                     style={styles.formSelect}
                     onPress={() => {
-                      // On a real app, would implement date picker here
-                      // For this example, we'll just use a placeholder
+                      // Implement date picker here if needed
                     }}
+                    accessibilityLabel="Select Date"
                   >
                     <Text style={styles.formSelectText}>{formData.date}</Text>
                     <Ionicons name="calendar" size={16} color="#8B4513" />
@@ -374,6 +358,7 @@ export default function CareJournalScreen({ route, navigation }: CareJournalScre
                     style={styles.saveButton}
                     onPress={handleSubmit}
                     disabled={isLoading}
+                    accessibilityLabel={editingEntry ? "Update Entry" : "Add Entry"}
                   >
                     <Ionicons name="save" size={16} color="white" />
                     <Text style={styles.saveButtonText}>
@@ -384,6 +369,7 @@ export default function CareJournalScreen({ route, navigation }: CareJournalScre
                   <TouchableOpacity
                     style={styles.cancelButton}
                     onPress={resetForm}
+                    accessibilityLabel="Cancel"
                   >
                     <Ionicons name="close" size={16} color="#8B4513" />
                     <Text style={styles.cancelButtonText}>Cancel</Text>
@@ -405,24 +391,32 @@ export default function CareJournalScreen({ route, navigation }: CareJournalScre
             <View style={styles.pickerContent}>
               <Text style={styles.pickerTitle}>Select a Pet</Text>
               <ScrollView>
-                {adoptedPets.map((pet) => (
-                  <TouchableOpacity
-                    key={pet.id}
-                    style={styles.pickerItem}
-                    onPress={() => {
-                      setFormData({ ...formData, petName: pet.name });
-                      setShowPetModal(false);
-                    }}
-                  >
-                    <Text style={styles.pickerItemText}>
-                      {pet.name} ({pet.breed})
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+                {adoptedPets.length === 0 ? (
+                  <Text style={{ textAlign: 'center', color: '#8B4513', marginVertical: 16 }}>
+                    No adopted pets found.
+                  </Text>
+                ) : (
+                  adoptedPets.map((pet) => (
+                    <TouchableOpacity
+                      key={pet.id}
+                      style={styles.pickerItem}
+                      onPress={() => {
+                        setFormData({ ...formData, petId: pet.id, petName: pet.name });
+                        setShowPetModal(false);
+                      }}
+                      accessibilityLabel={`Select ${pet.name}`}
+                    >
+                      <Text style={styles.pickerItemText}>
+                        {pet.name} ({pet.breed})
+                      </Text>
+                    </TouchableOpacity>
+                  ))
+                )}
               </ScrollView>
               <TouchableOpacity
                 style={styles.pickerCloseButton}
                 onPress={() => setShowPetModal(false)}
+                accessibilityLabel="Close Pet Picker"
               >
                 <Text style={styles.pickerCloseButtonText}>Close</Text>
               </TouchableOpacity>
@@ -457,6 +451,7 @@ export default function CareJournalScreen({ route, navigation }: CareJournalScre
                       setFormData({ ...formData, type: type.value as CareEntry["type"] });
                       setShowTypeModal(false);
                     }}
+                    accessibilityLabel={`Select ${type.label}`}
                   >
                     <Text style={styles.pickerItemText}>{type.label}</Text>
                   </TouchableOpacity>
@@ -465,6 +460,7 @@ export default function CareJournalScreen({ route, navigation }: CareJournalScre
               <TouchableOpacity
                 style={styles.pickerCloseButton}
                 onPress={() => setShowTypeModal(false)}
+                accessibilityLabel="Close Type Picker"
               >
                 <Text style={styles.pickerCloseButtonText}>Close</Text>
               </TouchableOpacity>
@@ -484,6 +480,7 @@ export default function CareJournalScreen({ route, navigation }: CareJournalScre
               <TouchableOpacity
                 style={styles.emptyStateButton}
                 onPress={() => setShowAddForm(true)}
+                accessibilityLabel="Add First Entry"
               >
                 <Ionicons name="add" size={16} color="white" />
                 <Text style={styles.emptyStateButtonText}>Add First Entry</Text>
@@ -494,20 +491,20 @@ export default function CareJournalScreen({ route, navigation }: CareJournalScre
               <View key={entry.id} style={styles.entryCard}>
                 <View style={styles.entryCardHeader}>
                   <View style={styles.entryTypeContainer}>
-                    <View 
+                    <View
                       style={[
                         styles.entryTypeBadge,
                         { backgroundColor: getTypeColor(entry.type).bg }
                       ]}
                     >
-                      <Ionicons 
-                        name={getTypeIcon(entry.type)} 
-                        size={14} 
-                        color={getTypeColor(entry.type).text} 
+                      <Ionicons
+                        name={getTypeIcon(entry.type)}
+                        size={14}
+                        color={getTypeColor(entry.type).text}
                       />
-                      <Text 
+                      <Text
                         style={[
-                          styles.entryTypeBadgeText, 
+                          styles.entryTypeBadgeText,
                           { color: getTypeColor(entry.type).text }
                         ]}
                       >
@@ -517,15 +514,17 @@ export default function CareJournalScreen({ route, navigation }: CareJournalScre
                     <Text style={styles.entryPetName}>{entry.petName}</Text>
                   </View>
                   <View style={styles.entryActions}>
-                    <TouchableOpacity 
+                    <TouchableOpacity
                       style={styles.editButton}
                       onPress={() => handleEdit(entry.id)}
+                      accessibilityLabel="Edit Entry"
                     >
                       <Ionicons name="create-outline" size={18} color="#8B4513" />
                     </TouchableOpacity>
-                    <TouchableOpacity 
+                    <TouchableOpacity
                       style={styles.deleteButton}
                       onPress={() => handleDelete(entry.id)}
+                      accessibilityLabel="Delete Entry"
                     >
                       <Ionicons name="trash-outline" size={18} color="#DC2626" />
                     </TouchableOpacity>
