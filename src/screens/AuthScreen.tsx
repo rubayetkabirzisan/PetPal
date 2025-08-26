@@ -13,9 +13,8 @@ import {
     TouchableOpacity,
     View,
 } from "react-native"
-//import { useAuth } from "../contexts/AuthContext"
+import { useAuth } from "../contexts/AuthContext"
 import { colors, spacing } from "../theme/theme"
-import { signup, login } from '../services/apiService';  // Import from services folder
 
 interface AuthScreenProps {
   navigation: any
@@ -27,7 +26,7 @@ export default function AuthScreen({ navigation, route }: AuthScreenProps) {
   const [password, setPassword] = useState("")
   const [isLogin, setIsLogin] = useState(true)
   const [loading, setLoading] = useState(false)
-  // const { login } = useAuth()
+  const { login } = useAuth()
 
   const userType = route.params?.userType || "adopter"
 
@@ -38,33 +37,22 @@ export default function AuthScreen({ navigation, route }: AuthScreenProps) {
     }
 
     setLoading(true)
-
     try {
-  let response;
-  if (isLogin) {
-    response = await login(email, password, userType); // Login request
-  } else {
-    response = await signup(email, password, userType); // Signup request
-  }
-
-  if (response) {
-    const { token } = response;
-    // Store token if needed in AsyncStorage or Context API
-    if (userType === "adopter") {
-      navigation.navigate("AdopterTabs");
-    } else {
-      navigation.navigate("AdminTabs");
+      const success = await login(email, password, userType)
+      if (success) {
+        if (userType === "adopter") {
+          navigation.navigate("AdopterTabs")
+        } else {
+          navigation.navigate("AdminTabs")
+        }
+      } else {
+        Alert.alert("Error", "Invalid credentials")
+      }
+    } catch (error) {
+      Alert.alert("Error", "Authentication failed")
+    } finally {
+      setLoading(false)
     }
-  }
-} catch (error) {
-  let message = "Authentication failed";
-  if (error instanceof Error) {
-    message = error.message;
-  }
-  Alert.alert("Error", message);
-} finally {
-  setLoading(false);
-}
   }
 
   return (
