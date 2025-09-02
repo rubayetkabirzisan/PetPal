@@ -1,11 +1,8 @@
 import { Feather } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-
-// Importing hooks and utilities - update paths as needed for your project
-import { addReminder, deleteReminder, getReminders, updateReminder } from "../../lib/reminders";
 import { useAuth } from "../hooks/useAuth";
-import { getAdoptedPets } from "../lib/data";
+import axios from "axios";
 import { borderRadius, colors, spacing } from "../theme/theme";
 
 // Types
@@ -36,7 +33,6 @@ interface RemindersScreenProps {
 }
 
 export default function RemindersScreen({ navigation }: RemindersScreenProps) {
-  // State
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [filteredReminders, setFilteredReminders] = useState<Reminder[]>([]);
   const [filter, setFilter] = useState<'all' | 'upcoming' | 'overdue' | 'completed'>('all');
@@ -61,10 +57,9 @@ export default function RemindersScreen({ navigation }: RemindersScreenProps) {
     recurringInterval: "weekly"
   });
 
-  const { user } = useAuth();
-  const userId = user?.id || "demo-user";
-  
-  // Load reminders on mount
+  // const { user } = useAuth();
+  const userId = "68ae122a91cb3e798d273b16";
+
   useEffect(() => {
     loadReminders();
   }, []);
@@ -72,12 +67,11 @@ export default function RemindersScreen({ navigation }: RemindersScreenProps) {
   const loadReminders = async () => {
     setIsLoading(true);
     try {
-      const userReminders = await getReminders(userId);
-      const pets = await getAdoptedPets(userId);
-      
-      setReminders(userReminders);
-      setFilteredReminders(userReminders);
-      setAdoptedPets(pets);
+      const response = await axios.get(`http://192.168.31.136:5000/api/reminders/viewById/${userId}`);
+      setReminders(response.data);
+      setFilteredReminders(response.data);
+      const petsResponse = await axios.get(`http://192.168.31.136:5000/api/pets/view/${userId}`);
+      setAdoptedPets(petsResponse.data);
     } catch (error) {
       console.error("Failed to load reminders:", error);
       Alert.alert("Error", "Failed to load reminders. Please try again later.");
@@ -86,60 +80,21 @@ export default function RemindersScreen({ navigation }: RemindersScreenProps) {
     }
   };
 
-  // Filter reminders when filter changes
-  useEffect(() => {
-    if (filter === 'all') {
-      setFilteredReminders(reminders);
-    } else {
-      setFilteredReminders(
-        reminders.filter(reminder => {
-          const status = getReminderStatus(reminder);
-          return filter === status;
-        })
-      );
-    }
-  }, [filter, reminders]);
-
-  // Helper functions
-  const getReminderStatus = (reminder: Reminder): 'completed' | 'overdue' | 'upcoming' => {
-    if (reminder.completed) return 'completed';
-    return isOverdue(reminder.dueDate) ? 'overdue' : 'upcoming';
-  };
-
-  const isOverdue = (dateString: string): boolean => {
-    const dueDate = new Date(dateString);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return dueDate < today;
-  };
-
-  const formatDate = (dateString: string): string => {
-    const options: Intl.DateTimeFormatOptions = { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
-    };
-    return new Date(dateString).toLocaleDateString(undefined, options);
-  };
-
-  const getPetName = (petId: string | undefined): string => {
-    if (!petId) return "Unknown Pet";
-    const pet = adoptedPets.find(p => p.id === petId);
-    return pet ? pet.name : "Unknown Pet";
-  };
-
-  // Action handlers
   const toggleCompleted = async (id: string) => {
     try {
-      const reminder = reminders.find(r => r.id === id);
+      const reminder = reminders.find((r) => r.id === id);
       if (!reminder) return;
-      
-      const updated = { ...reminder, completed: !reminder.completed, userId };
-      await updateReminder(id, { completed: !reminder.completed });
-      
-      setReminders(prev => 
-        prev.map(r => r.id === id ? updated : r)
-      );
+
+      const updatedReminder = { ...reminder, completed: !reminder.completed, userId };
+      const response = await axios.put(`http://192.168.31.136:5000/api/reminders/markCompleted/${id}`, {
+        completed: !reminder.completed,
+      });
+
+      if (response.status === 200) {
+        setReminders((prev) =>
+          prev.map((r) => (r.id === id ? updatedReminder : r))
+        );
+      }
     } catch (error) {
       console.error("Failed to update reminder:", error);
       Alert.alert("Error", "Failed to update reminder status.");
@@ -148,9 +103,11 @@ export default function RemindersScreen({ navigation }: RemindersScreenProps) {
 
   const handleDeleteReminder = async (id: string) => {
     try {
-      await deleteReminder(id);
-      setReminders(prev => prev.filter(r => r.id !== id));
-      Alert.alert("Success", "Reminder deleted successfully.");
+      const response = await axios.delete(`http://192.168.31.136:5000/api/reminders/delete/${id}`);
+      if (response.status === 200) {
+        setReminders((prev) => prev.filter((r) => r.id !== id));
+        Alert.alert("Success", "Reminder deleted successfully.");
+      }
     } catch (error) {
       console.error("Failed to delete reminder:", error);
       Alert.alert("Error", "Failed to delete reminder.");
@@ -164,14 +121,12 @@ export default function RemindersScreen({ navigation }: RemindersScreenProps) {
     }
 
     try {
-      await addReminder({
+      await axios.post("http://192.168.31.136:5000/api/reminders/addNew", {
         ...newReminder,
-        userId
+        userId,
       });
-      
-      // Refresh reminders after adding
+
       loadReminders();
-      
       setShowAddModal(false);
       setNewReminder({
         petId: "",
@@ -180,9 +135,9 @@ export default function RemindersScreen({ navigation }: RemindersScreenProps) {
         description: "",
         dueDate: new Date().toISOString().split('T')[0],
         recurring: false,
-        recurringInterval: "weekly"
+        recurringInterval: "weekly",
       });
-      
+
       Alert.alert("Success", "Reminder added successfully.");
     } catch (error) {
       console.error("Failed to add reminder:", error);
@@ -191,13 +146,14 @@ export default function RemindersScreen({ navigation }: RemindersScreenProps) {
   };
 
   const openAddReminderModal = () => {
-    if (adoptedPets.length > 0) {
-      setNewReminder(prev => ({ ...prev, petId: adoptedPets[0].id }));
+    if (adoptedPets.length === 0) {
+      Alert.alert("No Pets", "You must adopt a pet before adding reminders.");
+      return;
     }
+    setNewReminder((prev) => ({ ...prev, petId: adoptedPets[0].id }));
     setShowAddModal(true);
   };
 
-  // Loading state
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
@@ -206,6 +162,8 @@ export default function RemindersScreen({ navigation }: RemindersScreenProps) {
       </View>
     );
   }
+
+
 
   return (
     <View style={styles.outerContainer}>

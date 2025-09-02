@@ -61,7 +61,7 @@ export default function NotificationsScreen() {
   };
 
   const markAsRead = () => {
-  const notificationId = '68ab43ec74bbc731f0b09f6a';  // Hardcoded notification ID
+  const notificationId = '68ab442b74bbc731f0b09f6e';  // Hardcoded notification ID
   axios.patch(`http://192.168.31.136:5000/api/notifications/markRead/${notificationId}`)
     .then((response) => {
       // Update the notification state locally
