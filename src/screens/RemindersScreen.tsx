@@ -1,8 +1,7 @@
 import { Feather } from "@expo/vector-icons";
+import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { useAuth } from "../hooks/useAuth";
-import axios from "axios";
 import { borderRadius, colors, spacing } from "../theme/theme";
 
 // Types
@@ -67,10 +66,10 @@ export default function RemindersScreen({ navigation }: RemindersScreenProps) {
   const loadReminders = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get(`http://192.168.31.136:5000/api/reminders/viewById/${userId}`);
+      const response = await axios.get(`http://10.103.134.245:5000/api/reminders/viewById/${userId}`);
       setReminders(response.data);
       setFilteredReminders(response.data);
-      const petsResponse = await axios.get(`http://192.168.31.136:5000/api/pets/view/${userId}`);
+      const petsResponse = await axios.get(`http://10.103.134.245:5000/api/pets/view/${userId}`);
       setAdoptedPets(petsResponse.data);
     } catch (error) {
       console.error("Failed to load reminders:", error);
@@ -86,7 +85,7 @@ export default function RemindersScreen({ navigation }: RemindersScreenProps) {
       if (!reminder) return;
 
       const updatedReminder = { ...reminder, completed: !reminder.completed, userId };
-      const response = await axios.put(`http://192.168.31.136:5000/api/reminders/markCompleted/${id}`, {
+      const response = await axios.put(`http://10.103.134.245:5000/api/reminders/markCompleted/${id}`, {
         completed: !reminder.completed,
       });
 
@@ -103,7 +102,7 @@ export default function RemindersScreen({ navigation }: RemindersScreenProps) {
 
   const handleDeleteReminder = async (id: string) => {
     try {
-      const response = await axios.delete(`http://192.168.31.136:5000/api/reminders/delete/${id}`);
+      const response = await axios.delete(`http://10.103.134.245:5000/api/reminders/delete/${id}`);
       if (response.status === 200) {
         setReminders((prev) => prev.filter((r) => r.id !== id));
         Alert.alert("Success", "Reminder deleted successfully.");
@@ -121,7 +120,7 @@ export default function RemindersScreen({ navigation }: RemindersScreenProps) {
     }
 
     try {
-      await axios.post("http://192.168.31.136:5000/api/reminders/addNew", {
+      await axios.post("http://10.103.134.245:5000/api/reminders/addNew", {
         ...newReminder,
         userId,
       });

@@ -1,12 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
+import axios from "axios";
 import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
-import React, { useEffect, useState, useMemo } from "react";
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View, Dimensions } from "react-native";
-import axios from "axios";
+import React, { useEffect, useMemo, useState } from "react";
+import { Alert, Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { BarChart } from "react-native-chart-kit";
 import NavigationHeader from "../../components/NavigationHeader";
 import { colors, spacing } from "../theme/theme";
-import { BarChart } from "react-native-chart-kit";
 
 interface AnalyticsScreenProps {
   navigation: any;
@@ -34,7 +34,7 @@ export default function AnalyticsScreen({ navigation }: AnalyticsScreenProps) {
     const fetchAnalyticsData = async () => {
       try {
         const response = await axios.get(
-          "http://192.168.31.136:5000/api/analytics/view"
+          "http://10.103.134.245:5000/api/analytics/view"
         );
 
         if (response.data && response.data.length > 0) {

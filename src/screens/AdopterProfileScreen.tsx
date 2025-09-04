@@ -1,20 +1,20 @@
-import React, { useState, useEffect } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
-import { 
-  Alert, 
-  ScrollView, 
-  StyleSheet, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  View, 
-  ActivityIndicator 
+import { NavigationProp, useNavigation } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
+import {
+    ActivityIndicator,
+    Alert,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import NavigationHeader from '../../components/NavigationHeader';
 // import { useAuth } from '../contexts/AuthContext';
-import { colors } from '../theme/theme';
 import axios from 'axios';
+import { colors } from '../theme/theme';
 
 type RootStackParamList = {
   AuthScreen: undefined;
@@ -59,7 +59,7 @@ const AdopterProfileScreen: React.FC = () => {
   const loadProfile = async (): Promise<void> => {
     try {
       setLoading(true);
-      const response = await axios.get(`http://192.168.31.136:5000/api/profile/view/${userId}`);
+      const response = await axios.get(`http://10.103.134.245:5000/api/profile/view/${userId}`);
       const userProfile = response.data;
 
       setProfile({
@@ -91,7 +91,7 @@ const AdopterProfileScreen: React.FC = () => {
 
     try {
       setSaving(true);
-      await axios.put(`http://192.168.31.136:5000/api/profile/update/${userId}`, profile);
+      await axios.put(`http://10.103.134.245:5000/api/profile/update/${userId}`, profile);
       setIsEditing(false);
       Alert.alert("Success", "Profile updated successfully!");
     } catch (error) {

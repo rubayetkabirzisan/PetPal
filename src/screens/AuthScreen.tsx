@@ -22,7 +22,7 @@ interface AuthScreenProps {
 }
 
 
-const API_BASE = "http://192.168.31.136:5000/api/users";
+const API_BASE = "http://10.103.134.245:5000/api/users";
 export default function AuthScreen({ navigation, route }: AuthScreenProps) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
