@@ -39,7 +39,7 @@ app.use("/api/messages", require("./routes/messageRoutes"));
 app.use('/api/emergency', require('./routes/emergencyRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));//
 app.use("/api/reminders", require("./routes/reminders"));//
-
+app.use("/api/lostpets", require("./routes/LostpetRoutes"));
 
 
 // Start server
