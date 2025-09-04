@@ -74,7 +74,7 @@ export default function ContactAdopter() {
 
     // Simulate sending email/making call
     try {
-      await new Promise((resolve) => setTimeout(resolve, 2000))
+      await new Promise((resolve) => setTimeout(() => resolve(undefined), 2000))
       setSent(true)
       
       // Redirect back to applications after 3 seconds

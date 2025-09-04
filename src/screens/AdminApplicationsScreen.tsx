@@ -1,15 +1,15 @@
 import { Ionicons } from "@expo/vector-icons"
 import React, { useEffect, useState } from "react"
 import {
-  Alert,
-  Dimensions,
-  Modal,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    Alert,
+    Dimensions,
+    Modal,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from "react-native"
 import NavigationHeader from "../../components/NavigationHeader"
 import { colors, spacing } from "../theme/theme"
@@ -118,7 +118,7 @@ const sendApprovalNotification = async (application: Application): Promise<Notif
       applicationId: application.id,
       timestamp: new Date().toISOString()
     }
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await new Promise(resolve => setTimeout(() => resolve(undefined), 1000))
     return { success: true, messageId: `msg_${Date.now()}` }
   } catch (error) {
     return { success: false, error: (error as Error).message }
@@ -153,7 +153,7 @@ const sendStatusUpdateNotification = async (application: Application, newStatus:
       timestamp: new Date().toISOString()
     }
 
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await new Promise(resolve => setTimeout(() => resolve(undefined), 1000))
     return { success: true, messageId: `msg_${Date.now()}` }
   } catch (error) {
     return { success: false, error: (error as Error).message }

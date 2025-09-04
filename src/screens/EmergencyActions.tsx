@@ -95,7 +95,7 @@ const EmergencyActions: React.FC<EmergencyActionsProps> = ({
 
   const handleEmergencyAction = async (actionType: string) => {
     setLoading(actionType);
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise(resolve => setTimeout(() => resolve(undefined), 2000));
     setLoading(null);
     setModalData({ type: null, visible: false });
     resetForms();

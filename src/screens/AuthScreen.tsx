@@ -109,7 +109,7 @@ export default function AuthScreen({ navigation, route }: AuthScreenProps) {
       console.log("Creating user:", userData)
       
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      await new Promise(resolve => setTimeout(() => resolve(undefined), 1000))
       
       Alert.alert(
         "Account Created",

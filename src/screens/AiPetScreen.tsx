@@ -197,7 +197,7 @@ export default function AiPetScreen({ navigation }: AiPetScreenProps) {
     setIsAnalyzing(true)
     
     // Simulate AI processing time
-    await new Promise(resolve => setTimeout(resolve, 2000))
+    await new Promise(resolve => setTimeout(() => resolve(undefined), 2000))
 
     const scores = pets.map(calculateCompatibilityScore)
     const sortedMatches = scores

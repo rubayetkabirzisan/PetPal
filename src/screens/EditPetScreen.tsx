@@ -352,7 +352,7 @@ export default function EditPetScreen(props: any) {
     
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise(resolve => setTimeout(() => resolve(undefined), 1500));
       
       Alert.alert(
         "Success! 🎉", 
