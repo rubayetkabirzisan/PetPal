@@ -46,6 +46,10 @@ export default function AdopterProfileScreen() {
     ])
   }
 
+  // Determine if the user is an admin (shelter) or adopter
+  const isShelter = user?.type === 'admin';
+
+  // Define menu items based on user type
   const menuItems = [
     {
       icon: "notifications-outline",
@@ -54,19 +58,26 @@ export default function AdopterProfileScreen() {
       path: "notifications",
       onPress: () => navigation.navigate('Notifications' as never),
     },
-    {
+    // Only show Adoption History for adopters
+    ...(!isShelter ? [{
       icon: "heart-outline",
       title: "Adoption History",
       subtitle: "View your adopted pets",
       path: "history",
       onPress: () => navigation.navigate('AdoptionHistory' as never),
-    },
+    }] : []),
     {
       icon: "document-text-outline",
       title: "Applications",
-      subtitle: "Track your applications",
+      subtitle: isShelter ? "Manage adoption applications" : "Track your applications",
       path: "applications",
-      onPress: () => navigation.navigate('ModernApplicationList' as never),
+      onPress: () => {
+        if (isShelter) {
+          navigation.navigate('Applications' as never);
+        } else {
+          navigation.navigate('ModernApplicationList' as never);
+        }
+      },
     },
     {
       icon: "chatbubble-outline",
@@ -114,11 +125,11 @@ export default function AdopterProfileScreen() {
       <View style={styles.profileHeader}>
         <View style={styles.avatarContainer}>
           <View style={styles.avatar}>
-            <Ionicons name="person" size={40} color="white" />
+            <Ionicons name={isShelter ? "business" : "person"} size={40} color="white" />
           </View>
         </View>
         <Text style={styles.profileName}>{profile.name}</Text>
-        <Text style={styles.profileType}>Pet Adopter</Text>
+        <Text style={styles.profileType}>{isShelter ? "Shelter / Admin" : "Pet Adopter"}</Text>
       </View>
 
       {/* Profile Details */}
