@@ -201,8 +201,8 @@ export default function AiPetScreen({ navigation }: AiPetScreenProps) {
 
     const scores = pets.map(calculateCompatibilityScore)
     const sortedMatches = scores
-      .filter(match => match.score > 20) // Only show matches with decent compatibility
-      .sort((a, b) => b.score - a.score)
+      .filter((match: any) => match.score > 20) // Only show matches with decent compatibility
+      .sort((a: any, b: any) => b.score - a.score)
       .slice(0, 10) // Top 10 matches
 
     setMatches(sortedMatches)

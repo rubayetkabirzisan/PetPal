@@ -130,7 +130,7 @@ export default function AdopterProfileScreen() {
               <TextInput
                 style={styles.textInput}
                 value={profile.name}
-                onChangeText={(text) => setProfile({ ...profile, name: text })}
+                onChangeText={(text: string) => setProfile({ ...profile, name: text })}
               />
             </View>
 
@@ -139,7 +139,7 @@ export default function AdopterProfileScreen() {
               <TextInput
                 style={styles.textInput}
                 value={profile.email}
-                onChangeText={(text) => setProfile({ ...profile, email: text })}
+                onChangeText={(text: string) => setProfile({ ...profile, email: text })}
                 keyboardType="email-address"
               />
             </View>
@@ -149,7 +149,7 @@ export default function AdopterProfileScreen() {
               <TextInput
                 style={styles.textInput}
                 value={profile.phone}
-                onChangeText={(text) => setProfile({ ...profile, phone: text })}
+                onChangeText={(text: string) => setProfile({ ...profile, phone: text })}
                 keyboardType="phone-pad"
               />
             </View>
@@ -159,7 +159,7 @@ export default function AdopterProfileScreen() {
               <TextInput
                 style={styles.textInput}
                 value={profile.location}
-                onChangeText={(text) => setProfile({ ...profile, location: text })}
+                onChangeText={(text: string) => setProfile({ ...profile, location: text })}
               />
             </View>
 
@@ -168,7 +168,7 @@ export default function AdopterProfileScreen() {
               <TextInput
                 style={[styles.textInput, styles.textArea]}
                 value={profile.bio}
-                onChangeText={(text) => setProfile({ ...profile, bio: text })}
+                onChangeText={(text: string) => setProfile({ ...profile, bio: text })}
                 multiline
                 numberOfLines={4}
               />

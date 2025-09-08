@@ -6,7 +6,8 @@ import { useAuth } from '@hooks/useAuth';
 import { AdoptionApplication, ApplicationTimelineEvent, getApplicationById, getPetById, Pet } from '@lib/data';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@src/contexts/ThemeContext';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
+import { useTypedParams } from '@/src/utils/navigation-utils';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -36,9 +37,9 @@ export default function ApplicationDetailsScreen() {
   
   try {
     // Try to get params from Expo Router
-    const routerParams = useLocalSearchParams();
+    const routerParams = useTypedParams<{ id?: string }>();
     if (routerParams?.id) {
-      id = String(routerParams.id);
+      id = routerParams.id;
     }
   } catch (error) {
     console.warn("Error getting Expo Router params:", error);

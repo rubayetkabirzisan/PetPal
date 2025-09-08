@@ -3,14 +3,15 @@
 import { useAuth } from "@/hooks/useAuth"
 import { getApplications, getPetById, type AdoptionApplication } from "@/lib/data"
 import { Feather, MaterialIcons } from "@expo/vector-icons"
-import { useLocalSearchParams, useRouter } from "expo-router"
+import { useRouter } from "expo-router"
 import { StatusBar } from "expo-status-bar"
 import React, { useEffect, useState } from "react"
+import { useTypedParams } from "@/src/utils/navigation-utils"
 import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
 
 export default function ContactAdopter() {
-  const params = useLocalSearchParams<{ applicationId: string }>()
-  const applicationId = params.applicationId as string
+  const params = useTypedParams<{ applicationId: string }>()
+  const applicationId = params.applicationId
   
   const [application, setApplication] = useState<AdoptionApplication | null>(null)
   const [pet, setPet] = useState<any>(null)

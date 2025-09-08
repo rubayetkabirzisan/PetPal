@@ -327,7 +327,7 @@ export default function AdminApplicationsScreen({ navigation }: Props) {
     }
   }
 
-  const filteredApplications = applications.filter(app => {
+  const filteredApplications = applications.filter((app: any) => {
     const matchesStatus = selectedStatus === "All" || app.status === selectedStatus
     const matchesSearch = app.petName.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          app.adopterName.toLowerCase().includes(searchQuery.toLowerCase())
@@ -335,7 +335,7 @@ export default function AdminApplicationsScreen({ navigation }: Props) {
   })
 
   const handleStatusUpdate = async (applicationId: string, newStatus: string) => {
-    const application = applications.find(app => app.id === applicationId)
+    const application = applications.find((app: any) => app.id === applicationId)
     if (!application) return
 
     Alert.alert(
@@ -348,8 +348,8 @@ export default function AdminApplicationsScreen({ navigation }: Props) {
           onPress: async () => {
             setIsProcessing(true)
             try {
-              setApplications(prev =>
-                prev.map(app =>
+              setApplications((prev: any) =>
+                prev.map((app: any) =>
                   app.id === applicationId ? { ...app, status: newStatus } : app
                 )
               )
@@ -369,8 +369,8 @@ export default function AdminApplicationsScreen({ navigation }: Props) {
                 success: notificationResult.success
               }
 
-              setApplications(prev =>
-                prev.map(app =>
+              setApplications((prev: any) =>
+                prev.map((app: any) =>
                   app.id === applicationId ? {
                     ...app,
                     status: newStatus,
@@ -753,26 +753,26 @@ export default function AdminApplicationsScreen({ navigation }: Props) {
       {/* Statistics */}
       <View style={styles.statsSection}>
         <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{applications.filter(a => a.status === "Pending").length}</Text>
+          <Text style={styles.statNumber}>{applications.filter((a: any) => a.status === "Pending").length}</Text>
           <Text style={styles.statLabel}>Pending</Text>
         </View>
         <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{applications.filter(a => a.status === "Under Review").length}</Text>
+          <Text style={styles.statNumber}>{applications.filter((a: any) => a.status === "Under Review").length}</Text>
           <Text style={styles.statLabel}>Under Review</Text>
         </View>
         <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{applications.filter(a => a.status === "Approved").length}</Text>
+          <Text style={styles.statNumber}>{applications.filter((a: any) => a.status === "Approved").length}</Text>
           <Text style={styles.statLabel}>Approved</Text>
         </View>
         <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{applications.filter(a => a.status === "Rejected").length}</Text>
+          <Text style={styles.statNumber}>{applications.filter((a: any) => a.status === "Rejected").length}</Text>
           <Text style={styles.statLabel}>Rejected</Text>
         </View>
       </View>
 
       {/* Applications List */}
       <ScrollView style={styles.content}>
-        {filteredApplications.map((application) => (
+        {filteredApplications.map((application: any) => (
           <TouchableOpacity
             key={application.id}
             style={styles.applicationCard}

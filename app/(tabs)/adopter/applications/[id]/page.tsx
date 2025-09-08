@@ -3,7 +3,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@hooks/useAuth';
 import { AdoptionApplication, ApplicationTimelineEvent, getApplicationById, getPetById, Pet } from '@lib/data';
 import { useTheme } from '@src/contexts/ThemeContext';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router } from 'expo-router';
+import { useTypedParams } from '@/src/utils/navigation-utils';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -17,7 +18,7 @@ interface ApplicationStep {
 }
 
 export default function ApplicationDetailsScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id } = useTypedParams<{ id: string }>();
   const [application, setApplication] = useState<AdoptionApplication | null>(null);
   const [pet, setPet] = useState<Pet | null>(null);
   const [steps, setSteps] = useState<ApplicationStep[]>([]);

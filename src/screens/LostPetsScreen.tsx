@@ -97,7 +97,7 @@ export default function LostPetsScreen({ navigation }: LostPetsScreenProps) {
   })
   const [locationPermissionDenied, setLocationPermissionDenied] = useState(false)
   const [isLoadingLocation, setIsLoadingLocation] = useState(false)
-  const mapRef = useRef<MapView>(null)
+  const mapRef = useRef<any>(null)
   const MAX_PHOTOS = 4
 
   useEffect(() => {
@@ -753,7 +753,7 @@ export default function LostPetsScreen({ navigation }: LostPetsScreenProps) {
                             latitudeDelta: 0.01,  // Slightly wider initial view
                             longitudeDelta: 0.01
                           }}
-                          onRegionChangeComplete={(region) => setMapRegion(region)}
+                          onRegionChangeComplete={(region: any) => setMapRegion(region)}
                           onPress={handleMapPress}
                           showsUserLocation={true}
                           followsUserLocation={true}

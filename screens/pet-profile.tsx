@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
+import { useTypedParams } from "../src/utils/navigation-utils";
 import React, { useEffect, useState } from "react";
 import {
     Dimensions,
@@ -22,8 +23,8 @@ interface PetProfileScreenProps {
 const windowWidth = Dimensions.get('window').width;
 
 const PetProfileScreen = ({ petId: propPetId }: PetProfileScreenProps) => {
-  const params = useLocalSearchParams();
-  const paramPetId = params.id as string;
+  const params = useTypedParams<{ id?: string }>();
+  const paramPetId = params.id;
   const petId = propPetId || paramPetId || "1";
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);

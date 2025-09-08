@@ -182,7 +182,7 @@ export default function MessagesScreen({ navigation }: MessagesScreenProps) {
                   <Image
                     source={{ uri: message.petImage }}
                     style={styles.avatar}
-                    defaultSource={require('../../assets/images/favicon.png')}
+                    defaultSource={{ uri: '../../assets/images/favicon.png' }}
                   />
                 </View>
                 <View style={styles.messageDetails}>

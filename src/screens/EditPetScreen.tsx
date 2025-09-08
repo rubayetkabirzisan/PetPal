@@ -162,7 +162,7 @@ const ChipSelector: React.FC<{
     style={horizontal ? styles.chipScrollView : undefined}
     contentContainerStyle={!horizontal ? styles.chipGrid : undefined}
   >
-    {options.map((option) => (
+    {options.map((option: any) => (
       <TouchableOpacity
         key={option.id}
         style={[
