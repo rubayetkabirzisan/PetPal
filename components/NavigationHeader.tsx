@@ -3,11 +3,11 @@ import { useNavigation } from "@react-navigation/native"
 import { useRouter } from "expo-router"
 import React, { useEffect, useState } from "react"
 import {
-  Platform,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    Platform,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from "react-native"
 import { useAuth } from "../src/contexts/AuthContext"
 import { useTheme } from "../src/contexts/ThemeContext"
@@ -47,8 +47,12 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
   }
 
   const handleProfilePress = () => {
-    // Navigate to the Profile screen in the AdopterTabs navigator
-    navigation.navigate("AdopterTabs", { screen: "Profile" });
+    // Navigate to the appropriate profile screen based on user type
+    if (isAdmin) {
+      navigation.navigate("AdminTabs", { screen: "Profile" });
+    } else {
+      navigation.navigate("AdopterTabs", { screen: "Profile" });
+    }
   }
 
   const handleNotificationsPress = () => {
