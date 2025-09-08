@@ -1,10 +1,10 @@
+import { useTypedParams } from '@/src/utils/navigation-utils';
 import { Header } from '@components/header';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@hooks/useAuth';
 import { AdoptionApplication, ApplicationTimelineEvent, getApplicationById, getPetById, Pet } from '@lib/data';
 import { useTheme } from '@src/contexts/ThemeContext';
 import { router } from 'expo-router';
-import { useTypedParams } from '@/src/utils/navigation-utils';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 

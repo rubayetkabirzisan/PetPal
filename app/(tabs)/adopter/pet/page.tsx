@@ -1,9 +1,9 @@
 import { useAuth } from '@/hooks/useAuth';
 import { getPetById, type Pet } from '@/lib/data';
+import { useTypedParams } from '@/src/utils/navigation-utils';
 import { Feather } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
-import { useTypedParams } from '@/src/utils/navigation-utils';
 import React, { useEffect, useState } from 'react';
 import { Image, Linking, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 

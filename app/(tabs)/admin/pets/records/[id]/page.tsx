@@ -1,6 +1,6 @@
+import { useTypedParams } from '@/src/utils/navigation-utils';
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useTypedParams } from '@/src/utils/navigation-utils';
 import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,

@@ -1,5 +1,5 @@
-import { Ionicons } from '@expo/vector-icons';
 import { useTypedParams } from '@/src/utils/navigation-utils';
+import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,

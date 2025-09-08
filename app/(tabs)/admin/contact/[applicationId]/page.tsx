@@ -2,11 +2,11 @@
 
 import { useAuth } from "@/hooks/useAuth"
 import { getApplications, getPetById, type AdoptionApplication } from "@/lib/data"
+import { useTypedParams } from "@/src/utils/navigation-utils"
 import { Feather, MaterialIcons } from "@expo/vector-icons"
 import { useRouter } from "expo-router"
 import { StatusBar } from "expo-status-bar"
 import React, { useEffect, useState } from "react"
-import { useTypedParams } from "@/src/utils/navigation-utils"
 import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
 
 export default function ContactAdopter() {

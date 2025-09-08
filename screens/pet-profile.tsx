@@ -1,7 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
-import { useTypedParams } from "../src/utils/navigation-utils";
 import React, { useEffect, useState } from "react";
 import {
     Dimensions,
@@ -15,6 +14,7 @@ import {
 } from "react-native";
 import { useAuth } from "../hooks/useAuth";
 import { getPetById, type Pet } from "../src/lib/data";
+import { useTypedParams } from "../src/utils/navigation-utils";
 
 interface PetProfileScreenProps {
   petId?: string;
