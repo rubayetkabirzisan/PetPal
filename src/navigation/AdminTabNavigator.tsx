@@ -7,6 +7,8 @@ import AdminGPSTrackingScreen from "../screens/AdminGPSTrackingScreen"
 import AdminLostPetsScreen from "../screens/AdminLostPetsScreen"
 import AdopterVerificationScreen from "../screens/AdopterVerificationScreen"
 import ManagePetsScreen from "../screens/ManagePetsScreen"
+import LostPetsScreen from "../screens/LostPetsScreen"
+import AdminApplicationsScreen from "../screens/AdminApplicationsScreen"
 
 const Tab = createBottomTabNavigator()
 
@@ -48,9 +50,9 @@ export default function AdminTabNavigator() {
     >
       <Tab.Screen name="Dashboard" component={AdminDashboardScreen} options={{ title: "Home", headerShown: false }} />
       <Tab.Screen name="Pets" component={ManagePetsScreen} options={{ title: "Pets", headerShown: false }} />
-      <Tab.Screen name="LostPets" component={AdminLostPetsScreen} options={{ title: "Lost Pets", headerShown: false }} />
+      <Tab.Screen name="LostPets" component={LostPetsScreen} options={{ title: "Lost Pets", headerShown: false }} />
       <Tab.Screen name="GPS" component={AdminGPSTrackingScreen} options={{ title: "GPS", headerShown: false }} />
-      <Tab.Screen name="Verify" component={AdopterVerificationScreen} options={{ title: "Verify", headerShown: false }} />
+      <Tab.Screen name="Verify" component={AdminApplicationsScreen} options={{ title: "Verify", headerShown: false }} />
     </Tab.Navigator>
   )
 }
