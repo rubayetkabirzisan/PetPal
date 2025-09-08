@@ -23,6 +23,7 @@ interface AdminGPSTrackingScreenProps {
 }
 
 export default function AdminGPSTrackingScreen({ navigation }: AdminGPSTrackingScreenProps) {
+  const [activeFilter, setActiveFilter] = useState<"Safe" | "Alert" | "Lost" | null>(null);
   const [trackedPets, setTrackedPets] = useState<TrackedPet[]>([
     {
       id: "1",
@@ -173,6 +174,22 @@ export default function AdminGPSTrackingScreen({ navigation }: AdminGPSTrackingS
   const safeCount = trackedPets.filter((p) => p.status === "Safe").length
   const alertCount = trackedPets.filter((p) => p.status === "Alert").length
   const lostCount = trackedPets.filter((p) => p.status === "Lost").length
+  
+  // Handle filter by status
+  const handleFilterByStatus = (status: "Safe" | "Alert" | "Lost") => {
+    if (activeFilter === status) {
+      // If clicking on the already active filter, clear it
+      setActiveFilter(null);
+    } else {
+      // Set the new filter
+      setActiveFilter(status);
+    }
+  }
+  
+  // Apply filter to pets list
+  const filteredPets = activeFilter 
+    ? trackedPets.filter(pet => pet.status === activeFilter)
+    : trackedPets
 
 // Styles for tracked pets, system status, and pet cards
 const styles = StyleSheet.create({
@@ -208,6 +225,32 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
     borderWidth: 1,
     borderColor: colors.border,
+    position: "relative",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  activeStatCard: {
+    borderWidth: 2,
+    borderColor: colors.primary,
+    shadowColor: colors.primary,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  filterIndicator: {
+    position: "absolute",
+    top: 8,
+    right: 8,
   },
   statIcon: {
     width: 40,
@@ -247,6 +290,41 @@ const styles = StyleSheet.create({
   },
   section: {
     margin: 16,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  clearFilterButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.primary + "15",
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    gap: 6,
+  },
+  clearFilterText: {
+    fontSize: 12,
+    color: colors.primary,
+    fontWeight: "500",
+  },
+  emptyState: {
+    backgroundColor: "white",
+    borderRadius: 12,
+    padding: 24,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  emptyStateText: {
+    fontSize: 14,
+    color: colors.text,
+    textAlign: "center",
+    opacity: 0.7,
   },
   petCard: {
     backgroundColor: "white",
@@ -349,29 +427,65 @@ const styles = StyleSheet.create({
       <ScrollView style={styles.container}>
       {/* Overview Stats */}
       <View style={styles.statsContainer}>
-        <View style={styles.statCard}>
+        <TouchableOpacity 
+          style={[
+            styles.statCard, 
+            activeFilter === "Safe" && styles.activeStatCard
+          ]}
+          onPress={() => handleFilterByStatus("Safe")}
+          activeOpacity={0.7}
+        >
           <View style={[styles.statIcon, { backgroundColor: colors.success + "20" }]}> 
             <Ionicons name="shield-checkmark-outline" size={24} color={colors.success} />
           </View>
           <Text style={styles.statNumber}>{safeCount}</Text>
           <Text style={styles.statLabel}>Safe</Text>
-        </View>
+          {activeFilter === "Safe" && (
+            <View style={styles.filterIndicator}>
+              <Ionicons name="checkmark-circle" size={16} color={colors.success} />
+            </View>
+          )}
+        </TouchableOpacity>
 
-        <View style={styles.statCard}>
+        <TouchableOpacity 
+          style={[
+            styles.statCard, 
+            activeFilter === "Alert" && styles.activeStatCard
+          ]}
+          onPress={() => handleFilterByStatus("Alert")}
+          activeOpacity={0.7}
+        >
           <View style={[styles.statIcon, { backgroundColor: colors.warning + "20" }]}> 
             <Ionicons name="warning-outline" size={24} color={colors.warning} />
           </View>
           <Text style={styles.statNumber}>{alertCount}</Text>
           <Text style={styles.statLabel}>Alerts</Text>
-        </View>
+          {activeFilter === "Alert" && (
+            <View style={styles.filterIndicator}>
+              <Ionicons name="checkmark-circle" size={16} color={colors.warning} />
+            </View>
+          )}
+        </TouchableOpacity>
 
-        <View style={styles.statCard}>
+        <TouchableOpacity 
+          style={[
+            styles.statCard, 
+            activeFilter === "Lost" && styles.activeStatCard
+          ]}
+          onPress={() => handleFilterByStatus("Lost")}
+          activeOpacity={0.7}
+        >
           <View style={[styles.statIcon, { backgroundColor: colors.error + "20" }]}> 
             <Ionicons name="alert-circle-outline" size={24} color={colors.error} />
           </View>
           <Text style={styles.statNumber}>{lostCount}</Text>
           <Text style={styles.statLabel}>Lost</Text>
-        </View>
+          {activeFilter === "Lost" && (
+            <View style={styles.filterIndicator}>
+              <Ionicons name="checkmark-circle" size={16} color={colors.error} />
+            </View>
+          )}
+        </TouchableOpacity>
       </View>
 
       {/* System Status */}
@@ -395,8 +509,30 @@ const styles = StyleSheet.create({
 
       {/* Tracked Pets */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Tracked Pets ({trackedPets.length})</Text>
-        {trackedPets.map(renderPetCard)}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>
+            {activeFilter 
+              ? `${activeFilter} Pets (${filteredPets.length})`
+              : `Tracked Pets (${trackedPets.length})`
+            }
+          </Text>
+          {activeFilter && (
+            <TouchableOpacity 
+              style={styles.clearFilterButton}
+              onPress={() => setActiveFilter(null)}
+            >
+              <Text style={styles.clearFilterText}>Clear Filter</Text>
+              <Ionicons name="close-circle" size={16} color={colors.primary} />
+            </TouchableOpacity>
+          )}
+        </View>
+        {filteredPets.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyStateText}>No pets found with this status</Text>
+          </View>
+        ) : (
+          filteredPets.map(renderPetCard)
+        )}
       </View>
       {/* Emergency Actions */}
       <EmergencyActions 
