@@ -107,7 +107,7 @@ export default function App() {
             <Stack.Screen 
               name="ReportLostPet" 
               component={ReportLostPetScreen} 
-              options={{ headerShown: true, title: "Report Lost Pet" }}
+              options={{ headerShown: false }}
             />
             <Stack.Screen 
               name="PetMap" 
