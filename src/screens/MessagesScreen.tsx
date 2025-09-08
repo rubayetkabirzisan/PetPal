@@ -86,41 +86,37 @@ const headerStyles = StyleSheet.create({
 
 interface Message {
   id: string;
-  petName: string;
   shelterName: string;
   lastMessage: string;
   timestamp: string;
   unread: boolean;
-  petImage: string;
+  shelterImage: string;
 }
 
 const mockMessages: Message[] = [
   {
     id: "1",
-    petName: "Buddy",
     shelterName: "Happy Paws Shelter",
-    lastMessage: "Thank you for your interest in Buddy! We'd love to schedule a meet and greet.",
+    lastMessage: "Thank you for your interest in our available pets! We'd love to schedule a meet and greet.",
     timestamp: "2 hours ago",
     unread: true,
-    petImage: "https://images.unsplash.com/photo-1552053831-71594a27632d?w=100&h=100&fit=crop",
+    shelterImage: "https://images.unsplash.com/photo-1518176258769-f227c798150e?w=100&h=100&fit=crop",
   },
   {
     id: "2",
-    petName: "Luna",
     shelterName: "Feline Friends Rescue",
-    lastMessage: "Your application has been approved! When would you like to pick up Luna?",
+    lastMessage: "Your application has been approved! When would you like to visit our shelter?",
     timestamp: "1 day ago",
     unread: true,
-    petImage: "https://images.unsplash.com/photo-1574158622682-e40e69881006?w=100&h=100&fit=crop",
+    shelterImage: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=100&h=100&fit=crop",
   },
   {
     id: "3",
-    petName: "Max",
     shelterName: "Austin Animal Center",
     lastMessage: "We received your application and will review it within 2-3 business days.",
     timestamp: "3 days ago",
     unread: false,
-    petImage: "https://images.unsplash.com/photo-1589941013453-ec89f33b5e95?w=100&h=100&fit=crop",
+    shelterImage: "https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=100&h=100&fit=crop",
   },
 ];
 
@@ -134,14 +130,20 @@ export default function MessagesScreen({ navigation }: MessagesScreenProps) {
 
   const filteredMessages = messages.filter(
     (message) =>
-      message.petName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       message.shelterName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const unreadCount = messages.filter((m) => m.unread).length;
 
   const handleMessagePress = (messageId: string) => {
-    navigation.navigate("Chat", { messageId });
+    const selectedMessage = messages.find(message => message.id === messageId);
+    if (selectedMessage) {
+      navigation.navigate("Chat", { 
+        messageId,
+        shelterName: selectedMessage.shelterName,
+        shelterImage: selectedMessage.shelterImage
+      });
+    }
   };
 
   return (
@@ -180,15 +182,15 @@ export default function MessagesScreen({ navigation }: MessagesScreenProps) {
               <View style={styles.messageContent}>
                 <View style={styles.avatarContainer}>
                   <Image
-                    source={{ uri: message.petImage }}
+                    source={{ uri: message.shelterImage }}
                     style={styles.avatar}
                     defaultSource={{ uri: '../../assets/images/favicon.png' }}
                   />
                 </View>
                 <View style={styles.messageDetails}>
                   <View style={styles.messageHeader}>
-                    <Text style={styles.petName} numberOfLines={1}>
-                      {message.petName}
+                    <Text style={styles.shelterNameTitle} numberOfLines={1}>
+                      {message.shelterName}
                     </Text>
                     <View style={styles.timestampContainer}>
                       {message.unread && (
@@ -199,9 +201,6 @@ export default function MessagesScreen({ navigation }: MessagesScreenProps) {
                       <Text style={styles.timestamp}>{message.timestamp}</Text>
                     </View>
                   </View>
-                  <Text style={styles.shelterName} numberOfLines={1}>
-                    {message.shelterName}
-                  </Text>
                   <Text style={styles.lastMessage} numberOfLines={2}>
                     {message.lastMessage}
                   </Text>
@@ -304,7 +303,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 4,
   },
-  petName: {
+  shelterNameTitle: {
     fontSize: 16,
     fontWeight: '600',
     color: '#8B4513',
