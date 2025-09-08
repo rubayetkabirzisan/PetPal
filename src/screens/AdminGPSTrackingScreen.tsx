@@ -194,17 +194,23 @@ export default function AdminGPSTrackingScreen({ navigation }: AdminGPSTrackingS
 // Styles for tracked pets, system status, and pet cards
 const styles = StyleSheet.create({
   systemStatus: {
-    backgroundColor: "white",
+    backgroundColor: "#f5f7fa",
+    padding: 14,
+    marginHorizontal: 16,
+    marginVertical: 10,
     borderRadius: 12,
-    padding: 16,
-    margin: 16,
+    borderColor: "rgba(0,0,0,0.05)",
     borderWidth: 1,
-    borderColor: colors.border,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 2,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: colors.text,
+    fontSize: 20,
+    fontWeight: "700",
+    color: colors.primary,
     marginBottom: 16,
   },
   container: {
@@ -214,38 +220,41 @@ const styles = StyleSheet.create({
   statsContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    margin: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 8,
   },
   statCard: {
     flex: 1,
     backgroundColor: "white",
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 16,
+    padding: 18,
     alignItems: "center",
-    marginHorizontal: 4,
+    marginHorizontal: 5,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: "rgba(0,0,0,0.05)",
     position: "relative",
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
-      height: 1,
+      height: 2,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 1,
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    elevation: 3,
   },
   activeStatCard: {
     borderWidth: 2,
-    borderColor: colors.primary,
-    shadowColor: colors.primary,
+    borderColor: "#3949AB",
+    shadowColor: "#3949AB",
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 3,
     },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
     elevation: 3,
+    backgroundColor: "rgba(63, 81, 181, 0.05)",
   },
   filterIndicator: {
     position: "absolute",
@@ -253,12 +262,17 @@ const styles = StyleSheet.create({
     right: 8,
   },
   statIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 45,
+    height: 45,
+    borderRadius: 23,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 8,
+    marginBottom: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
   },
   statNumber: {
     fontSize: 20,
@@ -267,9 +281,9 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: 13,
     color: colors.text,
-    opacity: 0.7,
+    opacity: 0.8,
   },
   statusCard: {
     backgroundColor: "white",
@@ -282,29 +296,43 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 12,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    backgroundColor: "rgba(0,255,0,0.03)",
+    borderRadius: 8,
   },
   systemStatusText: {
     fontSize: 14,
+    fontWeight: "500",
     color: colors.text,
     marginLeft: 12,
   },
   section: {
-    margin: 16,
+    marginHorizontal: 16,
+    marginVertical: 10,
   },
   sectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 16,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(0,0,0,0.05)",
   },
   clearFilterButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.primary + "15",
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    backgroundColor: colors.primary + "20",
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
     gap: 6,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 1,
   },
   clearFilterText: {
     fontSize: 12,
@@ -328,48 +356,69 @@ const styles = StyleSheet.create({
   },
   petCard: {
     backgroundColor: "white",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: 16,
+    padding: 18,
+    marginVertical: 8,
+    marginHorizontal: 2,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: "rgba(0,0,0,0.05)",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
   },
   petHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 14,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(0,0,0,0.03)",
   },
   petInfo: {
     flex: 1,
   },
   petName: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: colors.text,
+    fontSize: 17,
+    fontWeight: "700",
+    color: colors.primary,
+    marginBottom: 2,
   },
   ownerName: {
-    fontSize: 12,
+    fontSize: 13,
     color: colors.text,
     opacity: 0.7,
     marginTop: 2,
   },
   statusBadge: {
-    borderRadius: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 1,
+    elevation: 1,
   },
   statusText: {
-    fontSize: 12,
-    fontWeight: "600",
+    fontSize: 13,
+    fontWeight: "700",
+    letterSpacing: 0.2,
   },
   locationInfo: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 12,
+    paddingVertical: 6,
+    paddingHorizontal: 4,
+    backgroundColor: "rgba(0,0,0,0.02)",
+    borderRadius: 8,
   },
   locationText: {
     fontSize: 14,
+    fontWeight: "500",
     color: colors.text,
     marginLeft: 8,
     flex: 1,
@@ -435,14 +484,14 @@ const styles = StyleSheet.create({
           onPress={() => handleFilterByStatus("Safe")}
           activeOpacity={0.7}
         >
-          <View style={[styles.statIcon, { backgroundColor: colors.success + "20" }]}> 
-            <Ionicons name="shield-checkmark-outline" size={24} color={colors.success} />
+          <View style={[styles.statIcon, { backgroundColor: "rgba(76, 175, 80, 0.15)" }]}> 
+            <Ionicons name="shield-checkmark-outline" size={24} color="#2E7D32" />
           </View>
           <Text style={styles.statNumber}>{safeCount}</Text>
           <Text style={styles.statLabel}>Safe</Text>
           {activeFilter === "Safe" && (
             <View style={styles.filterIndicator}>
-              <Ionicons name="checkmark-circle" size={16} color={colors.success} />
+              <Ionicons name="checkmark-circle" size={16} color="#2E7D32" />
             </View>
           )}
         </TouchableOpacity>
@@ -455,14 +504,14 @@ const styles = StyleSheet.create({
           onPress={() => handleFilterByStatus("Alert")}
           activeOpacity={0.7}
         >
-          <View style={[styles.statIcon, { backgroundColor: colors.warning + "20" }]}> 
-            <Ionicons name="warning-outline" size={24} color={colors.warning} />
+          <View style={[styles.statIcon, { backgroundColor: "rgba(255, 152, 0, 0.15)" }]}> 
+            <Ionicons name="warning-outline" size={24} color="#E65100" />
           </View>
           <Text style={styles.statNumber}>{alertCount}</Text>
           <Text style={styles.statLabel}>Alerts</Text>
           {activeFilter === "Alert" && (
             <View style={styles.filterIndicator}>
-              <Ionicons name="checkmark-circle" size={16} color={colors.warning} />
+              <Ionicons name="checkmark-circle" size={16} color="#E65100" />
             </View>
           )}
         </TouchableOpacity>
@@ -475,14 +524,14 @@ const styles = StyleSheet.create({
           onPress={() => handleFilterByStatus("Lost")}
           activeOpacity={0.7}
         >
-          <View style={[styles.statIcon, { backgroundColor: colors.error + "20" }]}> 
-            <Ionicons name="alert-circle-outline" size={24} color={colors.error} />
+          <View style={[styles.statIcon, { backgroundColor: "rgba(244, 67, 54, 0.15)" }]}> 
+            <Ionicons name="alert-circle-outline" size={24} color="#C62828" />
           </View>
           <Text style={styles.statNumber}>{lostCount}</Text>
           <Text style={styles.statLabel}>Lost</Text>
           {activeFilter === "Lost" && (
             <View style={styles.filterIndicator}>
-              <Ionicons name="checkmark-circle" size={16} color={colors.error} />
+              <Ionicons name="checkmark-circle" size={16} color="#C62828" />
             </View>
           )}
         </TouchableOpacity>

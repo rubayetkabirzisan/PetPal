@@ -1,9 +1,38 @@
 import { Ionicons } from "@expo/vector-icons"
 import { useNavigation } from "@react-navigation/native"
+import { StackNavigationProp } from "@react-navigation/stack"
 import React from "react"
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import NavigationHeader from "../../components/NavigationHeader"
 import { colors, spacing } from "../theme/theme"
+
+// Define the app's navigation types
+type RootStackParamList = {
+  Landing: undefined;
+  Auth: undefined;
+  AdopterTabs: {
+    screen?: string;
+    params?: any;
+  };
+  AdminTabs: {
+    screen?: string;
+    params?: any;
+  };
+  PetProfile: {
+    petId?: string;
+  };
+  Notifications: undefined;
+  ApplicationTracker: {
+    applicationId?: string;
+  };
+  ApplicationList: undefined;
+  DummyApplicationList: undefined;
+  ModernApplicationList: undefined;
+  Chat: undefined;
+  PetCareReminders: undefined;
+  LostPetDetails: undefined;
+  // Add other screens as needed
+};
 
 interface Notification {
   id: string;
@@ -12,10 +41,13 @@ interface Notification {
   time: string;
   type: 'application' | 'message' | 'reminder' | 'update';
   read: boolean;
+  targetScreen?: string;
+  targetParams?: any;
 }
 
 export default function NotificationsScreen() {
-  const navigation = useNavigation();
+  // Type the navigation properly
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
   const notifications: Notification[] = [
     {
@@ -24,7 +56,9 @@ export default function NotificationsScreen() {
       message: 'Your application for Buddy has been approved! Please contact the shelter to arrange pickup.',
       time: '2 hours ago',
       type: 'application',
-      read: false
+      read: false,
+      targetScreen: 'ApplicationDetails',
+      targetParams: { applicationId: 'app123', petName: 'Buddy' }
     },
     {
       id: '2',
@@ -32,7 +66,9 @@ export default function NotificationsScreen() {
       message: 'Happy Paws Shelter sent you a message about Max.',
       time: '1 day ago',
       type: 'message',
-      read: false
+      read: false,
+      targetScreen: 'Chat',
+      targetParams: { conversationId: 'conv456', shelterName: 'Happy Paws Shelter', petName: 'Max' }
     },
     {
       id: '3',
@@ -40,15 +76,39 @@ export default function NotificationsScreen() {
       message: 'Don\'t forget to schedule a vet appointment for Luna within 7 days of adoption.',
       time: '2 days ago',
       type: 'reminder',
-      read: true
+      read: true,
+      targetScreen: 'PetCareReminders',
+      targetParams: { petId: 'pet789', petName: 'Luna' }
     },
     {
       id: '4',
+      title: 'Pet Updates',
+      message: 'Luna\'s GPS tracker has detected movement outside the safe zone.',
+      time: '3 days ago',
+      type: 'application',
+      read: true,
+      targetScreen: 'PetProfile',
+      targetParams: { petId: 'pet789' }
+    },
+    {
+      id: '5',
+      title: 'Lost Pet Alert',
+      message: 'A pet matching Max\'s description has been reported in your area.',
+      time: '5 days ago',
+      type: 'reminder',
+      read: true,
+      targetScreen: 'LostPetDetails',
+      targetParams: { petId: 'pet456' }
+    },
+    {
+      id: '6',
       title: 'App Update',
       message: 'New features available! Check out our improved pet matching system.',
       time: '1 week ago',
       type: 'update',
-      read: true
+      read: true,
+      targetScreen: 'AIMatching',
+      targetParams: {}
     }
   ];
 
@@ -82,6 +142,84 @@ export default function NotificationsScreen() {
     }
   };
 
+  // Handle navigation based on notification type
+  const handleNotificationPress = (notification: Notification) => {
+    if (!notification.targetScreen) return;
+    
+    try {
+      // Using React Navigation directly since this component is used in the Stack Navigator
+      console.log(`Processing notification for: ${notification.targetScreen}`);
+      
+      switch (notification.targetScreen) {
+        case 'ApplicationDetails':
+          console.log(`Navigating to application: ${notification.targetParams?.applicationId || 'no ID'}`);
+          // Try application tracker first, fallback to application list
+          if (notification.targetParams?.applicationId) {
+            navigation.navigate('ApplicationTracker', { 
+              applicationId: notification.targetParams.applicationId 
+            });
+          } else {
+            navigation.navigate('ModernApplicationList');
+          }
+          break;
+          
+        case 'Chat':
+          console.log('Navigating to dashboard for messages');
+          // Navigate to the dashboard tab
+          navigation.navigate('AdopterTabs', { 
+            screen: 'Dashboard'
+          });
+          break;
+          
+        case 'PetCareReminders':
+          console.log('Navigating to dashboard for care reminders');
+          // Navigate to the dashboard tab
+          navigation.navigate('AdopterTabs', { 
+            screen: 'Dashboard'
+          });
+          break;
+          
+        case 'PetProfile':
+          console.log(`Navigating to pet: ${notification.targetParams?.petId || 'no ID'}`);
+          if (notification.targetParams?.petId) {
+            navigation.navigate('PetProfile', { 
+              petId: notification.targetParams.petId 
+            });
+          } else {
+            // Fallback to browse pets
+            navigation.navigate('AdopterTabs', { 
+              screen: 'Browse'
+            });
+          }
+          break;
+          
+        case 'LostPetDetails':
+          console.log('Navigating to lost pets');
+          navigation.navigate('AdopterTabs', { 
+            screen: 'LostPets'
+          });
+          break;
+          
+        case 'AIMatching':
+          console.log('Navigating to browse for AI matching');
+          navigation.navigate('AdopterTabs', { 
+            screen: 'Browse'
+          });
+          break;
+          
+        default:
+          console.log('Unknown target, navigating to dashboard');
+          navigation.navigate('AdopterTabs', { 
+            screen: 'Dashboard'
+          });
+          break;
+      }
+    } catch (error) {
+      console.error('Navigation error:', error);
+      Alert.alert('Navigation Error', 'Could not navigate to this notification. Please try again later.');
+    }
+  };
+  
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -98,6 +236,7 @@ export default function NotificationsScreen() {
               styles.notificationItem,
               !notification.read && styles.unreadNotification
             ]}
+            onPress={() => handleNotificationPress(notification)}
           >
             <View style={styles.notificationLeft}>
               <View style={[
