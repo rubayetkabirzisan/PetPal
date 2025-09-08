@@ -11,7 +11,7 @@ export default function AdminStackNavigator() {
     <Stack.Navigator>
       <Stack.Screen name="ManagePets" component={ManagePetsScreen} options={{ title: "Manage Pets" }} />
       <Stack.Screen name="EditPet" component={EditPetScreen} options={{ title: "Edit Pet" }} />
-      <Stack.Screen name="PetProfile" component={PetProfileScreen} options={{ title: "Pet Profile" }} />
+      <Stack.Screen name="PetProfile" component={PetProfileScreen} options={{ headerShown: false }} />
     </Stack.Navigator>
   );
 }

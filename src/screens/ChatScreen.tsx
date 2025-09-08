@@ -165,20 +165,6 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
     }
   }
 
-    const handleViewAvailablePets = () => {
-    // Navigate to shelter's available pets screen
-    try {
-      // Navigate to the shelter's available pets screen
-      navigation.navigate('AvailablePets', { 
-        shelterId: route?.params?.shelterId || 'shelter-001',
-        shelterName: shelterName
-      });
-    } catch (error) {
-      // Fallback to router if navigation is not available
-      console.log("Navigation error, using router instead:", error);
-    }
-  }
-
   const handleVoiceCall = () => {
     // Start voice call functionality
     const callMessage: Message = {
@@ -323,14 +309,6 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
         >
           <Ionicons name="document-text-outline" size={16} color={colors.primary} />
           <Text style={styles.quickActionText}>Application</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={styles.quickAction}
-          onPress={() => handleViewAvailablePets()}
-        >
-          <Ionicons name="heart-outline" size={16} color={colors.primary} />
-          <Text style={styles.quickActionText}>View Available Pets</Text>
         </TouchableOpacity>
       </View>
       </KeyboardAvoidingView>
