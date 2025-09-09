@@ -2,10 +2,11 @@ import { Ionicons } from "@expo/vector-icons"
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs"
 import { colors } from "../theme/theme"
 
+import AdminApplicationsScreen from "../screens/AdminApplicationsScreen"
 import AdminDashboardScreen from "../screens/AdminDashboardScreen"
 import AdminGPSTrackingScreen from "../screens/AdminGPSTrackingScreen"
-import AdminLostPetsScreen from "../screens/AdminLostPetsScreen"
-import AdopterVerificationScreen from "../screens/AdopterVerificationScreen"
+import AdopterProfileScreen from "../screens/AdopterProfileScreen"
+import LostPetsScreen from "../screens/LostPetsScreen"
 import ManagePetsScreen from "../screens/ManagePetsScreen"
 
 const Tab = createBottomTabNavigator()
@@ -27,6 +28,8 @@ export default function AdminTabNavigator() {
             iconName = focused ? "shield" : "shield-outline"
           } else if (route.name === "Verify") {
             iconName = focused ? "checkmark-circle" : "checkmark-circle-outline"
+          } else if (route.name === "Profile") {
+            iconName = focused ? "person" : "person-outline"
           } else {
             iconName = "home-outline"
           }
@@ -48,9 +51,10 @@ export default function AdminTabNavigator() {
     >
       <Tab.Screen name="Dashboard" component={AdminDashboardScreen} options={{ title: "Home", headerShown: false }} />
       <Tab.Screen name="Pets" component={ManagePetsScreen} options={{ title: "Pets", headerShown: false }} />
-      <Tab.Screen name="LostPets" component={AdminLostPetsScreen} options={{ title: "Lost Pets", headerShown: false }} />
+      <Tab.Screen name="LostPets" component={LostPetsScreen} options={{ title: "Lost Pets", headerShown: false }} />
       <Tab.Screen name="GPS" component={AdminGPSTrackingScreen} options={{ title: "GPS", headerShown: false }} />
-      <Tab.Screen name="Verify" component={AdopterVerificationScreen} options={{ title: "Verify", headerShown: false }} />
+      <Tab.Screen name="Verify" component={AdminApplicationsScreen} options={{ title: "Verify", headerShown: false }} />
+      <Tab.Screen name="Profile" component={AdopterProfileScreen} options={{ title: "Profile", headerShown: false }} />
     </Tab.Navigator>
   )
 }

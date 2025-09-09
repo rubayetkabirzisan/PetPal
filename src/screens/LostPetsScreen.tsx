@@ -6,20 +6,20 @@ import * as ImagePicker from "expo-image-picker"
 import * as Location from 'expo-location'
 import React, { useEffect, useRef, useState } from "react"
 import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  Image,
-  Keyboard,
-  Linking,
-  Modal,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View
+    ActivityIndicator,
+    Alert,
+    FlatList,
+    Image,
+    Keyboard,
+    Linking,
+    Modal,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View
 } from "react-native"
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps'
 import NavigationHeader from "../../components/NavigationHeader"
@@ -27,11 +27,11 @@ import { useDateTimePicker } from "../../hooks/useDateTimePicker"
 import { getLostPets, initializeLostPetsData, reportSighting, type LostPet } from "../../lib/lost-pets"
 import { validateSightingForm } from "../../utils/formValidation"
 import {
-  ImageInfo,
-  enforceMaxPhotos,
-  getImageCountString,
-  prepareImagesForSubmission,
-  processImagePickerResult
+    ImageInfo,
+    enforceMaxPhotos,
+    getImageCountString,
+    prepareImagesForSubmission,
+    processImagePickerResult
 } from "../../utils/imageUtils"
 import { colors, spacing } from "../theme/theme"
 
@@ -97,7 +97,7 @@ export default function LostPetsScreen({ navigation }: LostPetsScreenProps) {
   })
   const [locationPermissionDenied, setLocationPermissionDenied] = useState(false)
   const [isLoadingLocation, setIsLoadingLocation] = useState(false)
-  const mapRef = useRef<MapView>(null)
+  const mapRef = useRef<any>(null)
   const MAX_PHOTOS = 4
 
   useEffect(() => {
@@ -753,7 +753,7 @@ export default function LostPetsScreen({ navigation }: LostPetsScreenProps) {
                             latitudeDelta: 0.01,  // Slightly wider initial view
                             longitudeDelta: 0.01
                           }}
-                          onRegionChangeComplete={(region) => setMapRegion(region)}
+                          onRegionChangeComplete={(region: any) => setMapRegion(region)}
                           onPress={handleMapPress}
                           showsUserLocation={true}
                           followsUserLocation={true}

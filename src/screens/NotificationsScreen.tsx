@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import NavigationHeader from "../../components/NavigationHeader";
 import { colors, spacing } from "../theme/theme";
-
+//havent updated yet
 interface Notification {
   id: string;
   title: string;

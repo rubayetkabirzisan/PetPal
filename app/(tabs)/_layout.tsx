@@ -1,9 +1,9 @@
-import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { StyleSheet } from 'react-native';
 import { useAuth } from '../../hooks/useAuth';
 import { useTheme } from '../../src/contexts/ThemeContext';
+import { createTabIcon } from '../../src/utils/navigation';
 
 export default function TabsLayout() {
   const { theme } = useTheme();
@@ -33,21 +33,21 @@ export default function TabsLayout() {
           name="admin/dashboard"
           options={{
             title: 'Dashboard',
-            tabBarIcon: ({ color }) => <Ionicons name="home" size={24} color={color} />,
+            tabBarIcon: createTabIcon("home"),
           }}
         />
         <Tabs.Screen
           name="admin/pets"
           options={{
             title: 'Pets',
-            tabBarIcon: ({ color }) => <Ionicons name="paw" size={24} color={color} />,
+            tabBarIcon: createTabIcon("paw"),
           }}
         />
         <Tabs.Screen
           name="admin/applications"
           options={{
             title: 'Applications',
-            tabBarIcon: ({ color }) => <Ionicons name="document-text" size={24} color={color} />,
+            tabBarIcon: createTabIcon("document-text"),
             tabBarBadge: getNotificationBadge(3),
           }}
         />
@@ -55,7 +55,7 @@ export default function TabsLayout() {
           name="admin/messages"
           options={{
             title: 'Messages',
-            tabBarIcon: ({ color }) => <Ionicons name="chatbubbles" size={24} color={color} />,
+            tabBarIcon: createTabIcon("chatbubbles"),
             tabBarBadge: getNotificationBadge(5),
           }}
         />
@@ -63,7 +63,7 @@ export default function TabsLayout() {
           name="admin/lost-pets"
           options={{
             title: 'Lost Pets',
-            tabBarIcon: ({ color }) => <Ionicons name="search" size={24} color={color} />,
+            tabBarIcon: createTabIcon("search"),
           }}
         />
       </Tabs>
@@ -87,21 +87,21 @@ export default function TabsLayout() {
         name="adopter/dashboard"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <Ionicons name="home" size={24} color={color} />,
+          tabBarIcon: createTabIcon("home"),
         }}
       />
       <Tabs.Screen
         name="adopter/browse"
         options={{
           title: 'Browse',
-          tabBarIcon: ({ color }) => <Ionicons name="search" size={24} color={color} />,
+          tabBarIcon: createTabIcon("search"),
         }}
       />
       <Tabs.Screen
         name="adopter/applications"
         options={{
           title: 'Applications',
-          tabBarIcon: ({ color }) => <Ionicons name="document-text" size={24} color={color} />,
+          tabBarIcon: createTabIcon("document-text"),
           tabBarBadge: getNotificationBadge(1),
         }}
       />
@@ -109,7 +109,7 @@ export default function TabsLayout() {
         name="adopter/messages"
         options={{
           title: 'Messages',
-          tabBarIcon: ({ color }) => <Ionicons name="chatbubbles" size={24} color={color} />,
+          tabBarIcon: createTabIcon("chatbubbles"),
           tabBarBadge: getNotificationBadge(2),
         }}
       />
@@ -117,21 +117,21 @@ export default function TabsLayout() {
         name="adopter/care-journal"
         options={{
           title: 'Journal',
-          tabBarIcon: ({ color }) => <Ionicons name="book" size={24} color={color} />,
+          tabBarIcon: createTabIcon("book"),
         }}
       />
       <Tabs.Screen
         name="demo"
         options={{
           title: 'Demo',
-          tabBarIcon: ({ color }) => <Ionicons name="flask" size={24} color={color} />,
+          tabBarIcon: createTabIcon("flask"),
         }}
       />
       <Tabs.Screen
         name="auth"
         options={{
           title: 'Account',
-          tabBarIcon: ({ color }) => <Ionicons name="person" size={24} color={color} />,
+          tabBarIcon: createTabIcon("person"),
           headerShown: false
         }}
       />

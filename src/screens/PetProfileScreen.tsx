@@ -22,6 +22,9 @@ export default function PetProfileScreen({ navigation, route }: PetProfileScreen
 
   const { user } = useAuth()
   const petId = route.params?.petId
+  
+  // Determine if user is a shelter (admin)
+  const isShelter = user?.type === "admin"
 
   useEffect(() => {
     if (petId) {
@@ -53,10 +56,26 @@ export default function PetProfileScreen({ navigation, route }: PetProfileScreen
     }
   }
 
-  const handleChatWithShelter = () => {
-    if (pet) {
-      navigation.navigate("Chat", { petId: pet.id })
-    }
+    const handleChatWithShelter = () => {
+    if (!pet) return
+    
+    navigation.navigate("Chat", { 
+      messageId: pet.id,
+      petId: pet.id,
+      petName: pet.name
+    })
+  }
+  
+  // Handle viewing applications for a pet (for shelter admins)
+  const handleViewApplications = () => {
+    if (!pet) return
+    
+    // Navigate directly to the applications screen for this pet
+    navigation.navigate("Applications", { 
+      petId: pet.id,
+      petName: pet.name,
+      fromShelter: true // Flag to indicate this is being viewed by a shelter
+    })
   }
 
   if (!pet) {
@@ -227,47 +246,58 @@ export default function PetProfileScreen({ navigation, route }: PetProfileScreen
           )}
         </View>
 
-        {/* Shelter Information */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Shelter Information</Text>
-          <View style={styles.shelterCard}>
-            <Text style={styles.shelterName}>{pet.shelter.name}</Text>
-            <View style={styles.contactItem}>
-              <Ionicons name="call-outline" size={16} color={colors.primary} />
-              <Text style={styles.contactText}>{pet.shelter.contact}</Text>
+        {/* Shelter Information - Only shown for adopters */}
+        {!isShelter && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Shelter Information</Text>
+            <View style={styles.shelterCard}>
+              <Text style={styles.shelterName}>{pet.shelter.name}</Text>
+              <View style={styles.contactItem}>
+                <Ionicons name="call-outline" size={16} color={colors.primary} />
+                <Text style={styles.contactText}>{pet.shelter.contact}</Text>
+              </View>
+              <View style={styles.contactItem}>
+                <Ionicons name="mail-outline" size={16} color={colors.primary} />
+                <Text style={styles.contactText}>{pet.shelter.email}</Text>
+              </View>
+              <View style={styles.contactItem}>
+                <Ionicons name="location-outline" size={16} color={colors.primary} />
+                <Text style={styles.contactText}>{pet.shelter.address}</Text>
+              </View>
+              
+              {/* Contact Button */}
+              <TouchableOpacity style={styles.contactButton} onPress={handleContactShelter}>
+                <Ionicons name="call" size={20} color="white" />
+                <Text style={styles.contactButtonText}>Contact Shelter</Text>
+              </TouchableOpacity>
             </View>
-            <View style={styles.contactItem}>
-              <Ionicons name="mail-outline" size={16} color={colors.primary} />
-              <Text style={styles.contactText}>{pet.shelter.email}</Text>
-            </View>
-            <View style={styles.contactItem}>
-              <Ionicons name="location-outline" size={16} color={colors.primary} />
-              <Text style={styles.contactText}>{pet.shelter.address}</Text>
-            </View>
-            
-            {/* Contact Button */}
-            <TouchableOpacity style={styles.contactButton} onPress={handleContactShelter}>
-              <Ionicons name="call" size={20} color="white" />
-              <Text style={styles.contactButtonText}>Contact Shelter</Text>
-            </TouchableOpacity>
           </View>
-        </View>
+        )}
 
         {/* Add sufficient padding at the bottom to prevent content from being hidden under action buttons */}
         <View style={styles.bottomSpacing} />
       </ScrollView>
 
-      {/* Action Buttons */}
-      <View style={styles.actionButtons}>
-        <TouchableOpacity style={styles.chatButton} onPress={handleChatWithShelter}>
-          <Ionicons name="chatbubble-outline" size={20} color={colors.primary} />
-          <Text style={styles.chatButtonText}>Chat with Shelter</Text>
-        </TouchableOpacity>
+      {/* Action Buttons - Different buttons for adopters vs shelters */}
+      {isShelter ? (
+        <View style={styles.actionButtons}>
+          <TouchableOpacity style={styles.compactButton} onPress={handleViewApplications}>
+            <Ionicons name="document-text-outline" size={18} color="white" />
+            <Text style={styles.buttonText}>View Applications</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <View style={styles.actionButtons}>
+          <TouchableOpacity style={styles.chatButton} onPress={handleChatWithShelter}>
+            <Ionicons name="chatbubble-outline" size={18} color={colors.primary} />
+            <Text style={styles.chatButtonText}>Chat with Shelter</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity style={styles.adoptButton} onPress={handleApplyForAdoption}>
-          <Text style={styles.adoptButtonText}>Apply for Adoption</Text>
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity style={styles.adoptButton} onPress={handleApplyForAdoption}>
+            <Text style={styles.adoptButtonText}>Apply for Adoption</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
     </View>
   )
@@ -534,7 +564,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   bottomSpacing: {
-    height: 180, // Increased height to provide more space for the action buttons
+    height: 120, // Reduced height since action buttons are more compact now
   },
   actionButtons: {
     position: "absolute",
@@ -542,12 +572,12 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: "white",
-    padding: 24,
+    padding: 16,
     borderTopWidth: 1,
     borderTopColor: colors.border,
-    gap: 16,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    gap: 12,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: -3 },
     shadowOpacity: 0.1,
@@ -572,20 +602,44 @@ const styles = StyleSheet.create({
   },
   adoptButton: {
     backgroundColor: colors.primary,
-    borderRadius: 16,
-    padding: 18,
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
     alignItems: "center",
     shadowColor: colors.primary,
     shadowOffset: {
       width: 0,
-      height: 4,
+      height: 2,
     },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
   },
   adoptButtonText: {
-    fontSize: 18,
+    fontSize: 16,
+    color: "white",
+    fontWeight: "600",
+  },
+  compactButton: {
+    flexDirection: "row",
+    backgroundColor: colors.primary,
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: colors.primary,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
+    gap: 8,
+  },
+  buttonText: {
+    fontSize: 16,
     color: "white",
     fontWeight: "600",
   },

@@ -1,5 +1,6 @@
+import { useTypedParams } from '@/src/utils/navigation-utils';
 import { Feather } from '@expo/vector-icons';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
@@ -30,7 +31,7 @@ interface HealthRecord {
 }
 
 export default function EditPetScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id } = useTypedParams<{ id: string }>();
   
   const [pet, setPet] = useState<Pet | null>(null);
   const [formData, setFormData] = useState<Partial<Pet>>({});

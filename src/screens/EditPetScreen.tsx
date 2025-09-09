@@ -162,7 +162,7 @@ const ChipSelector: React.FC<{
     style={horizontal ? styles.chipScrollView : undefined}
     contentContainerStyle={!horizontal ? styles.chipGrid : undefined}
   >
-    {options.map((option) => (
+    {options.map((option: any) => (
       <TouchableOpacity
         key={option.id}
         style={[
@@ -352,7 +352,7 @@ export default function EditPetScreen(props: any) {
     
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise(resolve => setTimeout(() => resolve(undefined), 1500));
       
       Alert.alert(
         "Success! 🎉", 

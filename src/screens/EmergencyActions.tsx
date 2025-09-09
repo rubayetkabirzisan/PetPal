@@ -1,17 +1,18 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Modal,
-    ScrollView,
-    StyleSheet,
-    Switch,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Alert,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
+import NavigationHeader from '../../components/NavigationHeader';
 
 // Mock colors object - replace with your actual theme
 const colors = {
@@ -95,7 +96,7 @@ const EmergencyActions: React.FC<EmergencyActionsProps> = ({
 
   const handleEmergencyAction = async (actionType: string) => {
     setLoading(actionType);
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise(resolve => setTimeout(() => resolve(undefined), 2000));
     setLoading(null);
     setModalData({ type: null, visible: false });
     resetForms();
@@ -175,13 +176,11 @@ const EmergencyActions: React.FC<EmergencyActionsProps> = ({
       presentationStyle="pageSheet"
     >
       <View style={styles.modalContainer}>
-        <View style={styles.modalHeader}>
-          <TouchableOpacity onPress={closeModal}>
-            <Ionicons name="close" size={24} color={colors.text} />
-          </TouchableOpacity>
-          <Text style={styles.modalTitle}>Broadcast Emergency Alert</Text>
-          <View style={{ width: 24 }} />
-        </View>
+        <NavigationHeader 
+          title="Broadcast Emergency Alert" 
+          showBackButton={true} 
+          backButtonAction={closeModal}
+        />
         <ScrollView style={styles.modalContent}>
           <View style={styles.settingSection}>
             <Text style={styles.settingLabel}>Alert Radius (km)</Text>
@@ -278,13 +277,11 @@ const EmergencyActions: React.FC<EmergencyActionsProps> = ({
       presentationStyle="pageSheet"
     >
       <View style={styles.modalContainer}>
-        <View style={styles.modalHeader}>
-          <TouchableOpacity onPress={closeModal}>
-            <Ionicons name="close" size={24} color={colors.text} />
-          </TouchableOpacity>
-          <Text style={styles.modalTitle}>Contact Authorities</Text>
-          <View style={{ width: 24 }} />
-        </View>
+        <NavigationHeader 
+          title="Contact Authorities" 
+          showBackButton={true} 
+          backButtonAction={closeModal}
+        />
         <ScrollView style={styles.modalContent}>
           <View style={styles.settingSection}>
             <Text style={styles.settingLabel}>Select Authorities to Contact</Text>
@@ -376,13 +373,11 @@ const EmergencyActions: React.FC<EmergencyActionsProps> = ({
       presentationStyle="pageSheet"
     >
       <View style={styles.modalContainer}>
-        <View style={styles.modalHeader}>
-          <TouchableOpacity onPress={closeModal}>
-            <Ionicons name="close" size={24} color={colors.text} />
-          </TouchableOpacity>
-          <Text style={styles.modalTitle}>Coordinate Volunteer Search</Text>
-          <View style={{ width: 24 }} />
-        </View>
+        <NavigationHeader 
+          title="Coordinate Volunteer Search" 
+          showBackButton={true} 
+          backButtonAction={closeModal}
+        />
         <ScrollView style={styles.modalContent}>
           <View style={styles.settingSection}>
             <Text style={styles.settingLabel}>Search Area Radius (km)</Text>
@@ -643,6 +638,7 @@ const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
     backgroundColor: colors.background,
+    paddingTop: 0, // No extra padding needed as NavigationHeader handles this
   },
   modalHeader: {
     flexDirection: 'row',
@@ -662,6 +658,7 @@ const styles = StyleSheet.create({
   modalContent: {
     flex: 1,
     padding: 16,
+    paddingTop: 8, // Reduced top padding since NavigationHeader has its own padding
   },
   modalFooter: {
     flexDirection: 'row',

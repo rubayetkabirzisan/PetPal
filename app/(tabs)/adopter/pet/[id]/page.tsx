@@ -1,5 +1,5 @@
+import { useTypedParams } from '@/src/utils/navigation-utils';
 import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
     ActivityIndicator,
@@ -99,7 +99,7 @@ const initialForm: ApplicationForm = {
 };
 
 export default function AdoptionApplicationPage() {
-  const { id } = useLocalSearchParams();
+  const { id } = useTypedParams<{ id: string }>();
   const [pet, setPet] = useState<any>(null);
   const [currentStep, setCurrentStep] = useState(1);
   const [form, setForm] = useState<ApplicationForm>(initialForm);

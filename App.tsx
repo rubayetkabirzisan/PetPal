@@ -35,7 +35,7 @@ import ReportLostPetScreen from "./src/screens/ReportLostPetScreen"
 import SafeZoneScreen from "./src/screens/SafeZoneScreen"
 import SettingsScreen from "./src/screens/SettingsScreen"
 import { theme } from "./src/theme/theme"
-import RootNavigator from './src/navigation/RootNavigation';
+
 const Stack = createStackNavigator()
 
 export default function App() {
@@ -66,7 +66,7 @@ export default function App() {
             <Stack.Screen
               name="PetProfile"
               component={PetProfileScreen}
-              options={{ headerShown: true, title: "Pet Profile" }}
+              options={{ headerShown: false }}
             />
            <Stack.Screen
              name="EditPet"
@@ -107,7 +107,7 @@ export default function App() {
             <Stack.Screen 
               name="ReportLostPet" 
               component={ReportLostPetScreen} 
-              options={{ headerShown: true, title: "Report Lost Pet" }}
+              options={{ headerShown: false }}
             />
             <Stack.Screen 
               name="PetMap" 

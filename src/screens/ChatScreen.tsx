@@ -1,7 +1,7 @@
 "use client"
 
 import { Ionicons } from "@expo/vector-icons"
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import {
   KeyboardAvoidingView,
   Platform,
@@ -30,34 +30,39 @@ interface ChatScreenProps {
 }
 
 export default function ChatScreen({ navigation, route }: ChatScreenProps) {
-  // Get the messageId from route params if available
+  // Get the params from route if available
   const messageId = route?.params?.messageId;
+  const shelterName = route?.params?.shelterName || "Shelter Chat";
+  const shelterImage = route?.params?.shelterImage;
+  
+  // Reference to the ScrollView for auto-scrolling
+  const scrollViewRef = useRef<ScrollView>(null);
   
   // You can use messageId to fetch specific chat messages
   // For now, we'll use the mock data
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
-      text: "Hi! I'm interested in adopting Buddy. Could you tell me more about his temperament?",
+      text: "Hi! I'm interested in learning about pets available for adoption at your shelter. Do you have any medium-sized dogs that are good with children?",
       sender: "user",
       timestamp: "10:30 AM",
     },
     {
       id: "2",
-      text: "Hello! Thank you for your interest in Buddy. He's a very friendly and energetic dog who loves playing fetch and swimming. He's great with kids and gets along well with other dogs.",
+      text: "Hello! Thank you for your interest in our shelter. We currently have several medium-sized dogs that are great with children. We have a 3-year-old Lab mix and a 2-year-old Beagle who are both very friendly and well-socialized.",
       sender: "shelter",
       timestamp: "10:35 AM",
-      senderName: "Sarah - Happy Paws Shelter",
+      senderName: `Sarah - ${shelterName}`,
     },
     {
       id: "3",
-      text: "That sounds perfect! I have a 5-year-old daughter and we're looking for an active companion. What's the next step in the adoption process?",
+      text: "That sounds perfect! I have a 5-year-old daughter and we're looking for an active companion. What's the next step to visit the shelter?",
       sender: "user",
       timestamp: "10:37 AM",
     },
     {
       id: "4",
-      text: "Wonderful! The first step would be to fill out our adoption application. Once that's reviewed, we can schedule a meet and greet with Buddy. Would you like me to send you the application link?",
+      text: "Wonderful! You can schedule a visit to our shelter through our online calendar. We're open daily from 10AM to 5PM. Would you like me to send you the link to schedule a visit?",
       sender: "shelter",
       timestamp: "10:40 AM",
       senderName: "Sarah - Happy Paws Shelter",
@@ -65,6 +70,13 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
   ])
 
   const [newMessage, setNewMessage] = useState("")
+  
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }, 100); // Small delay to ensure rendering is complete
+  }, [messages]);
 
   const sendMessage = () => {
     if (newMessage.trim()) {
@@ -77,6 +89,9 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
 
       setMessages((prev) => [...prev, message])
       setNewMessage("")
+      
+      // Scroll to the bottom after sending
+      scrollViewRef.current?.scrollToEnd({ animated: true })
 
       // Simulate shelter response
       setTimeout(() => {
@@ -88,6 +103,8 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
           senderName: "Sarah - Happy Paws Shelter",
         }
         setMessages((prev) => [...prev, response])
+        // Scroll to the bottom after receiving shelter response
+        scrollViewRef.current?.scrollToEnd({ animated: true })
       }, 1000)
     }
   }
@@ -103,6 +120,7 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       }
       setMessages((prev) => [...prev, visitMessage])
+      scrollViewRef.current?.scrollToEnd({ animated: true })
       
       // Simulate shelter response
       setTimeout(() => {
@@ -114,6 +132,7 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
           senderName: "Sarah - Happy Paws Shelter",
         }
         setMessages((prev) => [...prev, response])
+        scrollViewRef.current?.scrollToEnd({ animated: true })
       }, 1500)
     }
   }
@@ -129,6 +148,7 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       }
       setMessages((prev) => [...prev, appMessage])
+      scrollViewRef.current?.scrollToEnd({ animated: true })
       
       // Simulate shelter response
       setTimeout(() => {
@@ -140,18 +160,8 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
           senderName: "Sarah - Happy Paws Shelter",
         }
         setMessages((prev) => [...prev, response])
+        scrollViewRef.current?.scrollToEnd({ animated: true })
       }, 1500)
-    }
-  }
-
-  const handleViewPet = () => {
-    // Navigate to pet profile screen
-    if (navigation) {
-      // Navigate to the pet profile screen
-      navigation.navigate('PetProfile', { 
-        petId: route?.params?.petId || 'buddy-001',
-        petName: route?.params?.petName || 'Buddy'
-      })
     }
   }
 
@@ -164,6 +174,7 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     }
     setMessages((prev) => [...prev, callMessage])
+    scrollViewRef.current?.scrollToEnd({ animated: true })
     
     // In a real app, this would integrate with calling services like Twilio, Agora, etc.
     console.log("Starting voice call with shelter...")
@@ -178,6 +189,7 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     }
     setMessages((prev) => [...prev, videoCallMessage])
+    scrollViewRef.current?.scrollToEnd({ animated: true })
     
     // In a real app, this would integrate with video calling services
     console.log("Starting video call with shelter...")
@@ -192,6 +204,7 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     }
     setMessages((prev) => [...prev, attachMessage])
+    scrollViewRef.current?.scrollToEnd({ animated: true })
     
     // In a real app, this would open file picker or camera
     console.log("Opening file attachment options...")
@@ -221,7 +234,7 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
   return (
     <View style={styles.container}>
       <NavigationHeader 
-        title="Happy Paws Shelter" 
+        title={shelterName} 
         showBackButton={true}
         backButtonAction={() => navigation?.goBack()}
       />
@@ -245,9 +258,11 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
 
         {/* Messages */}
         <ScrollView
+          ref={scrollViewRef}
           style={styles.messagesContainer}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.messagesContent}
+          onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
         >
           {messages.map(renderMessage)}
         </ScrollView>
@@ -294,14 +309,6 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
         >
           <Ionicons name="document-text-outline" size={16} color={colors.primary} />
           <Text style={styles.quickActionText}>Application</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={styles.quickAction}
-          onPress={() => handleViewPet()}
-        >
-          <Ionicons name="heart-outline" size={16} color={colors.primary} />
-          <Text style={styles.quickActionText}>View Pet</Text>
         </TouchableOpacity>
       </View>
       </KeyboardAvoidingView>
@@ -486,5 +493,5 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.primary,
     fontWeight: "500",
-  },
+  }
 })

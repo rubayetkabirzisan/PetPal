@@ -1,13 +1,14 @@
 import { useAuth } from '@/hooks/useAuth';
 import { getPetById, type Pet } from '@/lib/data';
+import { useTypedParams } from '@/src/utils/navigation-utils';
 import { Feather } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Image, Linking, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function PetProfilePage() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id } = useTypedParams<{ id: string }>();
   const [pet, setPet] = useState<Pet | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isFavorited, setIsFavorited] = useState(false);

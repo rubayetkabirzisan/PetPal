@@ -9,10 +9,34 @@ interface AdminDashboardScreenProps {
 
 export default function AdminDashboardScreen({ navigation }: AdminDashboardScreenProps) {
   const stats = [
-    { label: "Available Pets", value: "24", icon: "heart-outline", color: colors.primary },
-    { label: "Pending Applications", value: "8", icon: "document-text-outline", color: colors.warning },
-    { label: "Successful Adoptions", value: "156", icon: "checkmark-circle-outline", color: colors.success },
-    { label: "Lost Pet Reports", value: "3", icon: "alert-circle-outline", color: colors.error },
+    { 
+      label: "Available Pets", 
+      value: "24", 
+      icon: "heart-outline", 
+      color: colors.primary,
+      onPress: () => navigation.navigate("Pets") 
+    },
+    { 
+      label: "Pending Applications", 
+      value: "8", 
+      icon: "document-text-outline", 
+      color: colors.warning,
+      onPress: () => navigation.navigate("Applications", { status: "Pending" }) 
+    },
+    { 
+      label: "Successful Adoptions", 
+      value: "156", 
+      icon: "checkmark-circle-outline", 
+      color: colors.success,
+      onPress: () => navigation.navigate("AdoptionHistory") 
+    },
+    { 
+      label: "Lost Pet Reports", 
+      value: "3", 
+      icon: "alert-circle-outline", 
+      color: colors.error,
+      onPress: () => navigation.navigate("LostPets") 
+    },
   ]
 
   const quickActions = [
@@ -23,10 +47,36 @@ export default function AdminDashboardScreen({ navigation }: AdminDashboardScree
   ]
 
   const recentActivity = [
-    { type: "application", message: "New adoption application for Buddy", time: "2 hours ago" },
-    { type: "pet", message: "Luna was successfully adopted", time: "5 hours ago" },
-    { type: "lost", message: "Lost pet report: Max (German Shepherd)", time: "1 day ago" },
-    { type: "application", message: "Application approved for Bella", time: "2 days ago" },
+    { 
+      type: "application", 
+      message: "New adoption application for Buddy", 
+      time: "2 hours ago",
+      petId: "pet-1",
+      applicationId: "app-101",
+      onPress: () => navigation.navigate("Applications", { applicationId: "app-101" })
+    },
+    { 
+      type: "pet", 
+      message: "Luna was successfully adopted", 
+      time: "5 hours ago",
+      petId: "pet-2",
+      onPress: () => navigation.navigate("AdoptionHistory")
+    },
+    { 
+      type: "lost", 
+      message: "Lost pet report: Max (German Shepherd)", 
+      time: "1 day ago",
+      reportId: "lost-1",
+      onPress: () => navigation.navigate("LostPets", { reportId: "lost-1" })
+    },
+    { 
+      type: "application", 
+      message: "Application approved for Bella", 
+      time: "2 days ago",
+      petId: "pet-3",
+      applicationId: "app-102",
+      onPress: () => navigation.navigate("Applications", { applicationId: "app-102", status: "Approved" })
+    },
   ]
 
   const getActivityIcon = (type: string) => {
@@ -55,13 +105,18 @@ export default function AdminDashboardScreen({ navigation }: AdminDashboardScree
       {/* Stats Grid */}
       <View style={styles.statsContainer}>
         {stats.map((stat, index) => (
-          <View key={index} style={styles.statCard}>
+          <TouchableOpacity 
+            key={index} 
+            style={styles.statCard} 
+            onPress={stat.onPress}
+            activeOpacity={0.7}
+          >
             <View style={[styles.statIcon, { backgroundColor: stat.color + "20" }]}>
               <Ionicons name={stat.icon as any} size={24} color={stat.color} />
             </View>
             <Text style={styles.statValue}>{stat.value}</Text>
             <Text style={styles.statLabel}>{stat.label}</Text>
-          </View>
+          </TouchableOpacity>
         ))}
       </View>
 
@@ -83,7 +138,12 @@ export default function AdminDashboardScreen({ navigation }: AdminDashboardScree
         <Text style={styles.sectionTitle}>Recent Activity</Text>
         <View style={styles.activityContainer}>
           {recentActivity.map((activity, index) => (
-            <View key={index} style={styles.activityItem}>
+            <TouchableOpacity 
+              key={index} 
+              style={styles.activityItem} 
+              onPress={activity.onPress}
+              activeOpacity={0.7}
+            >
               <View style={styles.activityIcon}>
                 <Ionicons name={getActivityIcon(activity.type) as any} size={16} color={colors.primary} />
               </View>
@@ -91,7 +151,10 @@ export default function AdminDashboardScreen({ navigation }: AdminDashboardScree
                 <Text style={styles.activityMessage}>{activity.message}</Text>
                 <Text style={styles.activityTime}>{activity.time}</Text>
               </View>
-            </View>
+              <View style={styles.activityArrow}>
+                <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+              </View>
+            </TouchableOpacity>
           ))}
         </View>
       </View>
@@ -172,6 +235,14 @@ const styles = StyleSheet.create({
     width: "47%",
     borderWidth: 1,
     borderColor: colors.border,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
   },
   statIcon: {
     width: 48,
@@ -235,6 +306,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
+    justifyContent: "space-between",
   },
   activityIcon: {
     width: 32,
@@ -247,6 +319,9 @@ const styles = StyleSheet.create({
   },
   activityInfo: {
     flex: 1,
+  },
+  activityArrow: {
+    marginLeft: 8,
   },
   activityMessage: {
     fontSize: 14,

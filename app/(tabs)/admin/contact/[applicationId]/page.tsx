@@ -2,15 +2,16 @@
 
 import { useAuth } from "@/hooks/useAuth"
 import { getApplications, getPetById, type AdoptionApplication } from "@/lib/data"
+import { useTypedParams } from "@/src/utils/navigation-utils"
 import { Feather, MaterialIcons } from "@expo/vector-icons"
-import { useLocalSearchParams, useRouter } from "expo-router"
+import { useRouter } from "expo-router"
 import { StatusBar } from "expo-status-bar"
 import React, { useEffect, useState } from "react"
 import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
 
 export default function ContactAdopter() {
-  const params = useLocalSearchParams<{ applicationId: string }>()
-  const applicationId = params.applicationId as string
+  const params = useTypedParams<{ applicationId: string }>()
+  const applicationId = params.applicationId
   
   const [application, setApplication] = useState<AdoptionApplication | null>(null)
   const [pet, setPet] = useState<any>(null)
@@ -74,7 +75,7 @@ export default function ContactAdopter() {
 
     // Simulate sending email/making call
     try {
-      await new Promise((resolve) => setTimeout(resolve, 2000))
+      await new Promise((resolve) => setTimeout(() => resolve(undefined), 2000))
       setSent(true)
       
       // Redirect back to applications after 3 seconds
