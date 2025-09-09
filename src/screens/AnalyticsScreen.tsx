@@ -34,7 +34,7 @@ export default function AnalyticsScreen({ navigation }: AnalyticsScreenProps) {
     const fetchAnalyticsData = async () => {
       try {
         const response = await axios.get(
-          "http://10.103.134.245:5000/api/analytics/view"
+          "http://10.103.132.206:5000/api/analytics/view"
         );
 
         if (response.data && response.data.length > 0) {

@@ -21,7 +21,7 @@ export default function NotificationsScreen() {
 
   useEffect(() => {
     // Fetch notifications from backend when component mounts
-    axios.get('http://10.103.134.245:5000/api/notifications/viewAll')
+    axios.get('http://10.103.132.206:5000/api/notifications/viewAll')
       .then((response) => {
         setNotifications(response.data);  // Update state with fetched notifications
       })
@@ -62,7 +62,7 @@ export default function NotificationsScreen() {
 
   const markAsRead = () => {
   const notificationId = '68ab442b74bbc731f0b09f6e';  // Hardcoded notification ID
-  axios.patch(`http://10.103.134.245:5000/api/notifications/markRead/${notificationId}`)
+  axios.patch(`http://10.103.132.206:5000/api/notifications/markRead/${notificationId}`)
     .then((response) => {
       // Update the notification state locally
       setNotifications((prevNotifications) =>

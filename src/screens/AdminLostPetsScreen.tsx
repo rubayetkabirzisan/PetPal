@@ -1,7 +1,7 @@
 "use client";
 
 import { Ionicons } from "@expo/vector-icons";
-import { useState, useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import NavigationHeader from "../../components/NavigationHeader";
 import { colors } from "../theme/theme";
@@ -40,7 +40,7 @@ export default function AdminLostPetsScreen({ navigation }: AdminLostPetsScreenP
   useEffect(() => {
     const fetchLostPets = async () => {
       try {
-        const response = await fetch("http://10.103.134.245:5000/api/lostpets/viewAll");
+        const response = await fetch("http://10.103.132.206:5000/api/lostpets/viewAll");
         if (!response.ok) {
           throw new Error("Failed to fetch data");
         }
@@ -75,7 +75,7 @@ export default function AdminLostPetsScreen({ navigation }: AdminLostPetsScreenP
   const handleStatusChange = async (petId: string, newStatus: "Active" | "Found" | "Closed") => {
     setIsUpdating(true);
     try {
-      const response = await fetch(`http://10.103.134.245:5000/api/lostpets/update/${petId}`, {
+      const response = await fetch(`http://10.103.132.206:5000/api/lostpets/update/${petId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -98,7 +98,7 @@ export default function AdminLostPetsScreen({ navigation }: AdminLostPetsScreenP
   // Handle deleting a pet
   const handleDeletePet = async (petId: string) => {
     try {
-      const response = await fetch(`http://10.103.134.245:5000/api/lostpets/delete/${petId}`, {
+      const response = await fetch(`http://10.103.132.206:5000/api/lostpets/delete/${petId}`, {
         method: "DELETE",
       });
       const deletedPet = await response.json();

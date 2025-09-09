@@ -59,7 +59,7 @@ const AdopterProfileScreen: React.FC = () => {
   const loadProfile = async (): Promise<void> => {
     try {
       setLoading(true);
-      const response = await axios.get(`http://10.103.134.245:5000/api/profile/view/${userId}`);
+      const response = await axios.get(`http://10.103.132.206:5000/api/profile/view/${userId}`);
       const userProfile = response.data;
 
       setProfile({
@@ -91,7 +91,7 @@ const AdopterProfileScreen: React.FC = () => {
 
     try {
       setSaving(true);
-      await axios.put(`http://10.103.134.245:5000/api/profile/update/${userId}`, profile);
+      await axios.put(`http://10.103.132.206:5000/api/profile/update/${userId}`, profile);
       setIsEditing(false);
       Alert.alert("Success", "Profile updated successfully!");
     } catch (error) {

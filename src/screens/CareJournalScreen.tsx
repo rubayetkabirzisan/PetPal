@@ -3,15 +3,15 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Modal,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Alert,
+    Modal,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import NavigationHeader from '../../components/NavigationHeader';
 
@@ -85,12 +85,12 @@ export default function CareJournalScreen({ route, navigation }: CareJournalScre
   const loadData = async () => {
     try {
       // Get care entries for this user
-      const careEntriesResponse = await fetch(`http://10.103.134.245:5000/api/careEntries/viewAll`);
+      const careEntriesResponse = await fetch(`http://10.103.132.206:5000/api/careEntries/viewAll`);
       const careEntries = await careEntriesResponse.json();
       setEntries(careEntries);
 
       // Get adopted pets for this user
-      const petsResponse = await fetch(`http://10.103.134.245:5000/api/pets/view`);
+      const petsResponse = await fetch(`http://10.103.132.206:5000/api/pets/view`);
       const pets = await petsResponse.json();
       setAdoptedPets(pets);
     } catch (error) {
@@ -119,14 +119,14 @@ export default function CareJournalScreen({ route, navigation }: CareJournalScre
 
       if (editingEntry) {
         // Edit existing entry
-        await fetch(`http://10.103.134.245:5000/api/careEntries/update/${editingEntry}`, {
+        await fetch(`http://10.103.132.206:5000/api/careEntries/update/${editingEntry}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         });
       } else {
         // Create new entry
-        await fetch('http://10.103.134.245:5000/api/careEntries/create', {
+        await fetch('http://10.103.132.206:5000/api/careEntries/create', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
@@ -146,7 +146,7 @@ export default function CareJournalScreen({ route, navigation }: CareJournalScre
   // --- Edit ---
   const handleEdit = async (entryId: string) => {
     try {
-      const response = await fetch(`http://10.103.134.245:5000/api/careEntries/viewById/${entryId}`);
+      const response = await fetch(`http://10.103.132.206:5000/api/careEntries/viewById/${entryId}`);
       const entry = await response.json();
       setFormData({
         petId: entry.petId,
@@ -175,7 +175,7 @@ export default function CareJournalScreen({ route, navigation }: CareJournalScre
           text: 'Delete',
           onPress: async () => {
             try {
-              await fetch(`http://10.103.134.245:5000/api/careEntries/delete/${entryId}`, {
+              await fetch(`http://10.103.132.206:5000/api/careEntries/delete/${entryId}`, {
                 method: 'DELETE',
               });
               loadData();
