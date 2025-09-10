@@ -15,11 +15,11 @@ export default function AdopterProfileScreen() {
   const navigation = useNavigation()
   const [isEditing, setIsEditing] = useState(false)
   const [profile, setProfile] = useState({
-    name: "Zishan",
-    email: "zishan@example.com",
-    phone: "01310131344",
+    name: "Shelter XYZ",
+    email: "shelter@example.com",
+    phone: "01784012201",
     location: "Mirpur 12",
-    bio: "i am zishan.. a final year undergrad student.. looking for job opportu…",
+    bio: "admin",
   })
 
   const { user, logout } = useAuth()
