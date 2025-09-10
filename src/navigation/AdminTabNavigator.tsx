@@ -5,7 +5,8 @@ import { colors } from "../theme/theme"
 import AdminApplicationsScreen from "../screens/AdminApplicationsScreen"
 import AdminDashboardScreen from "../screens/AdminDashboardScreen"
 import AdminGPSTrackingScreen from "../screens/AdminGPSTrackingScreen"
-import AdopterProfileScreen from "../screens/AdopterProfileScreen"
+// import AdopterProfileScreen from "../screens/AdopterProfileScreen"
+import AdminProfileScreen from "../screens/AdminProfileScreen"
 import LostPetsScreen from "../screens/LostPetsScreen"
 import ManagePetsScreen from "../screens/ManagePetsScreen"
 
@@ -54,7 +55,7 @@ export default function AdminTabNavigator() {
       <Tab.Screen name="LostPets" component={LostPetsScreen} options={{ title: "Lost Pets", headerShown: false }} />
       <Tab.Screen name="GPS" component={AdminGPSTrackingScreen} options={{ title: "GPS", headerShown: false }} />
       <Tab.Screen name="Verify" component={AdminApplicationsScreen} options={{ title: "Verify", headerShown: false }} />
-      <Tab.Screen name="Profile" component={AdopterProfileScreen} options={{ title: "Profile", headerShown: false }} />
+      <Tab.Screen name="Profile" component={AdminProfileScreen} options={{ title: "Profile", headerShown: false }} />
     </Tab.Navigator>
   )
 }
