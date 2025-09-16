@@ -1,6 +1,14 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
+
+// Conditional import for expo-notifications
+let Notifications: any;
+try {
+  Notifications = require('expo-notifications');
+} catch (error) {
+  console.log('expo-notifications not available');
+  Notifications = null;
+}
 
 export interface Notification {
   id: string
@@ -26,6 +34,11 @@ const isExpoGo = (): boolean => {
  */
 export async function configureNotifications() {
   try {
+    if (!Notifications) {
+      console.log('Notifications not available, skipping configuration');
+      return;
+    }
+    
     await Notifications.setNotificationHandler({
       handleNotification: async () => ({
         shouldShowAlert: true,
@@ -50,6 +63,11 @@ export async function configureNotifications() {
  */
 export async function requestNotificationPermission(): Promise<boolean> {
   try {
+    if (!Notifications) {
+      console.log('Notifications not available, returning false for permissions');
+      return false;
+    }
+    
     const { status } = await Notifications.requestPermissionsAsync();
     return status === 'granted';
   } catch (error) {
@@ -68,15 +86,20 @@ export async function requestNotificationPermission(): Promise<boolean> {
  * This function can be called safely from App.tsx without causing errors
  */
 export async function initializeNotifications(): Promise<void> {
+  // Always log the message for Expo Go to explain limitations
   if (isExpoGo()) {
     console.log('PetPal Notifications: Running in Expo Go - local notifications only');
-    return;
   }
   
   try {
+    // Still try to configure basic notifications which work in Expo Go
     await configureNotifications();
+    // Still request permissions which work in Expo Go
     await requestNotificationPermission();
-    console.log('PetPal Notifications: Initialized successfully');
+    
+    if (!isExpoGo()) {
+      console.log('PetPal Notifications: Initialized successfully');
+    }
   } catch (error) {
     console.log('PetPal Notifications: Could not initialize push notifications, using local notifications only');
   }
@@ -203,8 +226,8 @@ export async function createApplicationUpdateNotification(
  */
 async function showPushNotification(notification: Notification): Promise<void> {
   try {
-    // Only attempt to show push notifications if not in Expo Go
-    if (isExpoGo()) {
+    // Only attempt to show push notifications if not in Expo Go and Notifications is available
+    if (isExpoGo() || !Notifications) {
       console.log(`Local notification: ${notification.title} - ${notification.message}`);
       return;
     }

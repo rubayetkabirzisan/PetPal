@@ -1,4 +1,3 @@
-"use client"
 
 import { Ionicons } from "@expo/vector-icons"
 import { StackNavigationProp } from "@react-navigation/stack"

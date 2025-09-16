@@ -1,26 +1,25 @@
 
 import { colors } from "../theme/theme";
-"use client"
 
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@hooks/useAuth';
-import { ApplicationTimelineEvent, Pet } from '@lib/data';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@src/contexts/ThemeContext';
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  Image,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Alert,
+    FlatList,
+    Image,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import NavigationHeader from "../../components/NavigationHeader";
+import { ApplicationTimelineEvent, Pet } from '../../lib/data';
 
 // Extend the ApplicationTimelineEvent to allow null date
 interface ExtendedTimelineEvent extends Omit<ApplicationTimelineEvent, 'date'> {

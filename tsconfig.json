@@ -3,24 +3,37 @@
   "compilerOptions": {
     "strict": true,
     "jsx": "react-native",
-    "lib": ["DOM", "ESNext"],
+    "lib": [
+      "DOM",
+      "ESNext"
+    ],
     "paths": {
       "@/*": [
         "./*"
       ],
-      "@components/*": ["./components/*"],
-      "@hooks/*": ["./hooks/*"],
-      "@screens/*": ["./screens/*"],
-      "@assets/*": ["./assets/*"],
-      "@lib/*": ["./lib/*"],
-      "@src/*": ["./src/*"]
+      "@components/*": [
+        "./components/*"
+      ],
+      "@hooks/*": [
+        "./hooks/*"
+      ],
+      "@screens/*": [
+        "./screens/*"
+      ],
+      "@assets/*": [
+        "./assets/*"
+      ],
+      "@lib/*": [
+        "./lib/*"
+      ],
+      "@src/*": [
+        "./src/*"
+      ]
     }
   },
   "include": [
     "**/*.ts",
     "**/*.tsx",
-    ".expo/types/**/*.ts",
-    "expo-env.d.ts",
     "nativewind-env.d.ts",
     "types/**/*.d.ts"
   ]

@@ -1,4 +1,3 @@
-"use client"
 
 import { Ionicons, MaterialIcons } from "@expo/vector-icons"
 import DateTimePicker from '@react-native-community/datetimepicker'
@@ -2116,3 +2115,4 @@ const styles = StyleSheet.create({
     color: colors.primary,
   },
 })
+

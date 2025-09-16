@@ -1,12 +1,12 @@
-import {
-    User,
-    authenticateUser,
-    clearStoredAuth,
-    getStoredAuth,
-    initializeDemoUsers,
-    registerUser
-} from '@lib/auth';
 import React, { createContext, useContext, useEffect, useState } from "react";
+import {
+  User,
+  authenticateUser,
+  clearStoredAuth,
+  getStoredAuth,
+  initializeDemoUsers,
+  registerUser
+} from '../../lib/auth';
 
 interface AuthContextType {
   user: User | null;

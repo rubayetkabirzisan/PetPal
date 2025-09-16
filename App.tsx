@@ -1,9 +1,10 @@
 import { NavigationContainer } from "@react-navigation/native"
-import { createStackNavigator } from "@react-navigation/stack"
+import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import { StatusBar } from "expo-status-bar"
 import React, { useEffect } from "react"
-import { LogBox } from "react-native"
+import { LogBox, View } from "react-native"
 import { Provider as PaperProvider } from "react-native-paper"
+import { SafeAreaProvider } from "react-native-safe-area-context"
 import { initializeNotifications } from "./lib/notifications"
 import { AuthProvider } from "./src/contexts/AuthContext"
 import { ThemeProvider } from "./src/contexts/ThemeContext"
@@ -36,16 +37,25 @@ import SafeZoneScreen from "./src/screens/SafeZoneScreen"
 import SettingsScreen from "./src/screens/SettingsScreen"
 import { theme } from "./src/theme/theme"
 
-const Stack = createStackNavigator()
+const Stack = createNativeStackNavigator()
+
+// Use View instead of GestureHandlerRootView to avoid gesture handler issues in Expo Go
 
 export default function App() {
   useEffect(() => {
-    // Suppress expected warnings in Expo Go for expo-notifications
+    // Suppress expected warnings in Expo Go
     // These warnings don't affect functionality, just inform about limitations
     LogBox.ignoreLogs([
       'expo-notifications: Android Push notifications',
       '`expo-notifications` functionality is not fully supported in Expo Go',
       'We recommend you instead use a development build',
+      // Gesture handler warnings in Expo Go
+      'RCTBridge required dispatch_sync',
+      'new NativeEventEmitter',
+      'Sending `gesture-handler`',
+      'ViewPropTypes will be removed',
+      '[Gesture Handler] Failed to obtain view for PanGestureHandler',
+      'PanGestureHandler',
     ])
     
     // Initialize notifications (safe for Expo Go)
@@ -53,12 +63,18 @@ export default function App() {
   }, [])
 
   return (
-    <PaperProvider theme={theme}>
-      <ThemeProvider>
-        <AuthProvider>
-          <NavigationContainer>
-            <StatusBar style="auto" />
-            <Stack.Navigator initialRouteName="Landing" screenOptions={{ headerShown: false }}>
+    <View style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <PaperProvider theme={theme}>
+            <ThemeProvider>
+              <AuthProvider>
+                <NavigationContainer>
+                  <StatusBar style="auto" />
+            <Stack.Navigator 
+              initialRouteName="Landing" 
+              screenOptions={{ 
+                headerShown: false
+              }}>
             <Stack.Screen name="Landing" component={LandingScreen} />
             <Stack.Screen name="Auth" component={AuthScreen} />
             <Stack.Screen name="AdopterTabs" component={AdopterTabNavigator} />
@@ -159,5 +175,7 @@ export default function App() {
       </AuthProvider>
       </ThemeProvider>
     </PaperProvider>
+      </SafeAreaProvider>
+    </View>
   )
 }

@@ -1,4 +1,3 @@
-"use client"
 
 import { Ionicons } from "@expo/vector-icons"
 import { useEffect, useRef, useState } from "react"

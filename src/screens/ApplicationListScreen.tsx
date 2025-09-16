@@ -1,9 +1,7 @@
-"use client"
 
 import { Header } from '@components/header';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@hooks/useAuth';
-import { ApplicationTimelineEvent, Pet } from '@lib/data';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@src/contexts/ThemeContext';
 import React, { useEffect, useState } from 'react';
@@ -18,6 +16,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { ApplicationTimelineEvent, Pet } from '../../lib/data';
 
 // Extend the ApplicationTimelineEvent to allow null date
 interface ExtendedTimelineEvent extends Omit<ApplicationTimelineEvent, 'date'> {

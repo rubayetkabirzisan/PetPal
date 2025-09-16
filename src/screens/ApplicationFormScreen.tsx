@@ -1,4 +1,3 @@
-"use client"
 
 import { Ionicons, MaterialIcons } from "@expo/vector-icons"
 import { useState } from "react"

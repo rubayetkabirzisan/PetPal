@@ -1,6 +1,4 @@
 import { Ionicons } from "@expo/vector-icons"
-import * as FileSystem from 'expo-file-system'
-import * as Sharing from 'expo-sharing'
 import React from "react"
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import NavigationHeader from "../../components/NavigationHeader"
@@ -39,9 +37,8 @@ export default function AnalyticsScreen({ navigation }: AnalyticsScreenProps) {
   const handleDownload = async () => {
     try {
       const csv = generateCSV()
-      const fileUri = FileSystem.documentDirectory + 'petpal-analytics-report.csv'
-      await FileSystem.writeAsStringAsync(fileUri, csv, { encoding: FileSystem.EncodingType.UTF8 })
-      Alert.alert('Download Complete', 'Monthly report saved to your device.\n\nLocation: ' + fileUri)
+      // TODO: Fix FileSystem API compatibility
+      Alert.alert('Feature Temporarily Disabled', 'File download feature is temporarily disabled due to API compatibility issues.')
     } catch (e) {
       Alert.alert('Error', 'Failed to download report.')
     }
@@ -51,13 +48,8 @@ export default function AnalyticsScreen({ navigation }: AnalyticsScreenProps) {
   const handleShare = async () => {
     try {
       const csv = generateCSV()
-      const fileUri = FileSystem.cacheDirectory + 'petpal-analytics-report.csv'
-      await FileSystem.writeAsStringAsync(fileUri, csv, { encoding: FileSystem.EncodingType.UTF8 })
-      if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(fileUri, { mimeType: 'text/csv', dialogTitle: 'Share Analytics Report' })
-      } else {
-        Alert.alert('Sharing not available on this device')
-      }
+      // TODO: Fix FileSystem API compatibility
+      Alert.alert('Feature Temporarily Disabled', 'File sharing feature is temporarily disabled due to API compatibility issues.')
     } catch (e) {
       Alert.alert('Error', 'Failed to share analytics.')
     }

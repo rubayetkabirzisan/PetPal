@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as FileSystem from 'expo-file-system';
+// Temporarily comment out FileSystem imports to fix compilation
+// import * as FileSystem from 'expo-file-system';
 // NOTE: expo-sharing package needs to be installed
 // Use: npm install expo-sharing --save
 // Import conditionally to handle cases where the package isn't installed
@@ -323,38 +324,11 @@ export async function shareCertificate(certificate: AdoptionCertificate): Promis
   `;
 
   try {
-    // Create temp file path for the certificate
-    const fileUri = FileSystem.cacheDirectory + `${certificate.petName}_Adoption_Certificate.html`;
+    // TODO: Fix FileSystem API compatibility with current expo-file-system version
+    console.warn('Certificate sharing temporarily disabled due to API compatibility issues');
+    return false;
     
-    // Write the HTML content to the file
-    await FileSystem.writeAsStringAsync(fileUri, certificateHTML, {
-      encoding: FileSystem.EncodingType.UTF8
-    });
-    
-    // Check if sharing is available
-    if (Sharing) {
-      try {
-        const isSharingAvailable = await Sharing.isAvailableAsync();
-        if (!isSharingAvailable) {
-          console.warn('Sharing is not available on this device');
-          return false;
-        }
-        
-        // Share the file
-        await Sharing.shareAsync(fileUri, {
-          mimeType: 'text/html',
-          dialogTitle: `${certificate.petName}'s Adoption Certificate`,
-        });
-        return true;
-      } catch (err) {
-        console.warn('Error using expo-sharing:', err);
-        return false;
-      }
-    } else {
-      console.warn('Expo Sharing is not available. Using alternative sharing if available.');
-      // Use alternative sharing method if available in the platform
-      return false;
-    }
+    // Sharing temporarily disabled
   } catch (error) {
     console.error('Error sharing certificate:', error);
     return false;
