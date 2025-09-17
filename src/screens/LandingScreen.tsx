@@ -105,6 +105,14 @@ export default function LandingScreen({ navigation }: LandingScreenProps) {
           </TouchableOpacity>
         </View>
 
+        <TouchableOpacity
+          style={styles.testButton}
+          onPress={() => navigation.navigate('BackendTest')}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.testButtonText}>Backend Test</Text>
+        </TouchableOpacity>
+
         <Text style={styles.footerText}>Every pet deserves a loving home 🐾</Text>
       </View>
     )
@@ -230,6 +238,19 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: "center",
     lineHeight: 20,
+  },
+  testButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    borderRadius: 8,
+    marginBottom: spacing.md,
+  },
+  testButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
   },
   footerText: {
     fontSize: 14,

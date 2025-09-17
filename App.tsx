@@ -21,6 +21,7 @@ import ApplicationFormScreen from "./src/screens/ApplicationFormScreen"
 import ApplicationListScreen from "./src/screens/ApplicationListScreen"
 import ApplicationTrackerScreen from "./src/screens/ApplicationTrackerScreen"
 import AuthScreen from "./src/screens/AuthScreen"
+import BackendTestScreen from "./src/screens/BackendTestScreen"
 import CareJournalScreen from "./src/screens/CareJournalScreen"
 import ChatScreen from "./src/screens/ChatScreen"
 import EditPetScreen from "./src/screens/EditPetScreen"
@@ -77,6 +78,7 @@ export default function App() {
               }}>
             <Stack.Screen name="Landing" component={LandingScreen} />
             <Stack.Screen name="Auth" component={AuthScreen} />
+            <Stack.Screen name="BackendTest" component={BackendTestScreen} options={{ headerShown: true, title: "Backend Test" }} />
             <Stack.Screen name="AdopterTabs" component={AdopterTabNavigator} />
             <Stack.Screen name="AdminTabs" component={AdminTabNavigator} />
             <Stack.Screen
