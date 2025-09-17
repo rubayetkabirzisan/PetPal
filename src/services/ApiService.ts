@@ -123,6 +123,16 @@ class ApiService {
   }
 
   /**
+   * PATCH request
+   */
+  patch(endpoint: string, data: any) {
+    return this.request(endpoint, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    })
+  }
+
+  /**
    * DELETE request
    */
   delete(endpoint: string) {
