@@ -108,7 +108,18 @@ class AuthService {
       return false
     }
   }
+
+  static async authenticate(username: string, password: string): Promise<boolean> {
+    // Mock authentication logic
+    if (username === 'validUser' && password === 'validPassword') {
+      return true;
+    }
+    return false;
+  }
 }
 
 export const authService = new AuthService()
 export default authService
+
+// Export the class as well for testing
+export { AuthService }

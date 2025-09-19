@@ -3,6 +3,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors"); // Importing cors
 const bodyParser = require("body-parser"); // Importing bodyParser (if using it)
+const adopterRoutes = require('./routes/AdopterDashboardScreen');
 const app = express();
 
 
@@ -11,6 +12,18 @@ app.use(cors());
 app.use(bodyParser.json());
  // Using CORS middleware
 app.use(express.json()); // Express built-in JSON parser
+
+// Mock authentication middleware for testing (add this for adopter routes)
+app.use('/api/adopter', (req, res, next) => {
+  req.user = {
+    id: 'adopter-001',
+    name: 'Test User',
+    email: 'testuser@petpal.com',
+    role: 'adopter'
+  };
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  next();
+});
 
 // Use the PORT from environment variables or fallback to 5000
 const PORT = process.env.PORT || 5000;
@@ -40,7 +53,13 @@ app.use('/api/emergency', require('./routes/emergencyRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));//
 app.use("/api/reminders", require("./routes/reminders"));//
 app.use("/api/lostpets", require("./routes/LostpetRoutes"));
+app.use('/api/adopter', adopterRoutes);
+
+// Health check
+app.get('/', (req, res) => {
+  res.json({ message: 'PetPal API is running!' });
+});
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });
