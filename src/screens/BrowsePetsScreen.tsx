@@ -15,10 +15,12 @@ export default function BrowsePetsScreen({ navigation }: BrowsePetsScreenProps) 
   const [selectedFilter, setSelectedFilter] = useState("all")
   const [pets, setPets] = useState<Pet[]>([])
   const [favorites, setFavorites] = useState<string[]>([])
+  const [renderKey, setRenderKey] = useState(0) // Force re-render key
   
   // Debug logging
   useEffect(() => {
     console.log("BrowsePetsScreen initialized");
+    console.log("Selected filter:", selectedFilter);
     
     // Verify navigation prop
     if (navigation) {
@@ -26,7 +28,7 @@ export default function BrowsePetsScreen({ navigation }: BrowsePetsScreenProps) 
     } else {
       console.log("WARNING: Navigation prop is not available");
     }
-  }, [])
+  }, [selectedFilter])
 
   useEffect(() => {
     const allPets = getPets()
@@ -146,18 +148,70 @@ export default function BrowsePetsScreen({ navigation }: BrowsePetsScreenProps) 
           />
         </View>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtersContainer}>
-          {["all", "dog", "cat", "small", "young"].map((filter) => (
-            <TouchableOpacity
-              key={filter}
-              style={[styles.filterButton, selectedFilter === filter && styles.filterButtonActive]}
-              onPress={() => setSelectedFilter(filter)}
-            >
-              <Text style={[styles.filterButtonText, selectedFilter === filter && styles.filterButtonTextActive]}>
-                {filter.charAt(0).toUpperCase() + filter.slice(1)}
-              </Text>
-            </TouchableOpacity>
-          ))}
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false} 
+          style={styles.filtersContainer}
+          key={`filters-${renderKey}`}
+        >
+          {["all", "dog", "cat", "small", "young"].map((filter, index) => {
+            const isActive = selectedFilter === filter;
+            
+            return (
+              <TouchableOpacity
+                key={`${filter}-${renderKey}-${isActive ? 'active' : 'inactive'}`}
+                style={[
+                  {
+                    backgroundColor: "#FFFFFF",
+                    borderColor: "#E5E5E5",
+                    borderWidth: 2,
+                    borderRadius: 24,
+                    paddingHorizontal: 16,
+                    paddingVertical: 10,
+                    marginRight: 8,
+                    minWidth: 60,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 1 },
+                    shadowOpacity: 0.08,
+                    shadowRadius: 2,
+                    elevation: 2,
+                  },
+                  isActive && {
+                    backgroundColor: "#FF7A47",
+                    borderColor: "#FF7A47",
+                    shadowColor: "#FF7A47",
+                    shadowOffset: { width: 0, height: 3 },
+                    shadowOpacity: 0.25,
+                    shadowRadius: 6,
+                    elevation: 6,
+                  }
+                ]}
+                onPress={() => {
+                  console.log(`Filter selected: ${filter}, was: ${selectedFilter}`);
+                  setSelectedFilter(filter);
+                  setRenderKey(prev => prev + 1); // Force re-render
+                }}
+                activeOpacity={0.7}
+              >
+                <Text style={[
+                  {
+                    color: "#8B4513",
+                    fontSize: 14,
+                    fontWeight: "600",
+                    textAlign: "center",
+                  },
+                  isActive && {
+                    color: "#FFFFFF",
+                    fontWeight: "700",
+                  }
+                ]}>
+                  {filter.charAt(0).toUpperCase() + filter.slice(1)}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </ScrollView>
       </View>
 
@@ -215,25 +269,44 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   filterButton: {
-    backgroundColor: colors.background,
-    borderRadius: 20,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    marginRight: spacing.sm,
-    borderWidth: 1,
-    borderColor: colors.border,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 24,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    marginRight: 8,
+    borderWidth: 2,
+    borderColor: "#E5E5E5",
+    minWidth: 60,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 2,
   },
   filterButtonActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
+    backgroundColor: "#FF7A47", // Explicit primary color
+    borderColor: "#FF7A47",
+    borderWidth: 2,
+    shadowColor: "#FF7A47",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 6,
+    transform: [{ scale: 1.02 }], // Slight scale for better visual feedback
   },
   filterButtonText: {
-    color: colors.text,
+    color: "#8B4513", // Explicit text color
     fontSize: 14,
-    fontWeight: "500",
+    fontWeight: "600",
+    textAlign: "center",
   },
   filterButtonTextActive: {
-    color: "white",
+    color: "#FFFFFF", // Pure white for contrast
+    fontSize: 14,
+    fontWeight: "700",
+    textAlign: "center",
   },
   petsContainer: {
     padding: spacing.md,

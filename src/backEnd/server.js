@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const cors = require("cors"); // Importing cors
 const bodyParser = require("body-parser"); // Importing bodyParser (if using it)
 const adopterRoutes = require('./routes/AdopterDashboardScreen');
+const browseRoutes = require('./routes/BrowsePetsScreen');
 const app = express();
 
 
@@ -54,6 +55,7 @@ app.use('/api/notifications', require('./routes/notificationRoutes'));//
 app.use("/api/reminders", require("./routes/reminders"));//
 app.use("/api/lostpets", require("./routes/LostpetRoutes"));
 app.use('/api/adopter', adopterRoutes);
+app.use('/api/browse', browseRoutes);
 
 // Health check
 app.get('/', (req, res) => {
