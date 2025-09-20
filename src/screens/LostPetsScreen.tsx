@@ -5,20 +5,20 @@ import * as ImagePicker from "expo-image-picker"
 import * as Location from 'expo-location'
 import React, { useEffect, useRef, useState } from "react"
 import {
-    ActivityIndicator,
-    Alert,
-    FlatList,
-    Image,
-    Keyboard,
-    Linking,
-    Modal,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    View
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Image,
+  Keyboard,
+  Linking,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View
 } from "react-native"
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps'
 import NavigationHeader from "../../components/NavigationHeader"
@@ -26,11 +26,11 @@ import { useDateTimePicker } from "../../hooks/useDateTimePicker"
 import { getLostPets, initializeLostPetsData, reportSighting, type LostPet } from "../../lib/lost-pets"
 import { validateSightingForm } from "../../utils/formValidation"
 import {
-    ImageInfo,
-    enforceMaxPhotos,
-    getImageCountString,
-    prepareImagesForSubmission,
-    processImagePickerResult
+  ImageInfo,
+  enforceMaxPhotos,
+  getImageCountString,
+  prepareImagesForSubmission,
+  processImagePickerResult
 } from "../../utils/imageUtils"
 import { colors, spacing } from "../theme/theme"
 
@@ -59,8 +59,12 @@ interface SightingFormData {
 }
 
 export default function LostPetsScreen({ navigation }: LostPetsScreenProps) {
+  // Simulate current user ID - in real app this would come from auth context
+  const currentUserId = "user-001"; // This user owns pets with ID "1" and "4"
+  
   const [lostPets, setLostPets] = useState<LostPet[]>([])
   const [selectedTab, setSelectedTab] = useState<"lost" | "found">("lost")
+  const [renderKey, setRenderKey] = useState(0)
   const [searchQuery, setSearchQuery] = useState("")
   const [isFilterModalVisible, setFilterModalVisible] = useState(false)
   const [showResources, setShowResources] = useState(false)
@@ -609,10 +613,106 @@ export default function LostPetsScreen({ navigation }: LostPetsScreenProps) {
     }
   };
 
+  const handleMarkAsFound = async (pet: LostPet) => {
+    Alert.alert(
+      "Mark as Found",
+      `Mark ${pet.name} as found? This will update the status and notify the community.`,
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "Mark Found",
+          onPress: async () => {
+            try {
+              // Here you would make an API call to update the pet status
+              // For demo purposes, we'll update the local state
+              setLostPets(prev => 
+                prev.map(p => 
+                  p.id === pet.id 
+                    ? { ...p, status: "found" as any, foundDate: new Date().toISOString() }
+                    : p
+                )
+              );
+              
+              Alert.alert(
+                "Success", 
+                `${pet.name} has been marked as found! The community will be notified.`
+              );
+            } catch (error) {
+              Alert.alert("Error", "Failed to update pet status. Please try again.");
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const handleDeletePost = async (pet: LostPet) => {
+    Alert.alert(
+      "Delete Post",
+      `Are you sure you want to delete ${pet.name}'s post? This action cannot be undone.`,
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              // Here you would make an API call to delete the pet
+              // For demo purposes, we'll remove from local state
+              setLostPets(prev => prev.filter(p => p.id !== pet.id));
+              
+              Alert.alert("Deleted", `${pet.name}'s post has been deleted.`);
+            } catch (error) {
+              Alert.alert("Error", "Failed to delete post. Please try again.");
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const handleOwnerOptions = (pet: LostPet) => {
+    const options = [];
+    
+    if (pet.status === "lost") {
+      options.push({
+        text: "Mark as Found",
+        onPress: () => handleMarkAsFound(pet)
+      });
+    }
+    
+    options.push(
+      {
+        text: "Delete Post",
+        style: "destructive" as const,
+        onPress: () => handleDeletePost(pet)
+      },
+      {
+        text: "Cancel",
+        style: "cancel" as const
+      }
+    );
+
+    Alert.alert(
+      "Manage Post",
+      `What would you like to do with ${pet.name}'s post?`,
+      options
+    );
+  };
+
   const renderLostPetCard = (pet: LostPet) => {
     const imageUri = pet.photos && pet.photos.length > 0 
       ? pet.photos[0] 
       : "https://via.placeholder.com/120x120";
+    
+    // Check if current user is the owner of this pet
+    const isOwner = pet.ownerId === currentUserId;
     
     return (
       <View key={pet.id} style={styles.petCard}>
@@ -658,23 +758,49 @@ export default function LostPetsScreen({ navigation }: LostPetsScreenProps) {
           )}
 
           <View style={styles.petActions}>
-            <TouchableOpacity 
-              style={styles.contactButton}
-              onPress={() => handleContactOwner(pet)}
-            >
-              <Ionicons name="call-outline" size={16} color="white" />
-              <Text style={styles.contactButtonText}>Contact</Text>
-            </TouchableOpacity>
+            {isOwner ? (
+              // Owner controls
+              <>
+                <TouchableOpacity 
+                  style={styles.ownerButton}
+                  onPress={() => handleOwnerOptions(pet)}
+                >
+                  <Ionicons name="settings-outline" size={16} color={colors.primary} />
+                  <Text style={styles.ownerButtonText}>Manage Post</Text>
+                </TouchableOpacity>
+                
+                {pet.status === "lost" && (
+                  <TouchableOpacity 
+                    style={styles.foundButton}
+                    onPress={() => handleMarkAsFound(pet)}
+                  >
+                    <Ionicons name="checkmark-circle-outline" size={16} color="white" />
+                    <Text style={styles.foundButtonText}>Mark Found</Text>
+                  </TouchableOpacity>
+                )}
+              </>
+            ) : (
+              // Non-owner controls
+              <>
+                <TouchableOpacity 
+                  style={styles.contactButton}
+                  onPress={() => handleContactOwner(pet)}
+                >
+                  <Ionicons name="call-outline" size={16} color="white" />
+                  <Text style={styles.contactButtonText}>Contact</Text>
+                </TouchableOpacity>
 
-            <TouchableOpacity 
-              style={styles.sightingButton} 
-              onPress={() => handleReportSighting(pet.id)}
-              accessibilityLabel={`Report sighting of ${pet.name}`}
-              disabled={pet.status === "reunited"}
-            >
-              <Ionicons name="eye-outline" size={16} color={colors.primary} />
-              <Text style={styles.sightingButtonText}>Report Sighting</Text>
-            </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.sightingButton} 
+                  onPress={() => handleReportSighting(pet.id)}
+                  accessibilityLabel={`Report sighting of ${pet.name}`}
+                  disabled={pet.status === "reunited"}
+                >
+                  <Ionicons name="eye-outline" size={16} color={colors.primary} />
+                  <Text style={styles.sightingButtonText}>Report Sighting</Text>
+                </TouchableOpacity>
+              </>
+            )}
           </View>
         </View>
       </View>
@@ -1226,18 +1352,82 @@ export default function LostPetsScreen({ navigation }: LostPetsScreenProps) {
     <View style={styles.container}>
       <NavigationHeader title="Lost Pets" />
       <View style={styles.header}>
-        <View style={styles.tabContainer}>
+        <View style={styles.tabContainer} key={`tab-container-${renderKey}`}>
           <TouchableOpacity
-            style={[styles.tab, selectedTab === "lost" && styles.activeTab]}
-            onPress={() => setSelectedTab("lost")}
+            style={selectedTab === "lost" ? {
+              flex: 1,
+              paddingVertical: 12,
+              paddingHorizontal: 16,
+              backgroundColor: '#FF7A47',
+              borderTopLeftRadius: 8,
+              borderBottomLeftRadius: 8,
+              borderWidth: 1,
+              borderColor: '#FF7A47',
+              alignItems: 'center'
+            } : {
+              flex: 1,
+              paddingVertical: 12,
+              paddingHorizontal: 16,
+              backgroundColor: 'transparent',
+              borderTopLeftRadius: 8,
+              borderBottomLeftRadius: 8,
+              borderWidth: 1,
+              borderColor: '#FF7A47',
+              alignItems: 'center'
+            }}
+            onPress={() => {
+              console.log('Lost tab pressed, current selectedTab:', selectedTab);
+              setSelectedTab("lost");
+              setRenderKey(prev => prev + 1);
+            }}
           >
-            <Text style={[styles.tabText, selectedTab === "lost" && styles.activeTabText]}>Lost Pets</Text>
+            <Text style={selectedTab === "lost" ? {
+              color: '#FFFFFF',
+              fontSize: 14,
+              fontWeight: '600'
+            } : {
+              color: '#FF7A47',
+              fontSize: 14,
+              fontWeight: '600'
+            }}>Lost Pets</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.tab, selectedTab === "found" && styles.activeTab]}
-            onPress={() => setSelectedTab("found")}
+            style={selectedTab === "found" ? {
+              flex: 1,
+              paddingVertical: 12,
+              paddingHorizontal: 16,
+              backgroundColor: '#FF7A47',
+              borderTopRightRadius: 8,
+              borderBottomRightRadius: 8,
+              borderWidth: 1,
+              borderColor: '#FF7A47',
+              alignItems: 'center'
+            } : {
+              flex: 1,
+              paddingVertical: 12,
+              paddingHorizontal: 16,
+              backgroundColor: 'transparent',
+              borderTopRightRadius: 8,
+              borderBottomRightRadius: 8,
+              borderWidth: 1,
+              borderColor: '#FF7A47',
+              alignItems: 'center'
+            }}
+            onPress={() => {
+              console.log('Found tab pressed, current selectedTab:', selectedTab);
+              setSelectedTab("found");
+              setRenderKey(prev => prev + 1);
+            }}
           >
-            <Text style={[styles.tabText, selectedTab === "found" && styles.activeTabText]}>Found Pets</Text>
+            <Text style={selectedTab === "found" ? {
+              color: '#FFFFFF',
+              fontSize: 14,
+              fontWeight: '600'
+            } : {
+              color: '#FF7A47',
+              fontSize: 14,
+              fontWeight: '600'
+            }}>Found Pets</Text>
           </TouchableOpacity>
         </View>
         
@@ -1928,6 +2118,40 @@ const styles = StyleSheet.create({
   },
   sightingButtonText: {
     color: colors.primary,
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  ownerButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "white",
+    borderRadius: 6,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    gap: spacing.xs,
+    flex: 1,
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: colors.primary,
+  },
+  ownerButtonText: {
+    color: colors.primary,
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  foundButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.success,
+    borderRadius: 6,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    gap: spacing.xs,
+    flex: 1,
+    justifyContent: "center",
+  },
+  foundButtonText: {
+    color: "white",
     fontSize: 12,
     fontWeight: "600",
   },

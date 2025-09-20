@@ -23,6 +23,7 @@ export interface LostPet {
   reportedDate: string
   sightings: Sighting[]
   actionLog: ActionLog[]
+  ownerId?: string // ID of the user who posted this pet
 }
 
 export interface Sighting {

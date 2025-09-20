@@ -5,6 +5,7 @@ const cors = require("cors"); // Importing cors
 const bodyParser = require("body-parser"); // Importing bodyParser (if using it)
 const adopterRoutes = require('./routes/AdopterDashboardScreen');
 const browseRoutes = require('./routes/BrowsePetsScreen');
+const lostPetsRoutes = require('./routes/LostPetsScreen');
 const app = express();
 
 
@@ -56,6 +57,7 @@ app.use("/api/reminders", require("./routes/reminders"));//
 app.use("/api/lostpets", require("./routes/LostpetRoutes"));
 app.use('/api/adopter', adopterRoutes);
 app.use('/api/browse', browseRoutes);
+app.use('/api/lost-pets-screen', lostPetsRoutes);
 
 // Health check
 app.get('/', (req, res) => {
