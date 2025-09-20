@@ -16,8 +16,14 @@ export default function ManagePetsScreen({ navigation }: ManagePetsScreenProps) 
   const [selectedStatus, setSelectedStatus] = useState("All")
   const [showStatusModal, setShowStatusModal] = useState(false)
   const [selectedPet, setSelectedPet] = useState<Pet | null>(null)
+  const [forceUpdate, setForceUpdate] = useState(0)
 
   const statusOptions = ["All", "Available", "Pending", "Adopted", "Medical Hold"]
+
+  const handleStatusSelection = (status: string) => {
+    setSelectedStatus(status)
+    setForceUpdate(prev => prev + 1)
+  }
 
   const filteredPets = pets.filter((pet) => {
     const matchesSearch =
@@ -68,73 +74,7 @@ export default function ManagePetsScreen({ navigation }: ManagePetsScreenProps) 
     }
   }
 
-  const renderPetCard = (pet: Pet) => (
-    <View key={pet.id} style={styles.petCard}>
-      <Image 
-        source={{ uri: pet.images[0] || "https://via.placeholder.com/80x80" }} 
-        style={styles.petImage} 
-      />
-      
-      <View style={styles.petInfo}>
-        <View style={styles.petHeader}>
-          <Text style={styles.petName}>{pet.name}</Text>
-          <View style={[styles.statusBadge, { backgroundColor: getStatusColor(pet.status) + "20" }]}>
-            <Text style={[styles.statusText, { color: getStatusColor(pet.status) }]}>{pet.status}</Text>
-          </View>
-        </View>
 
-        <Text style={styles.petDetails}>
-          {pet.breed} • {pet.age} • {pet.gender}
-        </Text>
-        <Text style={styles.petLocation}>{pet.location}</Text>
-
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false} 
-          style={styles.petActionsScroll}
-          contentContainerStyle={styles.petActionsContent}
-        >
-          <TouchableOpacity
-            style={[styles.actionButton, styles.viewButton]}
-            onPress={() => navigation.navigate("PetProfile", { petId: pet.id })}
-            accessibilityLabel={`View details for ${pet.name}`}
-          >
-            <Ionicons name="eye-outline" size={16} color={colors.primary} style={styles.actionIcon} />
-            <Text style={styles.actionButtonText}>View</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.actionButton, styles.editButton]}
-            onPress={() => navigation.navigate("EditPet", { petId: pet.id })}
-            accessibilityLabel={`Edit details for ${pet.name}`}
-          >
-            <Ionicons name="create-outline" size={16} color={colors.primary} style={styles.actionIcon} />
-            <Text style={styles.actionButtonText}>Edit</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.actionButton, styles.statusButton]}
-            onPress={() => {
-              setSelectedPet(pet)
-              setShowStatusModal(true)
-            }}
-            accessibilityLabel={`Change status for ${pet.name}`}
-          >
-            <Ionicons name="swap-horizontal-outline" size={16} color={colors.primary} style={styles.actionIcon} />
-            <Text style={styles.actionButtonText}>Status</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={[styles.actionButton, styles.deleteButton]} 
-            onPress={() => handleDeletePet(pet)}
-            accessibilityLabel={`Delete ${pet.name}`}
-          >
-            <Ionicons name="trash-outline" size={16} color={colors.error} style={styles.actionIcon} />
-          </TouchableOpacity>
-        </ScrollView>
-      </View>
-    </View>
-  )
 
   return (
     <View style={{ flex: 1 }}>
@@ -160,18 +100,59 @@ export default function ManagePetsScreen({ navigation }: ManagePetsScreenProps) 
             horizontal 
             showsHorizontalScrollIndicator={false} 
             contentContainerStyle={styles.statusFilters}
+            key={`status-filters-${forceUpdate}`}
           >
-            {statusOptions.map((status) => (
-              <TouchableOpacity
-                key={`status-filter-${status}`}
-                style={[styles.statusFilter, selectedStatus === status && styles.statusFilterActive]}
-                onPress={() => setSelectedStatus(status)}
-              >
-                <Text style={[styles.statusFilterText, selectedStatus === status && styles.statusFilterTextActive]}>
-                  {status}
-                </Text>
-              </TouchableOpacity>
-            ))}
+            {statusOptions.map((status, index) => {
+              const isSelected = selectedStatus === status;
+              
+              // Create completely separate style objects for selected and unselected states
+              const buttonStyle = isSelected ? {
+                borderRadius: 20,
+                paddingHorizontal: 16,
+                paddingVertical: 8,
+                borderWidth: 1,
+                minHeight: 36,
+                justifyContent: 'center' as const,
+                alignItems: 'center' as const,
+                backgroundColor: colors.primary,
+                borderColor: colors.primary,
+              } : {
+                borderRadius: 20,
+                paddingHorizontal: 16,
+                paddingVertical: 8,
+                borderWidth: 1,
+                minHeight: 36,
+                justifyContent: 'center' as const,
+                alignItems: 'center' as const,
+                backgroundColor: "#FFFFFF",
+                borderColor: colors.border,
+              };
+
+              const textStyle = isSelected ? {
+                fontSize: 14,
+                textAlign: 'center' as const,
+                fontWeight: '600' as const,
+                color: "#FFFFFF",
+              } : {
+                fontSize: 14,
+                textAlign: 'center' as const,
+                fontWeight: '500' as const,
+                color: colors.text,
+              };
+
+              return (
+                <TouchableOpacity
+                  key={`status-${index}-${status.replace(/\s+/g, '-').toLowerCase()}-${forceUpdate}`}
+                  style={buttonStyle}
+                  onPress={() => handleStatusSelection(status)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={textStyle}>
+                    {status}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </ScrollView>
 
           <TouchableOpacity style={styles.addButton} onPress={() => navigation.navigate("AddPet")}>
@@ -189,7 +170,73 @@ export default function ManagePetsScreen({ navigation }: ManagePetsScreenProps) 
 
       {/* Pet List */}
       <ScrollView style={styles.petsList} showsVerticalScrollIndicator={false}>
-        {filteredPets.map(renderPetCard)}
+        {filteredPets.map((pet, index) => (
+          <View key={`pet-card-${pet.id}-${index}`} style={styles.petCard}>
+            <Image 
+              source={{ uri: pet.images[0] || "https://via.placeholder.com/80x80" }} 
+              style={styles.petImage} 
+            />
+            
+            <View style={styles.petInfo}>
+              <View style={styles.petHeader}>
+                <Text style={styles.petName}>{pet.name}</Text>
+                <View style={[styles.statusBadge, { backgroundColor: getStatusColor(pet.status) + "20" }]}>
+                  <Text style={[styles.statusText, { color: getStatusColor(pet.status) }]}>{pet.status}</Text>
+                </View>
+              </View>
+
+              <Text style={styles.petDetails}>
+                {pet.breed} • {pet.age} • {pet.gender}
+              </Text>
+              <Text style={styles.petLocation}>{pet.location}</Text>
+
+              <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={false} 
+                style={styles.petActionsScroll}
+                contentContainerStyle={styles.petActionsContent}
+              >
+                <TouchableOpacity
+                  style={[styles.actionButton, styles.viewButton]}
+                  onPress={() => navigation.navigate("PetProfile", { petId: pet.id })}
+                  accessibilityLabel={`View details for ${pet.name}`}
+                >
+                  <Ionicons name="eye-outline" size={16} color={colors.primary} style={styles.actionIcon} />
+                  <Text style={styles.actionButtonText}>View</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.actionButton, styles.editButton]}
+                  onPress={() => navigation.navigate("EditPet", { petId: pet.id })}
+                  accessibilityLabel={`Edit details for ${pet.name}`}
+                >
+                  <Ionicons name="create-outline" size={16} color={colors.primary} style={styles.actionIcon} />
+                  <Text style={styles.actionButtonText}>Edit</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.actionButton, styles.statusButton]}
+                  onPress={() => {
+                    setSelectedPet(pet)
+                    setShowStatusModal(true)
+                  }}
+                  accessibilityLabel={`Change status for ${pet.name}`}
+                >
+                  <Ionicons name="swap-horizontal-outline" size={16} color={colors.primary} style={styles.actionIcon} />
+                  <Text style={styles.actionButtonText}>Status</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                  style={[styles.actionButton, styles.deleteButton]} 
+                  onPress={() => handleDeletePet(pet)}
+                  accessibilityLabel={`Delete ${pet.name}`}
+                >
+                  <Ionicons name="trash-outline" size={16} color={colors.error} style={styles.actionIcon} />
+                </TouchableOpacity>
+              </ScrollView>
+            </View>
+          </View>
+        ))}
 
         {filteredPets.length === 0 && (
           <View style={styles.emptyState}>
@@ -220,9 +267,9 @@ export default function ManagePetsScreen({ navigation }: ManagePetsScreenProps) 
           <View style={styles.modalContent}>
             {statusOptions
               .filter((s) => s !== "All")
-              .map((status) => (
+              .map((status, index) => (
                 <TouchableOpacity
-                  key={`status-option-${status}`}
+                  key={`modal-status-${index}-${status.replace(/\s+/g, '-').toLowerCase()}`}
                   style={[styles.statusOption, selectedPet?.status === status && styles.statusOptionActive]}
                   onPress={() => selectedPet && handleStatusChange(selectedPet, status)}
                 >
@@ -283,26 +330,18 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   statusFilter: {
-    backgroundColor: colors.background,
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderWidth: 1,
-    borderColor: colors.border,
     minHeight: 36,
     justifyContent: 'center',
-  },
-  statusFilterActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
+    alignItems: 'center',
   },
   statusFilterText: {
-    color: colors.text,
     fontSize: 14,
-    fontWeight: "500",
-  },
-  statusFilterTextActive: {
-    color: "white",
+    textAlign: 'center',
+    fontWeight: '500',
   },
   addButton: {
     backgroundColor: colors.primary,
