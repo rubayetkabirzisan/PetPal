@@ -1,8 +1,9 @@
 
 import { Ionicons } from "@expo/vector-icons"
 import { useNavigation } from "@react-navigation/native"
+import * as ImagePicker from 'expo-image-picker'
 import { useState } from "react"
-import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
+import { Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
 import NavigationHeader from "../../components/NavigationHeader"
 import { useAuth } from "../contexts/AuthContext"
 import { colors } from "../theme/theme"
@@ -19,6 +20,7 @@ export default function AdopterProfileScreen() {
     phone: "+1 (555) 123-4567",
     location: "Austin, TX",
     bio: "Animal lover looking for the perfect companion. I have experience with both dogs and cats.",
+    profileImage: null as string | null,
   })
 
   const { user, logout } = useAuth()
@@ -26,6 +28,56 @@ export default function AdopterProfileScreen() {
   const handleSave = () => {
     setIsEditing(false)
     Alert.alert("Success", "Profile updated successfully!")
+  }
+
+  const handleImagePicker = () => {
+    Alert.alert(
+      "Select Profile Picture",
+      "Choose how you'd like to add your photo",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Take Photo", onPress: openCamera },
+        { text: "Choose from Gallery", onPress: openImageLibrary },
+      ]
+    )
+  }
+
+  const openCamera = async () => {
+    const permissionResult = await ImagePicker.requestCameraPermissionsAsync()
+    if (permissionResult.granted === false) {
+      Alert.alert("Permission Required", "Camera permission is required to take photos.")
+      return
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    })
+
+    if (!result.canceled && result.assets[0]) {
+      setProfile({ ...profile, profileImage: result.assets[0].uri })
+    }
+  }
+
+  const openImageLibrary = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync()
+    if (permissionResult.granted === false) {
+      Alert.alert("Permission Required", "Gallery permission is required to select photos.")
+      return
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    })
+
+    if (!result.canceled && result.assets[0]) {
+      setProfile({ ...profile, profileImage: result.assets[0].uri })
+    }
   }
 
   const handleLogout = () => {
@@ -124,7 +176,11 @@ export default function AdopterProfileScreen() {
       <View style={styles.profileHeader}>
         <View style={styles.avatarContainer}>
           <View style={styles.avatar}>
-            <Ionicons name={isShelter ? "business" : "person"} size={40} color="white" />
+            {profile.profileImage ? (
+              <Image source={{ uri: profile.profileImage }} style={styles.avatarImage} />
+            ) : (
+              <Ionicons name={isShelter ? "business" : "person"} size={40} color="white" />
+            )}
           </View>
         </View>
         <Text style={styles.profileName}>{profile.name}</Text>
@@ -135,6 +191,31 @@ export default function AdopterProfileScreen() {
       <View style={styles.profileDetails}>
         {isEditing ? (
           <View style={styles.editForm}>
+            {/* Profile Photo Section */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Profile Photo</Text>
+              <TouchableOpacity style={styles.photoSelector} onPress={handleImagePicker}>
+                <View style={styles.photoPreview}>
+                  {profile.profileImage ? (
+                    <Image source={{ uri: profile.profileImage }} style={styles.photoPreviewImage} />
+                  ) : (
+                    <View style={styles.photoPlaceholder}>
+                      <Ionicons name="camera-outline" size={24} color={colors.text} />
+                    </View>
+                  )}
+                </View>
+                <View style={styles.photoSelectorText}>
+                  <Text style={styles.photoSelectorTitle}>
+                    {profile.profileImage ? "Change Photo" : "Add Photo"}
+                  </Text>
+                  <Text style={styles.photoSelectorSubtitle}>
+                    Tap to {profile.profileImage ? "change" : "select"} your profile picture
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={16} color={colors.text} />
+              </TouchableOpacity>
+            </View>
+
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>Name</Text>
               <TextInput
@@ -287,6 +368,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     justifyContent: "center",
     alignItems: "center",
+    overflow: "hidden",
+  },
+  avatarImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
   },
   profileName: {
     fontSize: 24,
@@ -459,5 +546,49 @@ const styles = StyleSheet.create({
     color: colors.error,
     fontSize: 16,
     fontWeight: "600",
+  },
+  // Photo selector styles
+  photoSelector: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.background,
+    borderRadius: 8,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    gap: 12,
+  },
+  photoPreview: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    overflow: "hidden",
+  },
+  photoPreviewImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+  },
+  photoPlaceholder: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: colors.border,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  photoSelectorText: {
+    flex: 1,
+  },
+  photoSelectorTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: colors.text,
+  },
+  photoSelectorSubtitle: {
+    fontSize: 12,
+    color: colors.text,
+    opacity: 0.7,
+    marginTop: 2,
   },
 })

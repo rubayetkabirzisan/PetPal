@@ -7,6 +7,7 @@ const adopterRoutes = require('./routes/AdopterDashboardScreen');
 const browseRoutes = require('./routes/BrowsePetsScreen');
 const lostPetsRoutes = require('./routes/LostPetsScreen');
 const gpsTrackingRoutes = require('./routes/GPSTrackingScreen');
+const adopterProfileRoutes = require('./routes/AdopterProfileScreen');
 const app = express();
 
 
@@ -60,6 +61,7 @@ app.use('/api/adopter', adopterRoutes);
 app.use('/api/browse', browseRoutes);
 app.use('/api/lost-pets-screen', lostPetsRoutes);
 app.use('/api/gps-tracking', gpsTrackingRoutes);
+app.use('/api/adopter-profile', adopterProfileRoutes);
 
 // Health check
 app.get('/', (req, res) => {
