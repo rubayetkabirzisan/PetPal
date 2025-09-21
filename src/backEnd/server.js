@@ -11,6 +11,7 @@ const adopterProfileRoutes = require('./routes/AdopterProfileScreen');
 const adminDashboardRoutes = require('./routes/AdminDashboardScreen');
 const managePetsRoutes = require('./routes/ManagePetsScreen');
 const adminGPSTrackingRoutes = require('./routes/AdminGPSTrackingScreen');
+const adminApplicationsRoutes = require('./routes/AdminApplicationsScreen');
 const app = express();
 
 
@@ -55,6 +56,7 @@ app.use('/api/adopter-profile', adopterProfileRoutes);
 app.use('/api/admin-dashboard', adminDashboardRoutes);
 app.use('/api/manage-pets', managePetsRoutes);
 app.use('/api/admin-gps-tracking', adminGPSTrackingRoutes);
+app.use('/api/admin-applications', adminApplicationsRoutes);
 
 // Health check
 app.get('/', (req, res) => {
