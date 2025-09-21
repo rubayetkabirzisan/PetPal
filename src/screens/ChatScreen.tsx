@@ -1,8 +1,11 @@
+"use client"
 
 import { Ionicons } from "@expo/vector-icons"
 import { useEffect, useRef, useState } from "react"
 import {
+  Alert,
   KeyboardAvoidingView,
+  Linking,
   Platform,
   ScrollView,
   StyleSheet,
@@ -12,6 +15,7 @@ import {
   View,
 } from "react-native"
 import NavigationHeader from "../../components/NavigationHeader"
+import { API_CONFIG, apiCall } from "../config/api"
 import { colors } from "../theme/theme"
 
 interface Message {
@@ -30,13 +34,13 @@ interface ChatScreenProps {
 
 export default function ChatScreen({ navigation, route }: ChatScreenProps) {
   // Get the params from route if available
-  const messageId = route?.params?.messageId;
-  const shelterName = route?.params?.shelterName || "Shelter Chat";
-  const shelterImage = route?.params?.shelterImage;
-  
+  const messageId = route?.params?.messageId
+  const shelterName = route?.params?.shelterName || "Shelter Chat"
+  const shelterImage = route?.params?.shelterImage
+
   // Reference to the ScrollView for auto-scrolling
-  const scrollViewRef = useRef<ScrollView>(null);
-  
+  const scrollViewRef = useRef<ScrollView>(null)
+
   // You can use messageId to fetch specific chat messages
   // For now, we'll use the mock data
   const [messages, setMessages] = useState<Message[]>([
@@ -69,13 +73,13 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
   ])
 
   const [newMessage, setNewMessage] = useState("")
-  
+
   // Scroll to bottom when messages change
   useEffect(() => {
     setTimeout(() => {
-      scrollViewRef.current?.scrollToEnd({ animated: true });
-    }, 100); // Small delay to ensure rendering is complete
-  }, [messages]);
+      scrollViewRef.current?.scrollToEnd({ animated: true })
+    }, 100) // Small delay to ensure rendering is complete
+  }, [messages])
 
   const sendMessage = () => {
     if (newMessage.trim()) {
@@ -88,7 +92,7 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
 
       setMessages((prev) => [...prev, message])
       setNewMessage("")
-      
+
       // Scroll to the bottom after sending
       scrollViewRef.current?.scrollToEnd({ animated: true })
 
@@ -108,10 +112,37 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
     }
   }
 
-  const handleScheduleVisit = () => {
-    // Navigate to schedule visit screen or show modal
-    if (navigation) {
-      // For now, we'll add a message to the chat to show functionality
+  const handleScheduleVisit = async () => {
+    try {
+      // Make API call to schedule visit
+      const result = await apiCall(API_CONFIG.ENDPOINTS.SCHEDULE_VISIT("1"), {
+        method: "POST",
+        body: JSON.stringify({
+          userId: "user-001",
+          preferredDate: new Date().toISOString().split("T")[0], // Today's date
+          preferredTime: "Morning (10am-12pm)",
+          notes: "Looking forward to meeting the available pets",
+        }),
+      })
+
+      if (result.success) {
+        // Add the message from API response
+        const visitMessage: Message = {
+          id: result.data.message.id,
+          text: result.data.message.text,
+          sender: "user",
+          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        }
+        setMessages((prev) => [...prev, visitMessage])
+        scrollViewRef.current?.scrollToEnd({ animated: true })
+
+        console.log("Visit request sent successfully:", result.data.action)
+      } else {
+        console.error("Failed to schedule visit:", result.error)
+      }
+    } catch (error) {
+      console.error("Error scheduling visit:", error)
+      // Fallback to local functionality if API fails
       const visitMessage: Message = {
         id: Date.now().toString(),
         text: "I'd like to schedule a visit to meet the pet. What times are available?",
@@ -120,26 +151,37 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
       }
       setMessages((prev) => [...prev, visitMessage])
       scrollViewRef.current?.scrollToEnd({ animated: true })
-      
-      // Simulate shelter response
-      setTimeout(() => {
-        const response: Message = {
-          id: (Date.now() + 1).toString(),
-          text: "Great! We're available for visits Monday-Friday 10am-6pm, and weekends 9am-5pm. What day works best for you?",
-          sender: "shelter",
-          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-          senderName: "Sarah - Happy Paws Shelter",
-        }
-        setMessages((prev) => [...prev, response])
-        scrollViewRef.current?.scrollToEnd({ animated: true })
-      }, 1500)
     }
   }
 
-  const handleViewApplication = () => {
-    // Navigate to application screen or show current application status
-    if (navigation) {
-      // For demo purposes, add a message about application status
+  const handleViewApplication = async () => {
+    try {
+      // Make API call to view application status
+      const result = await apiCall(API_CONFIG.ENDPOINTS.VIEW_APPLICATION("1"), {
+        method: "POST",
+        body: JSON.stringify({
+          userId: "user-001",
+        }),
+      })
+
+      if (result.success) {
+        // Add the message from API response
+        const appMessage: Message = {
+          id: result.data.message.id,
+          text: result.data.message.text,
+          sender: "user",
+          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        }
+        setMessages((prev) => [...prev, appMessage])
+        scrollViewRef.current?.scrollToEnd({ animated: true })
+
+        console.log("Application status:", result.data.applicationStatus)
+      } else {
+        console.error("Failed to view application:", result.error)
+      }
+    } catch (error) {
+      console.error("Error viewing application:", error)
+      // Fallback to local functionality if API fails
       const appMessage: Message = {
         id: Date.now().toString(),
         text: "Can you tell me the status of my adoption application?",
@@ -148,65 +190,216 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
       }
       setMessages((prev) => [...prev, appMessage])
       scrollViewRef.current?.scrollToEnd({ animated: true })
-      
-      // Simulate shelter response
-      setTimeout(() => {
-        const response: Message = {
-          id: (Date.now() + 1).toString(),
-          text: "Your application is currently under review. We should have an update for you within 2-3 business days. Thank you for your patience!",
-          sender: "shelter",
+    }
+  }
+
+  const handleVoiceCall = async () => {
+    try {
+      // Make API call to initiate voice call
+      const result = await apiCall(API_CONFIG.ENDPOINTS.VOICE_CALL("1"), {
+        method: "POST",
+        body: JSON.stringify({
+          userId: "user-001",
+        }),
+      })
+
+      if (result.success) {
+        // Add the system message from API response
+        const callMessage: Message = {
+          id: result.data.message.id,
+          text: result.data.message.text,
+          sender: "user",
           timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-          senderName: "Sarah - Happy Paws Shelter",
         }
-        setMessages((prev) => [...prev, response])
+        setMessages((prev) => [...prev, callMessage])
         scrollViewRef.current?.scrollToEnd({ animated: true })
-      }, 1500)
+
+        const phoneNumber = result.data.callDetails?.shelterContact || "+1234567890" // Fallback number
+        const phoneUrl = `tel:${phoneNumber}`
+
+        // Check if the device can make phone calls
+        const canCall = await Linking.canOpenURL(phoneUrl)
+        if (canCall) {
+          await Linking.openURL(phoneUrl)
+        } else {
+          Alert.alert(
+            "Call Not Available",
+            "Your device doesn't support making phone calls or the number is invalid.",
+            [{ text: "OK" }],
+          )
+        }
+
+        console.log("Voice call initiated:", result.data.callDetails)
+      } else {
+        console.error("Failed to initiate voice call:", result.error)
+        Alert.alert("Call Failed", "Unable to initiate voice call. Please try again later.", [{ text: "OK" }])
+      }
+    } catch (error) {
+      console.error("Error initiating voice call:", error)
+      Alert.alert("Start Voice Call?", "Would you like to call the shelter directly?", [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Call",
+          onPress: async () => {
+            const fallbackNumber = "+1234567890" // Replace with actual shelter number
+            const phoneUrl = `tel:${fallbackNumber}`
+            const canCall = await Linking.canOpenURL(phoneUrl)
+            if (canCall) {
+              await Linking.openURL(phoneUrl)
+            }
+          },
+        },
+      ])
     }
   }
 
-  const handleVoiceCall = () => {
-    // Start voice call functionality
-    const callMessage: Message = {
-      id: Date.now().toString(),
-      text: "📞 Voice call initiated with Happy Paws Shelter",
-      sender: "user",
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+  const handleVideoCall = async () => {
+    try {
+      // Make API call to initiate video call
+      const result = await apiCall(API_CONFIG.ENDPOINTS.VIDEO_CALL("1"), {
+        method: "POST",
+        body: JSON.stringify({
+          userId: "user-001",
+        }),
+      })
+
+      if (result.success) {
+        // Add the system message from API response
+        const videoCallMessage: Message = {
+          id: result.data.message.id,
+          text: result.data.message.text,
+          sender: "user",
+          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        }
+        setMessages((prev) => [...prev, videoCallMessage])
+        scrollViewRef.current?.scrollToEnd({ animated: true })
+
+        const roomUrl = result.data.callDetails?.roomUrl
+
+        if (roomUrl) {
+          // If we have a video call room URL, open it
+          const canOpen = await Linking.canOpenURL(roomUrl)
+          if (canOpen) {
+            await Linking.openURL(roomUrl)
+          } else {
+            Alert.alert("Video Call", "Video call room created. Please check your messages for the meeting link.", [
+              { text: "OK" },
+            ])
+          }
+        } else {
+          Alert.alert("Start Video Call?", "Choose your preferred video calling platform:", [
+            { text: "Cancel", style: "cancel" },
+            {
+              text: "FaceTime",
+              onPress: async () => {
+                const facetimeUrl = "facetime://+1234567890" // Replace with actual number
+                const canOpen = await Linking.canOpenURL(facetimeUrl)
+                if (canOpen) {
+                  await Linking.openURL(facetimeUrl)
+                } else {
+                  Alert.alert("FaceTime not available", "FaceTime is not installed or available on this device.")
+                }
+              },
+            },
+            {
+              text: "WhatsApp",
+              onPress: async () => {
+                const whatsappUrl =
+                  "https://wa.me/1234567890?text=Hi, I would like to start a video call about pet adoption"
+                const canOpen = await Linking.canOpenURL(whatsappUrl)
+                if (canOpen) {
+                  await Linking.openURL(whatsappUrl)
+                } else {
+                  Alert.alert("WhatsApp not available", "WhatsApp is not installed on this device.")
+                }
+              },
+            },
+          ])
+        }
+
+        console.log("Video call initiated:", result.data.callDetails)
+      } else {
+        console.error("Failed to initiate video call:", result.error)
+        Alert.alert("Video Call Failed", "Unable to start video call. Please try again later.", [{ text: "OK" }])
+      }
+    } catch (error) {
+      console.error("Error initiating video call:", error)
+      Alert.alert("Start Video Call?", "Choose your preferred video calling platform:", [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "FaceTime",
+          onPress: async () => {
+            const facetimeUrl = "facetime://+1234567890"
+            const canOpen = await Linking.canOpenURL(facetimeUrl)
+            if (canOpen) {
+              await Linking.openURL(facetimeUrl)
+            } else {
+              Alert.alert("FaceTime not available", "FaceTime is not installed or available on this device.")
+            }
+          },
+        },
+        {
+          text: "WhatsApp",
+          onPress: async () => {
+            const whatsappUrl =
+              "https://wa.me/1234567890?text=Hi, I would like to start a video call about pet adoption"
+            const canOpen = await Linking.canOpenURL(whatsappUrl)
+            if (canOpen) {
+              await Linking.openURL(whatsappUrl)
+            } else {
+              Alert.alert("WhatsApp not available", "WhatsApp is not installed on this device.")
+            }
+          },
+        },
+      ])
     }
-    setMessages((prev) => [...prev, callMessage])
-    scrollViewRef.current?.scrollToEnd({ animated: true })
-    
-    // In a real app, this would integrate with calling services like Twilio, Agora, etc.
-    console.log("Starting voice call with shelter...")
   }
 
-  const handleVideoCall = () => {
-    // Start video call functionality
-    const videoCallMessage: Message = {
-      id: Date.now().toString(),
-      text: "📹 Video call initiated with Happy Paws Shelter",
-      sender: "user",
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    }
-    setMessages((prev) => [...prev, videoCallMessage])
-    scrollViewRef.current?.scrollToEnd({ animated: true })
-    
-    // In a real app, this would integrate with video calling services
-    console.log("Starting video call with shelter...")
-  }
+  const handleAttachFile = async () => {
+    try {
+      // Simulate file selection - in production, this would open a file picker
+      const mockFile = {
+        fileName: "pet_medical_records.pdf",
+        fileType: "application/pdf",
+        fileSize: "1.2 MB",
+      }
 
-  const handleAttachFile = () => {
-    // Handle file attachment - photos, documents, etc.
-    const attachMessage: Message = {
-      id: Date.now().toString(),
-      text: "📎 File attachment feature - you can upload photos, documents, or medical records here",
-      sender: "user",
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      // Make API call to attach file
+      const result = await apiCall(API_CONFIG.ENDPOINTS.ATTACH_FILE("1"), {
+        method: "POST",
+        body: JSON.stringify({
+          userId: "user-001",
+          ...mockFile,
+        }),
+      })
+
+      if (result.success) {
+        // Add the message from API response
+        const attachMessage: Message = {
+          id: result.data.message.id,
+          text: result.data.message.text,
+          sender: "user",
+          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        }
+        setMessages((prev) => [...prev, attachMessage])
+        scrollViewRef.current?.scrollToEnd({ animated: true })
+
+        console.log("File attached successfully:", result.data.action)
+      } else {
+        console.error("Failed to attach file:", result.error)
+      }
+    } catch (error) {
+      console.error("Error attaching file:", error)
+      // Fallback to local functionality if API fails
+      const attachMessage: Message = {
+        id: Date.now().toString(),
+        text: "📎 File attachment feature - you can upload photos, documents, or medical records here",
+        sender: "user",
+        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      }
+      setMessages((prev) => [...prev, attachMessage])
+      scrollViewRef.current?.scrollToEnd({ animated: true })
     }
-    setMessages((prev) => [...prev, attachMessage])
-    scrollViewRef.current?.scrollToEnd({ animated: true })
-    
-    // In a real app, this would open file picker or camera
-    console.log("Opening file attachment options...")
   }
 
   const renderMessage = (message: Message) => (
@@ -232,12 +425,8 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
 
   return (
     <View style={styles.container}>
-      <NavigationHeader 
-        title={shelterName} 
-        showBackButton={true}
-        backButtonAction={() => navigation?.goBack()}
-      />
-      
+      <NavigationHeader title={shelterName} showBackButton={true} backButtonAction={() => navigation?.goBack()} />
+
       <KeyboardAvoidingView style={styles.keyboardContainer} behavior={Platform.OS === "ios" ? "padding" : "height"}>
         {/* Quick Status Bar */}
         <View style={styles.statusBar}>
@@ -266,50 +455,54 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
           {messages.map(renderMessage)}
         </ScrollView>
 
-      {/* Input Area */}
-      <View style={styles.inputContainer}>
-        <View style={styles.inputWrapper}>
-          <TextInput
-            style={styles.textInput}
-            value={newMessage}
-            onChangeText={setNewMessage}
-            placeholder="Type a message..."
-            placeholderTextColor={colors.text + "80"}
-            multiline
-            maxLength={500}
-          />
-          <TouchableOpacity style={styles.attachButton} onPress={() => handleAttachFile()}>
-            <Ionicons name="attach-outline" size={20} color={colors.text} />
+        {/* Input Area */}
+        <View style={styles.inputContainer}>
+          <View style={styles.inputWrapper}>
+            <TextInput
+              style={styles.textInput}
+              value={newMessage}
+              onChangeText={setNewMessage}
+              placeholder="Type a message..."
+              placeholderTextColor={colors.text + "80"}
+              multiline
+              maxLength={500}
+            />
+            <TouchableOpacity style={styles.attachButton} onPress={() => handleAttachFile()}>
+              <Ionicons name="attach-outline" size={20} color={colors.text} />
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity
+            style={[styles.sendButton, newMessage.trim() ? styles.sendButtonActive : styles.sendButtonInactive]}
+            onPress={sendMessage}
+            disabled={!newMessage.trim()}
+          >
+            <Ionicons name="send" size={20} color={newMessage.trim() ? "white" : colors.text} />
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity
-          style={[styles.sendButton, newMessage.trim() ? styles.sendButtonActive : styles.sendButtonInactive]}
-          onPress={sendMessage}
-          disabled={!newMessage.trim()}
-        >
-          <Ionicons name="send" size={20} color={newMessage.trim() ? "white" : colors.text} />
-        </TouchableOpacity>
-      </View>
+        {/* Quick Actions */}
+        <View style={styles.quickActions}>
+          <TouchableOpacity style={styles.quickAction} onPress={() => handleScheduleVisit()}>
+            <Ionicons name="calendar-outline" size={16} color={colors.primary} />
+            <Text style={styles.quickActionText}>Schedule Visit</Text>
+          </TouchableOpacity>
 
-      {/* Quick Actions */}
-      <View style={styles.quickActions}>
-        <TouchableOpacity 
-          style={styles.quickAction}
-          onPress={() => handleScheduleVisit()}
-        >
-          <Ionicons name="calendar-outline" size={16} color={colors.primary} />
-          <Text style={styles.quickActionText}>Schedule Visit</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.quickAction} onPress={() => handleViewApplication()}>
+            <Ionicons name="document-text-outline" size={16} color={colors.primary} />
+            <Text style={styles.quickActionText}>Application</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity 
-          style={styles.quickAction}
-          onPress={() => handleViewApplication()}
-        >
-          <Ionicons name="document-text-outline" size={16} color={colors.primary} />
-          <Text style={styles.quickActionText}>Application</Text>
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity style={styles.quickAction} onPress={() => handleVoiceCall()}>
+            <Ionicons name="call-outline" size={16} color={colors.primary} />
+            <Text style={styles.quickActionText}>Voice Call</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.quickAction} onPress={() => handleVideoCall()}>
+            <Ionicons name="videocam-outline" size={16} color={colors.primary} />
+            <Text style={styles.quickActionText}>Video Call</Text>
+          </TouchableOpacity>
+        </View>
       </KeyboardAvoidingView>
     </View>
   )
@@ -472,25 +665,29 @@ const styles = StyleSheet.create({
   quickActions: {
     backgroundColor: "white",
     flexDirection: "row",
+    flexWrap: "wrap",
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderTopWidth: 1,
     borderTopColor: colors.border,
-    gap: 12,
+    gap: 8,
   },
   quickAction: {
     flex: 1,
+    minWidth: "22%",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: colors.background,
     borderRadius: 8,
     paddingVertical: 8,
-    gap: 4,
+    paddingHorizontal: 4,
+    gap: 2,
   },
   quickActionText: {
-    fontSize: 12,
+    fontSize: 10,
     color: colors.primary,
     fontWeight: "500",
-  }
+    textAlign: "center",
+  },
 })
