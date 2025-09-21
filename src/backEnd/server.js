@@ -17,6 +17,7 @@ const messagesRoutes = require('./routes/MessagesScreen');
 const chatRoutes = require('./routes/ChatScreen');
 const notificationsRoutes = require('./routes/NotificationsScreen');
 const adoptionHistoryRoutes = require('./routes/AdoptionHistoryScreen');
+const careJournalRoutes = require('./routes/CareJournalScreen');
 const app = express();
 
 
@@ -67,6 +68,7 @@ app.use('/api/messages', messagesRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/adoption-history', adoptionHistoryRoutes);
+app.use('/api/care-journal', careJournalRoutes);
 
 // Health check
 app.get('/', (req, res) => {
