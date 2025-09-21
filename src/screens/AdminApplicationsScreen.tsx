@@ -1,15 +1,15 @@
 import { Ionicons } from "@expo/vector-icons"
 import React, { useEffect, useState } from "react"
 import {
-    Alert,
-    Dimensions,
-    Modal,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  Alert,
+  Dimensions,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from "react-native"
 import NavigationHeader from "../../components/NavigationHeader"
 import { colors, spacing } from "../theme/theme"
