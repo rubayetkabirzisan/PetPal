@@ -15,6 +15,7 @@ const adminApplicationsRoutes = require('./routes/AdminApplicationsScreen');
 const modernApplicationListRoutes = require('./routes/ModernApplicationListScreen');
 const messagesRoutes = require('./routes/MessagesScreen');
 const chatRoutes = require('./routes/ChatScreen');
+const notificationsRoutes = require('./routes/NotificationsScreen');
 const app = express();
 
 
@@ -63,6 +64,7 @@ app.use('/api/admin-applications', adminApplicationsRoutes);
 app.use('/api/modern-application-list', modernApplicationListRoutes);
 app.use('/api/messages', messagesRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/notifications', notificationsRoutes);
 
 // Health check
 app.get('/', (req, res) => {
