@@ -1,6 +1,7 @@
 import { Feather } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import NavigationHeader from "../../components/NavigationHeader";
 
 // Importing hooks and utilities - update paths as needed for your project
 import { addReminder, deleteReminder, getReminders, updateReminder } from "../../lib/reminders";
@@ -209,27 +210,11 @@ export default function RemindersScreen({ navigation }: RemindersScreenProps) {
 
   return (
     <View style={styles.outerContainer}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Feather name="arrow-left" size={24} color={colors.primary} />
-        </TouchableOpacity>
-        
-        <View style={styles.headerTextContainer}>
-          <Text style={styles.headerTitle}>Reminders</Text>
-          <Text style={styles.headerSubtitle}>Keep track of your pet care</Text>
-        </View>
-        
-        <TouchableOpacity 
-          style={styles.headerRight}
-          onPress={openAddReminderModal}
-        >
-          <Feather name="plus" size={24} color={colors.primary} />
-        </TouchableOpacity>
-      </View>
+      <NavigationHeader 
+        title="Reminders" 
+        showBackButton={true}
+        backButtonAction={() => navigation.goBack()}
+      />
 
       {/* Filters */}
       <View style={styles.filterContainer}>
@@ -689,42 +674,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: colors.background,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.md,
-    paddingTop: 50,
-    paddingBottom: spacing.md,
-    backgroundColor: colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTextContainer: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: colors.text,
-  },
-  headerSubtitle: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginTop: spacing.xs,
-  },
-  headerRight: {
-    width: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+
   filterContainer: {
     marginVertical: spacing.md,
     paddingHorizontal: spacing.md,
