@@ -16,6 +16,7 @@ const modernApplicationListRoutes = require('./routes/ModernApplicationListScree
 const messagesRoutes = require('./routes/MessagesScreen');
 const chatRoutes = require('./routes/ChatScreen');
 const notificationsRoutes = require('./routes/NotificationsScreen');
+const adoptionHistoryRoutes = require('./routes/AdoptionHistoryScreen');
 const app = express();
 
 
@@ -65,6 +66,7 @@ app.use('/api/modern-application-list', modernApplicationListRoutes);
 app.use('/api/messages', messagesRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/notifications', notificationsRoutes);
+app.use('/api/adoption-history', adoptionHistoryRoutes);
 
 // Health check
 app.get('/', (req, res) => {
