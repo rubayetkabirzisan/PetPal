@@ -13,6 +13,7 @@ const managePetsRoutes = require('./routes/ManagePetsScreen');
 const adminGPSTrackingRoutes = require('./routes/AdminGPSTrackingScreen');
 const adminApplicationsRoutes = require('./routes/AdminApplicationsScreen');
 const modernApplicationListRoutes = require('./routes/ModernApplicationListScreen');
+const messagesRoutes = require('./routes/MessagesScreen');
 const app = express();
 
 
@@ -59,6 +60,7 @@ app.use('/api/manage-pets', managePetsRoutes);
 app.use('/api/admin-gps-tracking', adminGPSTrackingRoutes);
 app.use('/api/admin-applications', adminApplicationsRoutes);
 app.use('/api/modern-application-list', modernApplicationListRoutes);
+app.use('/api/messages', messagesRoutes);
 
 // Health check
 app.get('/', (req, res) => {
