@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import React, { useState } from "react";
 import { ActivityIndicator, Alert, Image, Linking, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import NavigationHeader from "../../components/NavigationHeader";
 import { colors, spacing } from "../theme/theme";
 // Import MapView conditionally to handle potential module missing errors
 let MapView: any, Marker: any;
@@ -122,16 +123,12 @@ function PetLocationScreen() {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{petName}'s Location</Text>
-      </View>
+    <View style={styles.container}>
+      <NavigationHeader 
+        title={`${petName}'s Location`}
+        showBackButton={true}
+      />
+      <ScrollView style={styles.content}>
 
       {/* Location Card */}
       <View style={styles.locationCard}>
@@ -305,7 +302,8 @@ function PetLocationScreen() {
           {isOpeningDirections ? "Opening Maps..." : "Get Directions"}
         </Text>
       </TouchableOpacity>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -314,21 +312,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: spacing.md,
-    backgroundColor: colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  backButton: {
-    marginRight: spacing.md,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: colors.text,
+  content: {
+    flex: 1,
   },
   locationCard: {
     backgroundColor: colors.surface,
