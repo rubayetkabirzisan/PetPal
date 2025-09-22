@@ -1,7 +1,63 @@
 const express = require('express');
 const router = express.Router();
+const Pet = require('../models/Pet');
+const User = require('../models/User');
+const Application = require('../models/Application');
+const Notification = require('../models/Notification');
+const Shelter = require('../models/Shelter');
 
-// Mock data - In a real app, this would come from a database
+// Authentication middleware
+const authenticateUser = (req, res, next) => {
+  const { userId } = req.query;
+  if (!userId) {
+    return res.status(401).json({
+      success: false,
+      message: 'User authentication required'
+    });
+  }
+  req.userId = userId;
+  next();
+};
+
+// Input validation middleware
+const validateDashboardParams = (req, res, next) => {
+  const { limit, status, type } = req.query;
+  
+  if (limit && (isNaN(limit) || parseInt(limit) < 1 || parseInt(limit) > 50)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Limit must be between 1 and 50'
+    });
+  }
+  
+  if (status && !['available', 'pending', 'adopted', 'fostered'].includes(status.toLowerCase())) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid status filter'
+    });
+  }
+  
+  if (type && !['dog', 'cat', 'bird', 'other'].includes(type.toLowerCase())) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid pet type filter'
+    });
+  }
+  
+  next();
+};
+
+// Error handling middleware
+const handleError = (res, error, message = 'Internal server error') => {
+  console.error('Dashboard Error:', error);
+  res.status(500).json({
+    success: false,
+    message,
+    error: process.env.NODE_ENV === 'development' ? error.message : undefined
+  });
+};
+
+// Mock data - Fallback if database is unavailable
 const mockPets = [
   {
     id: 'pet-001',
@@ -269,57 +325,113 @@ const mockGPSAlerts = [
 ];
 
 // GET /api/adopter/dashboard - Get dashboard overview data
-router.get('/dashboard', async (req, res) => {
+router.get('/dashboard', authenticateUser, validateDashboardParams, async (req, res) => {
   try {
-    const adopterId = req.user?.id; // Assuming user auth middleware provides this
+    const { userId } = req;
+    const { limit = 10, status, type } = req.query;
+    
+    // Verify user exists and is an adopter
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+    
+    if (user.role !== 'adopter' && user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Adopter role required.'
+      });
+    }
 
-    // Get available pets
-    const availablePets = mockPets.filter(pet => pet.status === 'Available');
+    // Build query filters
+    const petFilters = { status: status || 'available' };
+    if (type) petFilters.type = type;
+
+    // Get available pets with populated shelter info
+    const availablePets = await Pet.find(petFilters)
+      .populate('shelter', 'name location contact')
+      .limit(parseInt(limit))
+      .sort({ createdAt: -1 })
+      .lean();
     
-    // Get adopter's applications
-    const applications = mockApplications;
+    // Get adopter's applications with status counts
+    const applications = await Application.find({ adopterId: userId })
+      .populate('petId', 'name breed images')
+      .sort({ createdAt: -1 })
+      .lean();
     
-    // Get unread messages count
-    const unreadMessages = mockMessages.filter(msg => !msg.read);
+    const applicationStats = applications.reduce((stats, app) => {
+      stats[app.status] = (stats[app.status] || 0) + 1;
+      return stats;
+    }, {});
+    
+    // Get unread notifications count
+    const unreadNotifications = await Notification.countDocuments({
+      userId: userId,
+      read: false
+    });
     
     // Get adopted pets for this adopter
-    const adoptedPets = mockAdoptedPets;
+    const adoptedPets = await Pet.find({
+      adopterId: userId,
+      status: 'adopted'
+    }).select('name breed images adoptionDate').lean();
     
-    // Get pending reminders
-    const pendingReminders = mockReminders.filter(reminder => !reminder.completed);
-    
-    // Get recent care journal entries
-    const recentCareEntries = mockCareJournalEntries
-      .sort((a, b) => new Date(b.date) - new Date(a.date))
-      .slice(0, 5);
-    
-    // Get GPS alerts
-    const activeGPSAlerts = mockGPSAlerts.filter(alert => !alert.resolved);
+    // Get recent applications (last 5)
+    const recentApplications = applications.slice(0, 5);
 
     const dashboardData = {
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        memberSince: user.createdAt
+      },
       quickStats: {
         applicationsCount: applications.length,
-        unreadMessagesCount: unreadMessages.length,
+        unreadNotificationsCount: unreadNotifications,
         adoptedPetsCount: adoptedPets.length,
-        pendingRemindersCount: pendingReminders.length,
-        gpsAlertsCount: activeGPSAlerts.length
+        applicationStats
       },
-      pets: availablePets,
-      recentCareEntries,
-      gpsAlerts: activeGPSAlerts
+      availablePets: availablePets.map(pet => ({
+        id: pet._id,
+        name: pet.name,
+        breed: pet.breed,
+        type: pet.type,
+        age: pet.age,
+        images: pet.images || [],
+        shelter: pet.shelter,
+        adoptionFee: pet.adoptionFee,
+        status: pet.status,
+        isFavorited: user.favorites?.includes(pet._id.toString()) || false
+      })),
+      recentApplications: recentApplications.map(app => ({
+        id: app._id,
+        pet: app.petId,
+        status: app.status,
+        submissionDate: app.createdAt,
+        lastUpdated: app.updatedAt
+      })),
+      adoptedPets: adoptedPets.map(pet => ({
+        id: pet._id,
+        name: pet.name,
+        breed: pet.breed,
+        images: pet.images || [],
+        adoptionDate: pet.adoptionDate
+      }))
     };
 
     res.json({
       success: true,
-      data: dashboardData
+      message: 'Dashboard data retrieved successfully',
+      data: dashboardData,
+      timestamp: new Date().toISOString()
     });
   } catch (error) {
-    console.error('Dashboard error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to fetch dashboard data',
-      error: error.message
-    });
+    return handleError(res, error, 'Failed to fetch dashboard data');
   }
 });
 

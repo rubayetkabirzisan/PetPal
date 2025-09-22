@@ -1,7 +1,84 @@
 const express = require('express');
 const router = express.Router();
+const Pet = require('../models/Pet');
+const User = require('../models/User');
+const Application = require('../models/Application');
+const Shelter = require('../models/Shelter');
+const LostPet = require('../models/LostPet');
+const Analytics = require('../models/analytics');
 
-// Mock database for demonstration - replace with actual database integration
+// Admin authentication middleware
+const authenticateAdmin = (req, res, next) => {
+  const { userId } = req.query;
+  if (!userId) {
+    return res.status(401).json({
+      success: false,
+      message: 'Admin authentication required'
+    });
+  }
+  req.userId = userId;
+  next();
+};
+
+// Role verification middleware
+const requireAdminRole = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user || user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Admin privileges required'
+      });
+    }
+    req.user = user;
+    next();
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Authentication verification failed'
+    });
+  }
+};
+
+// Input validation middleware
+const validateDateRange = (req, res, next) => {
+  const { startDate, endDate, period = '30d' } = req.query;
+  
+  if (startDate && !Date.parse(startDate)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid start date format'
+    });
+  }
+  
+  if (endDate && !Date.parse(endDate)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid end date format'
+    });
+  }
+  
+  if (!['7d', '30d', '90d', '1y'].includes(period)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid period. Must be one of: 7d, 30d, 90d, 1y'
+    });
+  }
+  
+  next();
+};
+
+// Error handling middleware
+const handleError = (res, error, message = 'Internal server error') => {
+  console.error('Admin Dashboard Error:', error);
+  res.status(500).json({
+    success: false,
+    message,
+    error: process.env.NODE_ENV === 'development' ? error.message : undefined
+  });
+};
+
+// Mock database for demonstration - Fallback data
 let dashboardData = {
   stats: {
     availablePets: 24,
@@ -154,44 +231,119 @@ let dashboardData = {
 };
 
 // GET /api/admin-dashboard - Get complete dashboard data
-router.get('/', (req, res) => {
+router.get('/', authenticateAdmin, requireAdminRole, validateDateRange, async (req, res) => {
   try {
-    const { includeActivity = true, includeAlerts = true, activityLimit = 10 } = req.query;
+    const { includeActivity = true, includeAlerts = true, activityLimit = 10, period = '30d' } = req.query;
+    
+    // Calculate date range
+    const endDate = new Date();
+    const startDate = new Date();
+    switch (period) {
+      case '7d': startDate.setDate(endDate.getDate() - 7); break;
+      case '30d': startDate.setDate(endDate.getDate() - 30); break;
+      case '90d': startDate.setDate(endDate.getDate() - 90); break;
+      case '1y': startDate.setFullYear(endDate.getFullYear() - 1); break;
+    }
+
+    // Get real-time statistics from database
+    const [
+      totalPets,
+      availablePets,
+      adoptedPets,
+      pendingApplications,
+      totalUsers,
+      totalShelters,
+      lostPetReports,
+      recentApplications
+    ] = await Promise.all([
+      Pet.countDocuments(),
+      Pet.countDocuments({ status: 'available' }),
+      Pet.countDocuments({ status: 'adopted', adoptionDate: { $gte: startDate } }),
+      Application.countDocuments({ status: 'pending' }),
+      User.countDocuments({ role: { $in: ['adopter', 'volunteer'] } }),
+      Shelter.countDocuments({ status: 'active' }),
+      LostPet.countDocuments({ status: 'missing', reportDate: { $gte: startDate } }),
+      Application.find({ createdAt: { $gte: startDate } })
+        .populate('petId', 'name breed')
+        .populate('adopterId', 'name email')
+        .sort({ createdAt: -1 })
+        .limit(parseInt(activityLimit))
+        .lean()
+    ]);
+
+    const stats = {
+      totalPets,
+      availablePets,
+      adoptedPets,
+      pendingApplications,
+      successfulAdoptions: adoptedPets,
+      totalUsers,
+      totalShelters,
+      lostPetReports,
+      adoptionRate: totalPets > 0 ? ((adoptedPets / totalPets) * 100).toFixed(1) : '0',
+      averageAdoptionTime: '14 days' // Could calculate from actual data
+    };
 
     let responseData = {
-      stats: dashboardData.stats,
-      quickActions: dashboardData.quickActions
+      stats,
+      admin: {
+        name: req.user.name,
+        role: req.user.role,
+        lastLogin: req.user.lastLogin
+      },
+      period: {
+        label: period,
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString()
+      }
     };
 
     if (includeActivity === 'true') {
-      responseData.recentActivity = dashboardData.recentActivity
-        .slice(0, parseInt(activityLimit))
-        .map(activity => ({
-          ...activity,
-          formattedTime: formatTimeAgo(activity.timestamp)
-        }));
+      responseData.recentActivity = recentApplications.map(app => ({
+        id: app._id,
+        type: 'application',
+        message: `New adoption application for ${app.petId?.name || 'Unknown Pet'}`,
+        timestamp: app.createdAt,
+        formattedTime: formatTimeAgo(app.createdAt),
+        petId: app.petId?._id,
+        userId: app.adopterId?._id,
+        priority: app.status === 'pending' ? 'high' : 'medium',
+        details: {
+          petName: app.petId?.name,
+          petBreed: app.petId?.breed,
+          adopterName: app.adopterId?.name,
+          status: app.status
+        }
+      }));
     }
 
     if (includeAlerts === 'true') {
-      responseData.alerts = dashboardData.alerts.map(alert => ({
-        ...alert,
-        formattedTime: formatTimeAgo(alert.createdAt)
+      // Get recent alerts from lost pets and urgent applications
+      const urgentLostPets = await LostPet.find({ 
+        status: 'missing',
+        reportDate: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } // Last 24 hours
+      }).limit(5).lean();
+      
+      responseData.alerts = urgentLostPets.map(lostPet => ({
+        id: lostPet._id,
+        type: 'lost_pet',
+        priority: 'high',
+        message: `Urgent: ${lostPet.name} reported missing`,
+        createdAt: lostPet.reportDate,
+        formattedTime: formatTimeAgo(lostPet.reportDate),
+        resolved: false
       }));
     }
 
     res.json({
       success: true,
+      message: 'Dashboard data retrieved successfully',
       data: responseData,
       timestamp: new Date().toISOString()
     });
 
   } catch (error) {
-    console.error('Error fetching dashboard data:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to fetch dashboard data',
-      error: error.message
-    });
+    return handleError(res, error, 'Failed to fetch dashboard data');
   }
 });
 

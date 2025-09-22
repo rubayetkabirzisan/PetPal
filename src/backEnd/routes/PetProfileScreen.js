@@ -1,7 +1,62 @@
 const express = require('express');
 const router = express.Router();
+const Pet = require('../models/Pet');
+const User = require('../models/User');
+const Application = require('../models/Application');
+const Shelter = require('../models/Shelter');
+const Analytics = require('../models/analytics');
 
-// In-memory storage for pets and related data (in production, use a database)
+// Authentication middleware
+const authenticateUser = (req, res, next) => {
+  const { userId } = req.query;
+  if (!userId) {
+    return res.status(401).json({
+      success: false,
+      message: 'User authentication required'
+    });
+  }
+  req.userId = userId;
+  next();
+};
+
+// Pet ID validation middleware
+const validatePetId = (req, res, next) => {
+  const { petId } = req.params;
+  if (!petId || !petId.match(/^[0-9a-fA-F]{24}$/)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid pet ID format'
+    });
+  }
+  next();
+};
+
+// Input validation middleware for actions
+const validateAction = (req, res, next) => {
+  const { action } = req.body;
+  const validActions = ['favorite', 'unfavorite', 'share', 'report', 'inquire'];
+  
+  if (action && !validActions.includes(action)) {
+    return res.status(400).json({
+      success: false,
+      message: `Invalid action. Must be one of: ${validActions.join(', ')}`
+    });
+  }
+  
+  next();
+};
+
+// Error handling middleware
+const handleError = (res, error, message = 'Internal server error') => {
+  console.error('Pet Profile Error:', error);
+  res.status(500).json({
+    success: false,
+    message,
+    error: process.env.NODE_ENV === 'development' ? error.message : undefined
+  });
+};
+
+// In-memory storage for pets and related data (fallback data)
 let pets = [
   {
     id: "pet-001",
@@ -220,12 +275,15 @@ const generateId = (prefix) => {
 };
 
 // GET /api/pet-profile/:petId - Get specific pet details
-router.get('/:petId', (req, res) => {
+router.get('/:petId', validatePetId, authenticateUser, async (req, res) => {
   try {
     const { petId } = req.params;
-    const { userId } = req.query;
+    const { userId } = req;
 
-    const pet = pets.find(p => p.id === petId);
+    // Find pet with populated shelter information
+    const pet = await Pet.findById(petId)
+      .populate('shelter', 'name contact email address')
+      .lean();
 
     if (!pet) {
       return res.status(404).json({
@@ -234,31 +292,78 @@ router.get('/:petId', (req, res) => {
       });
     }
 
-    // Check if user has favorited this pet
-    const isFavorited = userId ? userFavorites.some(fav => 
-      fav.userId === userId && fav.petId === petId
-    ) : false;
+    // Verify user exists
+    const user = await User.findById(userId).select('favorites');
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
 
-    // Log the view interaction
-    if (userId) {
-      const interaction = {
-        id: generateId('int'),
-        petId,
-        userId,
-        type: 'view',
-        timestamp: new Date().toISOString()
-      };
-      interactions.push(interaction);
+    // Check if user has favorited this pet
+    const isFavorited = user.favorites ? user.favorites.includes(petId) : false;
+
+    // Log the view interaction and update analytics
+    try {
+      await Analytics.findOneAndUpdate(
+        { petId: petId, date: new Date().toISOString().split('T')[0] },
+        { 
+          $inc: { views: 1 },
+          $setOnInsert: { 
+            petId: petId,
+            date: new Date().toISOString().split('T')[0]
+          }
+        },
+        { upsert: true, new: true }
+      );
+    } catch (analyticsError) {
+      console.warn('Analytics update failed:', analyticsError);
+      // Don't fail the request if analytics fails
     }
 
     // Get application count for this pet
-    const applicationCount = applications.filter(app => app.petId === petId).length;
+    const applicationCount = await Application.countDocuments({ petId: petId });
+
+    // Get total view count from analytics
+    const analyticsData = await Analytics.aggregate([
+      { $match: { petId: petId } },
+      { $group: { _id: null, totalViews: { $sum: '$views' } } }
+    ]);
+    const totalViews = analyticsData.length > 0 ? analyticsData[0].totalViews : 0;
+
+    // Calculate compatibility score if user preferences exist
+    let compatibilityScore = null;
+    if (user.preferences) {
+      compatibilityScore = calculateCompatibilityScore(pet, user.preferences);
+    }
 
     const petData = {
-      ...pet,
+      id: pet._id,
+      name: pet.name,
+      breed: pet.breed,
+      type: pet.type,
+      age: pet.age,
+      gender: pet.gender,
+      size: pet.size,
+      color: pet.color,
+      energyLevel: pet.energyLevel,
+      description: pet.description,
+      personality: pet.personality || [],
+      vaccinated: pet.vaccinated || false,
+      neutered: pet.neutered || false,
+      microchipped: pet.microchipped || false,
+      images: pet.images || [],
+      healthRecords: pet.healthRecords || [],
+      shelter: pet.shelter,
+      status: pet.status,
+      adoptionFee: pet.adoptionFee,
+      createdAt: pet.createdAt,
+      updatedAt: pet.updatedAt,
       isFavorited,
       applicationCount,
-      viewCount: interactions.filter(int => int.petId === petId && int.type === 'view').length
+      viewCount: totalViews,
+      compatibilityScore
     };
 
     res.json({
@@ -796,5 +901,47 @@ router.post('/:petId/contact', (req, res) => {
     });
   }
 });
+
+// Helper function to calculate compatibility score
+function calculateCompatibilityScore(pet, userPreferences) {
+  let score = 0;
+  let factors = 0;
+  
+  // Size preference match
+  if (userPreferences.size && pet.size) {
+    factors++;
+    if (userPreferences.size.toLowerCase() === pet.size.toLowerCase()) {
+      score += 25;
+    }
+  }
+  
+  // Energy level match
+  if (userPreferences.energyLevel && pet.energyLevel) {
+    factors++;
+    if (userPreferences.energyLevel.toLowerCase() === pet.energyLevel.toLowerCase()) {
+      score += 25;
+    }
+  }
+  
+  // Pet type match
+  if (userPreferences.type && pet.type) {
+    factors++;
+    if (userPreferences.type.toLowerCase() === pet.type.toLowerCase()) {
+      score += 25;
+    }
+  }
+  
+  // Age preference
+  if (userPreferences.ageRange && pet.age) {
+    factors++;
+    // Simple age matching - could be enhanced
+    const petAgeNum = parseInt(pet.age);
+    if (!isNaN(petAgeNum) && petAgeNum >= userPreferences.ageRange.min && petAgeNum <= userPreferences.ageRange.max) {
+      score += 25;
+    }
+  }
+  
+  return factors > 0 ? Math.round(score / factors) : null;
+}
 
 module.exports = router;
