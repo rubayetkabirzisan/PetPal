@@ -26,6 +26,7 @@ const petLocationRoutes = require('./routes/PetLocationScreen');
 const settingsRoutes = require('./routes/SettingsScreen');
 const addPetRoutes = require('./routes/AddPetScreen');
 const editPetRoutes = require('./routes/EditPetScreen');
+const reportLostPetRoutes = require('./routes/ReportLostPetScreen');
 const analyticsRoutes = require('./routes/AnalyticsScreen');
 const app = express();
 
@@ -86,6 +87,7 @@ app.use('/api/pet-location', petLocationRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/add-pet', addPetRoutes);
 app.use('/api/edit-pet', editPetRoutes);
+app.use('/api/report-lost-pet', reportLostPetRoutes);
 app.use('/api/analytics', analyticsRoutes);
 
 // Health check

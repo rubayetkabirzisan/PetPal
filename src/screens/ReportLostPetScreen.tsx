@@ -103,7 +103,10 @@ export default function ReportLostPetScreen({ navigation }: ReportLostPetScreenP
 
   const renderSpeciesSelector = () => (
     <View style={styles.selectorContainer}>
-      <Text style={styles.label}>Pet Type*</Text>
+      <View style={styles.labelContainer}>
+        <Text style={styles.label}>Pet Type</Text>
+        <Text style={styles.requiredIndicator}>*</Text>
+      </View>
       <View style={styles.optionsRow}>
         <TouchableOpacity
           style={[styles.option, formData.species === "Dog" && styles.selectedOption]}
@@ -220,23 +223,29 @@ export default function ReportLostPetScreen({ navigation }: ReportLostPetScreenP
       >
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
           <View style={styles.content}>
-          <Text style={styles.title}>Report a Lost Pet</Text>
-          <Text style={styles.subtitle}>
-            Please provide as much information as possible to help us find your pet
-          </Text>
+          <View style={styles.headerContainer}>
+            <Ionicons name="heart-broken" size={32} color={colors.primary} />
+            <Text style={styles.title}>Report a Lost Pet</Text>
+            <Text style={styles.subtitle}>
+              Please provide as much information as possible to help us find your pet
+            </Text>
+          </View>
 
           {/* Pet Information */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Pet Information</Text>
             
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Pet's Name*</Text>
+              <View style={styles.labelContainer}>
+                <Text style={styles.label}>Pet's Name</Text>
+                <Text style={styles.requiredIndicator}>*</Text>
+              </View>
               <TextInput
-                style={styles.input}
+                style={[styles.input, formData.name && styles.inputFilled]}
                 value={formData.name}
                 onChangeText={(text) => handleInputChange("name", text)}
                 placeholder="Enter pet's name"
-                placeholderTextColor={colors.textSecondary}
+                placeholderTextColor={colors.textSecondary + "80"}
               />
             </View>
 
@@ -245,33 +254,36 @@ export default function ReportLostPetScreen({ navigation }: ReportLostPetScreenP
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Breed</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, formData.breed && styles.inputFilled]}
                 value={formData.breed}
                 onChangeText={(text) => handleInputChange("breed", text)}
                 placeholder="Enter breed (if known)"
-                placeholderTextColor={colors.textSecondary}
+                placeholderTextColor={colors.textSecondary + "80"}
               />
             </View>
             
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Age</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, formData.age && styles.inputFilled]}
                 value={formData.age}
                 onChangeText={(text) => handleInputChange("age", text)}
                 placeholder="Enter approximate age"
-                placeholderTextColor={colors.textSecondary}
+                placeholderTextColor={colors.textSecondary + "80"}
               />
             </View>
             
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Color/Markings*</Text>
+              <View style={styles.labelContainer}>
+                <Text style={styles.label}>Color/Markings</Text>
+                <Text style={styles.requiredIndicator}>*</Text>
+              </View>
               <TextInput
-                style={styles.input}
+                style={[styles.input, formData.color && styles.inputFilled]}
                 value={formData.color}
                 onChangeText={(text) => handleInputChange("color", text)}
                 placeholder="Enter color and distinctive markings"
-                placeholderTextColor={colors.textSecondary}
+                placeholderTextColor={colors.textSecondary + "80"}
               />
             </View>
 
@@ -283,35 +295,44 @@ export default function ReportLostPetScreen({ navigation }: ReportLostPetScreenP
             <Text style={styles.sectionTitle}>Lost Information</Text>
             
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Last Seen Location*</Text>
+              <View style={styles.labelContainer}>
+                <Text style={styles.label}>Last Seen Location</Text>
+                <Text style={styles.requiredIndicator}>*</Text>
+              </View>
               <TextInput
-                style={styles.input}
+                style={[styles.input, formData.lastSeenLocation && styles.inputFilled]}
                 value={formData.lastSeenLocation}
                 onChangeText={(text) => handleInputChange("lastSeenLocation", text)}
                 placeholder="Enter address or location description"
-                placeholderTextColor={colors.textSecondary}
+                placeholderTextColor={colors.textSecondary + "80"}
               />
             </View>
             
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Last Seen Date*</Text>
+              <View style={styles.labelContainer}>
+                <Text style={styles.label}>Last Seen Date</Text>
+                <Text style={styles.requiredIndicator}>*</Text>
+              </View>
               <TextInput
-                style={styles.input}
+                style={[styles.input, formData.lastSeenDate && styles.inputFilled]}
                 value={formData.lastSeenDate}
                 onChangeText={(text) => handleInputChange("lastSeenDate", text)}
                 placeholder="MM/DD/YYYY"
-                placeholderTextColor={colors.textSecondary}
+                placeholderTextColor={colors.textSecondary + "80"}
               />
             </View>
             
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Description*</Text>
+              <View style={styles.labelContainer}>
+                <Text style={styles.label}>Description</Text>
+                <Text style={styles.requiredIndicator}>*</Text>
+              </View>
               <TextInput
-                style={[styles.input, styles.textArea]}
+                style={[styles.input, styles.textArea, formData.description && styles.inputFilled]}
                 value={formData.description}
                 onChangeText={(text) => handleInputChange("description", text)}
                 placeholder="Describe your pet and the circumstances in which it was lost"
-                placeholderTextColor={colors.textSecondary}
+                placeholderTextColor={colors.textSecondary + "80"}
                 multiline
                 numberOfLines={4}
               />
@@ -325,24 +346,30 @@ export default function ReportLostPetScreen({ navigation }: ReportLostPetScreenP
             <Text style={styles.sectionTitle}>Contact Information</Text>
             
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Your Name*</Text>
+              <View style={styles.labelContainer}>
+                <Text style={styles.label}>Your Name</Text>
+                <Text style={styles.requiredIndicator}>*</Text>
+              </View>
               <TextInput
-                style={styles.input}
+                style={[styles.input, formData.contactName && styles.inputFilled]}
                 value={formData.contactName}
                 onChangeText={(text) => handleInputChange("contactName", text)}
                 placeholder="Enter your full name"
-                placeholderTextColor={colors.textSecondary}
+                placeholderTextColor={colors.textSecondary + "80"}
               />
             </View>
             
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Phone Number*</Text>
+              <View style={styles.labelContainer}>
+                <Text style={styles.label}>Phone Number</Text>
+                <Text style={styles.requiredIndicator}>*</Text>
+              </View>
               <TextInput
-                style={styles.input}
+                style={[styles.input, formData.contactPhone && styles.inputFilled]}
                 value={formData.contactPhone}
                 onChangeText={(text) => handleInputChange("contactPhone", text)}
                 placeholder="Enter your phone number"
-                placeholderTextColor={colors.textSecondary}
+                placeholderTextColor={colors.textSecondary + "80"}
                 keyboardType="phone-pad"
               />
             </View>
@@ -350,11 +377,11 @@ export default function ReportLostPetScreen({ navigation }: ReportLostPetScreenP
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Email</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, formData.contactEmail && styles.inputFilled]}
                 value={formData.contactEmail}
                 onChangeText={(text) => handleInputChange("contactEmail", text)}
                 placeholder="Enter your email address"
-                placeholderTextColor={colors.textSecondary}
+                placeholderTextColor={colors.textSecondary + "80"}
                 keyboardType="email-address"
                 autoCapitalize="none"
               />
@@ -363,11 +390,11 @@ export default function ReportLostPetScreen({ navigation }: ReportLostPetScreenP
             <View style={styles.inputContainer}>
               <Text style={styles.label}>Reward (Optional)</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, formData.reward && styles.inputFilled]}
                 value={formData.reward}
                 onChangeText={(text) => handleInputChange("reward", text)}
                 placeholder="Enter reward amount if offered"
-                placeholderTextColor={colors.textSecondary}
+                placeholderTextColor={colors.textSecondary + "80"}
                 keyboardType="numeric"
               />
             </View>
@@ -405,48 +432,97 @@ const styles = StyleSheet.create({
   content: {
     padding: spacing.md,
   },
+  headerContainer: {
+    alignItems: "center",
+    marginBottom: spacing.xl,
+    backgroundColor: colors.tertiary + "15",
+    borderRadius: 16,
+    padding: spacing.lg,
+  },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: "bold",
-    color: colors.text,
+    color: colors.primary,
     marginBottom: spacing.xs,
+    marginTop: spacing.sm,
+    textAlign: "center",
   },
   subtitle: {
     fontSize: 16,
-    color: colors.textSecondary,
+    color: colors.text,
     marginBottom: spacing.xl,
+    textAlign: "center",
+    lineHeight: 22,
   },
   section: {
-    marginBottom: spacing.xl,
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    padding: spacing.md,
+    marginBottom: spacing.lg,
+    shadowColor: colors.primary,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: colors.text,
+    fontSize: 20,
+    fontWeight: "700",
+    color: colors.primary,
     marginBottom: spacing.md,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.tertiary,
+    paddingBottom: spacing.xs,
   },
   inputContainer: {
     marginBottom: spacing.md,
   },
+  labelContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: spacing.xs,
+  },
   label: {
     fontSize: 16,
-    fontWeight: "500",
-    color: colors.text,
-    marginBottom: spacing.xs,
+    fontWeight: "600",
+    color: colors.primary,
+  },
+  requiredIndicator: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: colors.error,
+    marginLeft: 4,
   },
   sublabel: {
     fontSize: 14,
-    color: colors.textSecondary,
+    color: colors.text,
     marginBottom: spacing.sm,
+    fontStyle: "italic",
   },
   input: {
-    backgroundColor: "white",
-    borderWidth: 1,
+    backgroundColor: colors.surface,
+    borderWidth: 2,
     borderColor: colors.border,
-    borderRadius: 8,
+    borderRadius: 12,
     padding: spacing.md,
     fontSize: 16,
     color: colors.text,
+    shadowColor: colors.primary,
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  inputFilled: {
+    borderColor: colors.secondary,
+    backgroundColor: colors.tertiary + "10", // 10% opacity
+    shadowOpacity: 0.1,
   },
   textArea: {
     height: 100,
@@ -466,26 +542,46 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     padding: spacing.md,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: colors.border,
-    borderRadius: 8,
-    backgroundColor: "white",
+    borderRadius: 12,
+    backgroundColor: colors.surface,
     gap: spacing.xs,
+    shadowColor: colors.primary,
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   selectedOption: {
     backgroundColor: colors.primary,
     borderColor: colors.primary,
+    shadowColor: colors.primary,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 4,
   },
   optionText: {
     fontSize: 14,
-    fontWeight: "500",
+    fontWeight: "600",
     color: colors.text,
   },
   selectedOptionText: {
-    color: "white",
+    color: colors.surface,
+    fontWeight: "700",
   },
   imageSection: {
     marginTop: spacing.md,
+    backgroundColor: colors.tertiary + "20", // 20% opacity
+    borderRadius: 12,
+    padding: spacing.md,
   },
   imagesContainer: {
     flexDirection: "row",
@@ -498,45 +594,70 @@ const styles = StyleSheet.create({
   image: {
     width: 100,
     height: 100,
-    borderRadius: 8,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: colors.tertiary,
   },
   removeImageButton: {
     position: "absolute",
-    top: -5,
-    right: -5,
+    top: -8,
+    right: -8,
     backgroundColor: colors.error,
-    borderRadius: 10,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: colors.surface,
   },
   addImageButton: {
     width: 100,
     height: 100,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: colors.secondary,
+    borderRadius: 12,
     borderStyle: "dashed",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: colors.background,
+    backgroundColor: colors.surface,
+    shadowColor: colors.secondary,
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   addImageText: {
     color: colors.primary,
     fontSize: 12,
+    fontWeight: "600",
     marginTop: spacing.xs,
   },
   submitButton: {
     backgroundColor: colors.primary,
-    borderRadius: 8,
-    paddingVertical: spacing.md,
+    borderRadius: 16,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.xl,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    marginTop: spacing.md,
+    marginTop: spacing.xl,
     marginBottom: spacing.xxl,
     gap: spacing.sm,
+    shadowColor: colors.primary,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 6,
+    borderWidth: 2,
+    borderColor: colors.secondary,
   },
   submitButtonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
+    color: colors.surface,
+    fontSize: 18,
+    fontWeight: "700",
+    letterSpacing: 0.5,
   }
 })
