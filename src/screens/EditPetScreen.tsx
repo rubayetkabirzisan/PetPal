@@ -450,105 +450,105 @@ export default function EditPetScreen({ route, navigation }: any) {
               )}
             </View>
 
-            {/* Age and Gender Row */}
-            <View style={styles.rowContainer}>
-              <View style={styles.halfInput}>
-                <Text style={styles.label}>
-                  Age <Text style={styles.required}>*</Text>
-                </Text>
-                <TextInput
-                  style={[styles.input, errors.age && styles.inputError]}
-                  value={form.age || ""}
-                  onChangeText={(value) => handleChange("age", value)}
-                  placeholder="e.g. 2 years"
-                  placeholderTextColor={colors.textSecondary}
-                />
-                {errors.age && (
-                  <View style={styles.errorContainer}>
-                    <Ionicons name="alert-circle" size={16} color={colors.error} />
-                    <Text style={styles.errorMessage}>{errors.age}</Text>
-                  </View>
-                )}
-              </View>
-              <View style={styles.halfInput}>
-                <Text style={styles.label}>
-                  Gender <Text style={styles.required}>*</Text>
-                </Text>
-                <View style={styles.genderSelector}>
-                  {GENDER_OPTIONS.map(gender => (
-                    <TouchableOpacity
-                      key={gender}
-                      style={[
-                        styles.genderChip,
-                        form.gender === gender && styles.genderChipActive
-                      ]}
-                      onPress={() => handleChange("gender", gender)}
-                    >
-                      <Ionicons
-                        name={gender === 'Male' ? 'male' : 'female'}
-                        size={18}
-                        color={form.gender === gender ? "white" : colors.primary}
-                      />
-                      <Text style={[
-                        styles.genderChipText,
-                        form.gender === gender && styles.genderChipTextActive
-                      ]}>
-                        {gender}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
+            {/* Age Input */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>
+                Age <Text style={styles.required}>*</Text>
+              </Text>
+              <TextInput
+                style={[styles.input, errors.age && styles.inputError]}
+                value={form.age || ""}
+                onChangeText={(value) => handleChange("age", value)}
+                placeholder="e.g. 2 years"
+                placeholderTextColor={colors.textSecondary}
+              />
+              {errors.age && (
+                <View style={styles.errorContainer}>
+                  <Ionicons name="alert-circle" size={16} color={colors.error} />
+                  <Text style={styles.errorMessage}>{errors.age}</Text>
                 </View>
-                {errors.gender && (
-                  <View style={styles.errorContainer}>
-                    <Ionicons name="alert-circle" size={16} color={colors.error} />
-                    <Text style={styles.errorMessage}>{errors.gender}</Text>
-                  </View>
-                )}
-              </View>
+              )}
             </View>
 
-            {/* Size and Color Row */}
-            <View style={styles.rowContainer}>
-              <View style={styles.halfInput}>
-                <Text style={styles.label}>
-                  Size <Text style={styles.required}>*</Text>
-                </Text>
-                <View style={styles.sizeSelector}>
-                  {SIZE_OPTIONS.map(size => (
-                    <TouchableOpacity
-                      key={size}
-                      style={[
-                        styles.sizeChip,
-                        form.size === size && styles.sizeChipActive
-                      ]}
-                      onPress={() => handleChange("size", size)}
-                    >
-                      <Text style={[
-                        styles.sizeChipText,
-                        form.size === size && styles.sizeChipTextActive
-                      ]}>
-                        {size}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
+            {/* Gender Selection */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>
+                Gender <Text style={styles.required}>*</Text>
+              </Text>
+              <View style={styles.genderSelector}>
+                {GENDER_OPTIONS.map(gender => (
+                  <TouchableOpacity
+                    key={gender}
+                    style={[
+                      styles.genderChip,
+                      form.gender === gender && styles.genderChipActive
+                    ]}
+                    onPress={() => handleChange("gender", gender)}
+                  >
+                    <Ionicons
+                      name={gender === 'Male' ? 'male' : 'female'}
+                      size={18}
+                      color={form.gender === gender ? "white" : colors.primary}
+                    />
+                    <Text style={[
+                      styles.genderChipText,
+                      form.gender === gender && styles.genderChipTextActive
+                    ]}>
+                      {gender}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+              {errors.gender && (
+                <View style={styles.errorContainer}>
+                  <Ionicons name="alert-circle" size={16} color={colors.error} />
+                  <Text style={styles.errorMessage}>{errors.gender}</Text>
                 </View>
-                {errors.size && (
-                  <View style={styles.errorContainer}>
-                    <Ionicons name="alert-circle" size={16} color={colors.error} />
-                    <Text style={styles.errorMessage}>{errors.size}</Text>
-                  </View>
-                )}
+              )}
+            </View>
+
+            {/* Size Selection */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>
+                Size <Text style={styles.required}>*</Text>
+              </Text>
+              <View style={styles.sizeSelector}>
+                {SIZE_OPTIONS.map(size => (
+                  <TouchableOpacity
+                    key={size}
+                    style={[
+                      styles.sizeChip,
+                      form.size === size && styles.sizeChipActive
+                    ]}
+                    onPress={() => handleChange("size", size)}
+                  >
+                    <Text style={[
+                      styles.sizeChipText,
+                      form.size === size && styles.sizeChipTextActive
+                    ]}>
+                      {size}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
               </View>
-              <View style={styles.halfInput}>
-                <Text style={styles.label}>Color</Text>
-                <TextInput
-                  style={styles.input}
-                  value={form.color || ""}
-                  onChangeText={(value) => handleChange("color", value)}
-                  placeholder="e.g. Brown, White"
-                  placeholderTextColor={colors.textSecondary}
-                />
-              </View>
+              {errors.size && (
+                <View style={styles.errorContainer}>
+                  <Ionicons name="alert-circle" size={16} color={colors.error} />
+                  <Text style={styles.errorMessage}>{errors.size}</Text>
+                </View>
+              )}
+            </View>
+
+            {/* Color Input */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Color</Text>
+              <TextInput
+                style={styles.input}
+                value={form.color || ""}
+                onChangeText={(value) => handleChange("color", value)}
+                placeholder="e.g. Brown, White"
+                placeholderTextColor={colors.textSecondary}
+              />
             </View>
 
             {/* Location Input */}
@@ -990,11 +990,10 @@ const styles = StyleSheet.create({
   typeSelector: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: spacing.sm,
+    gap: spacing.md,
     marginBottom: spacing.sm,
   },
   typeChip: {
-    flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -1002,9 +1001,12 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: colors.primary,
     borderRadius: borderRadius.lg,
-    paddingHorizontal: spacing.lg,
+    paddingHorizontal: spacing.xl,
     paddingVertical: spacing.md,
-    minWidth: 0,
+    minWidth: 120,
+    flexGrow: 1,
+    flexShrink: 0,
+    flexBasis: '45%',
   },
   typeChipActive: {
     backgroundColor: colors.primary,
@@ -1069,17 +1071,20 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     borderRadius: borderRadius.lg,
     paddingVertical: spacing.md,
+    paddingHorizontal: spacing.sm,
     elevation: 1,
+    minHeight: 48,
   },
   genderChipActive: {
     backgroundColor: colors.primary,
     borderColor: colors.primary,
   },
   genderChipText: {
-    fontSize: 14,
-    fontWeight: "500",
+    fontSize: 15,
+    fontWeight: "600",
     color: colors.text,
     marginLeft: spacing.xs,
+    textAlign: "center",
   },
   genderChipTextActive: {
     color: "white",
@@ -1088,26 +1093,31 @@ const styles = StyleSheet.create({
   // Size Selector
   sizeSelector: {
     flexDirection: "row",
-    gap: spacing.md,
+    gap: spacing.sm,
   },
   sizeChip: {
     flex: 1,
     alignItems: "center",
+    justifyContent: "center",
     backgroundColor: colors.surface,
     borderWidth: 2,
     borderColor: colors.border,
     borderRadius: borderRadius.lg,
     paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xs,
     elevation: 1,
+    minHeight: 48,
+    minWidth: 60,
   },
   sizeChipActive: {
     backgroundColor: colors.primary,
     borderColor: colors.primary,
   },
   sizeChipText: {
-    fontSize: 14,
-    fontWeight: "500",
+    fontSize: 15,
+    fontWeight: "600",
     color: colors.text,
+    textAlign: "center",
   },
   sizeChipTextActive: {
     color: "white",
