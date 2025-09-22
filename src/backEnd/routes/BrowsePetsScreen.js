@@ -1,7 +1,52 @@
 const express = require('express');
 const router = express.Router();
+const Pet = require('../models/Pet');
+const Shelter = require('../models/Shelter');
+const User = require('../models/User');
 
-// Enhanced mock pet data with more variety for browsing
+// Input validation middleware
+const validateBrowseParams = (req, res, next) => {
+  const { page, limit, minAge, maxAge, maxFee } = req.query;
+  
+  if (page && (isNaN(page) || parseInt(page) < 1)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Page must be a positive integer'
+    });
+  }
+  
+  if (limit && (isNaN(limit) || parseInt(limit) < 1 || parseInt(limit) > 100)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Limit must be between 1 and 100'
+    });
+  }
+  
+  if (minAge && isNaN(minAge)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Minimum age must be a number'
+    });
+  }
+  
+  if (maxAge && isNaN(maxAge)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Maximum age must be a number'
+    });
+  }
+  
+  if (maxFee && isNaN(maxFee)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Maximum fee must be a number'
+    });
+  }
+  
+  next();
+};
+
+// Enhanced mock pet data with more variety for browsing (fallback)
 const mockPets = [
   {
     id: 'pet-001',
@@ -185,7 +230,7 @@ const mockPets = [
 const userFavorites = new Map();
 
 // GET /api/browse/pets - Get available pets for browsing with advanced filtering
-router.get('/pets', async (req, res) => {
+router.get('/pets', validateBrowseParams, async (req, res) => {
   try {
     const {
       search,
@@ -567,6 +612,196 @@ router.get('/search/suggestions', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to fetch search suggestions',
+      error: error.message
+    });
+  }
+});
+
+// NEW ROUTE: Get pets from actual database
+router.get('/pets/database', async (req, res) => {
+  try {
+    const { 
+      page = 1, 
+      limit = 20, 
+      type, 
+      breed, 
+      size, 
+      age,
+      location,
+      maxDistance = 25,
+      minFee,
+      maxFee,
+      vaccinated,
+      neutered,
+      specialNeeds,
+      sortBy = 'createdAt',
+      sortOrder = 'desc'
+    } = req.query;
+
+    // Build query filters
+    const filters = {
+      status: 'Available', // Only show available pets
+      isActive: { $ne: false } // Exclude deactivated pets
+    };
+
+    if (type) filters.type = type;
+    if (breed) filters.breed = new RegExp(breed, 'i');
+    if (size) filters.size = size;
+    if (vaccinated !== undefined) filters.vaccinated = vaccinated === 'true';
+    if (neutered !== undefined) filters.neutered = neutered === 'true';
+    if (specialNeeds !== undefined) filters.specialNeeds = specialNeeds === 'true';
+
+    // Age filtering
+    if (age) {
+      // This is simplified - in real implementation, you'd parse age ranges
+      filters.age = new RegExp(age, 'i');
+    }
+
+    // Fee filtering
+    if (minFee || maxFee) {
+      filters.adoptionFee = {};
+      if (minFee) filters.adoptionFee.$gte = parseFloat(minFee);
+      if (maxFee) filters.adoptionFee.$lte = parseFloat(maxFee);
+    }
+
+    // Location filtering (basic city/state match)
+    if (location) {
+      filters.$or = [
+        { 'location.city': new RegExp(location, 'i') },
+        { 'location.address': new RegExp(location, 'i') },
+        { 'shelter.name': new RegExp(location, 'i') }
+      ];
+    }
+
+    // Pagination
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    
+    // Sorting
+    const sort = {};
+    sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
+
+    // Execute query with population
+    const pets = await Pet.find(filters)
+      .populate('adoptedBy', 'name email')
+      .populate('shelter', 'name contactInfo location')
+      .sort(sort)
+      .skip(skip)
+      .limit(parseInt(limit))
+      .lean();
+
+    // Get total count for pagination
+    const total = await Pet.countDocuments(filters);
+
+    // Transform data to match expected format
+    const transformedPets = pets.map(pet => ({
+      id: pet._id,
+      name: pet.name,
+      breed: pet.breed,
+      type: pet.type,
+      age: pet.age,
+      size: pet.size,
+      location: pet.shelter?.name || `${pet.location?.city}, ${pet.location?.state}`,
+      images: pet.images || [],
+      vaccinated: pet.vaccinated,
+      neutered: pet.neutered,
+      adoptionFee: pet.adoptionFee,
+      status: pet.status,
+      description: pet.description,
+      temperament: pet.temperament || [],
+      goodWith: pet.goodWith || [],
+      specialNeeds: pet.specialNeeds,
+      specialNeedsDescription: pet.specialNeedsDescription,
+      viewCount: pet.viewCount || 0,
+      favoriteCount: pet.favoriteCount || 0,
+      daysInShelter: pet.daysInShelter,
+      shelter: pet.shelter ? {
+        id: pet.shelter._id,
+        name: pet.shelter.name,
+        phone: pet.shelter.contactInfo?.phone,
+        email: pet.shelter.contactInfo?.email
+      } : null
+    }));
+
+    res.json({
+      success: true,
+      data: {
+        pets: transformedPets,
+        pagination: {
+          currentPage: parseInt(page),
+          totalPages: Math.ceil(total / parseInt(limit)),
+          totalItems: total,
+          itemsPerPage: parseInt(limit),
+          hasNextPage: skip + transformedPets.length < total,
+          hasPrevPage: parseInt(page) > 1
+        },
+        filters: filters,
+        summary: {
+          totalAvailable: total,
+          types: await Pet.distinct('type', { status: 'Available' }),
+          breeds: await Pet.distinct('breed', { status: 'Available' }),
+          sizes: await Pet.distinct('size', { status: 'Available' })
+        }
+      },
+      message: `Found ${transformedPets.length} pets`
+    });
+
+  } catch (error) {
+    console.error('Database pet search error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch pets from database',
+      error: error.message
+    });
+  }
+});
+
+// Get pet statistics for dashboard
+router.get('/stats/database', async (req, res) => {
+  try {
+    const stats = await Pet.aggregate([
+      {
+        $group: {
+          _id: '$status',
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const typeBreakdown = await Pet.aggregate([
+      {
+        $match: { status: 'Available' }
+      },
+      {
+        $group: {
+          _id: '$type',
+          count: { $sum: 1 },
+          avgFee: { $avg: '$adoptionFee' }
+        }
+      }
+    ]);
+
+    const recentAdoptions = await Pet.find({
+      status: 'Adopted',
+      adoptionDate: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
+    }).countDocuments();
+
+    res.json({
+      success: true,
+      data: {
+        statusBreakdown: stats,
+        typeBreakdown,
+        recentAdoptions,
+        totalPets: await Pet.countDocuments(),
+        availablePets: await Pet.countDocuments({ status: 'Available' }),
+        totalShelters: await Pet.distinct('shelter.id').length
+      }
+    });
+
+  } catch (error) {
+    console.error('Pet statistics error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch pet statistics',
       error: error.message
     });
   }

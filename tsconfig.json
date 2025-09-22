@@ -36,5 +36,10 @@
     "**/*.tsx",
     "nativewind-env.d.ts",
     "types/**/*.d.ts"
+  ],
+  "exclude": [
+    "**/*.test.*",
+    "**/__tests__/**/*",
+    "**/node_modules/**/*"
   ]
 }

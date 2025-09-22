@@ -1,8 +1,11 @@
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
-const cors = require("cors"); // Importing cors
-const bodyParser = require("body-parser"); // Importing bodyParser (if using it)
+const cors = require("cors");
+const bodyParser = require("body-parser");
+
+// Import and initialize models
+const { initializeModels, createIndexes, seedDatabase } = require('./models/index');
 const adopterRoutes = require('./routes/AdopterDashboardScreen');
 const browseRoutes = require('./routes/BrowsePetsScreen');
 const lostPetsRoutes = require('./routes/LostPetsScreen');
@@ -29,6 +32,16 @@ const editPetRoutes = require('./routes/EditPetScreen');
 const reportLostPetRoutes = require('./routes/ReportLostPetScreen');
 const analyticsRoutes = require('./routes/AnalyticsScreen');
 const emergencyActionsRoutes = require('./routes/EmergencyActions');
+// New route imports for missing screens
+const adminLostPetsRoutes = require('./routes/AdminLostPetsScreen');
+const aiPetRoutes = require('./routes/AiPetScreen');
+const applicationDetailsRoutes = require('./routes/ApplicationDetailsScreen');
+const applicationListRoutes = require('./routes/ApplicationListScreen');
+const applicationTrackerRoutes = require('./routes/ApplicationTrackerScreen');
+const authRoutes = require('./routes/AuthScreen');
+const backendTestRoutes = require('./routes/BackendTestScreen');
+const landingRoutes = require('./routes/LandingScreen');
+
 const app = express();
 
 
@@ -57,8 +70,19 @@ const PORT = process.env.PORT || 3000;
 const mongoUrl = process.env.MONGO_URI || "mongodb+srv://rubayetkabirz:admin@cluster0.xqq91hf.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
 mongoose.connect(mongoUrl, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => {
+  .then(async () => {
     console.log("MongoDB connected successfully");
+    
+    // Initialize models and create indexes
+    initializeModels();
+    await createIndexes();
+    
+    // Seed database if in development
+    if (process.env.NODE_ENV !== 'production') {
+      await seedDatabase();
+    }
+    
+    console.log("🚀 Database setup complete!");
   })
   .catch((e) => {
     console.error("Error connecting to MongoDB:", e);
@@ -91,6 +115,15 @@ app.use('/api/edit-pet', editPetRoutes);
 app.use('/api/report-lost-pet', reportLostPetRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/emergency-actions', emergencyActionsRoutes);
+// New route registrations
+app.use('/api/admin-lost-pets', adminLostPetsRoutes);
+app.use('/api/ai-pet', aiPetRoutes);
+app.use('/api/application-details', applicationDetailsRoutes);
+app.use('/api/application-list', applicationListRoutes);
+app.use('/api/application-tracker', applicationTrackerRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/backend-test', backendTestRoutes);
+app.use('/api/landing', landingRoutes);
 
 // Health check
 app.get('/', (req, res) => {
