@@ -23,6 +23,7 @@ const petProfileRoutes = require('./routes/PetProfileScreen');
 const applicationFormRoutes = require('./routes/ApplicationFormScreen');
 const safeZoneRoutes = require('./routes/SafeZoneScreen');
 const petLocationRoutes = require('./routes/PetLocationScreen');
+const settingsRoutes = require('./routes/SettingsScreen');
 const app = express();
 
 
@@ -79,6 +80,7 @@ app.use('/api/pet-profile', petProfileRoutes);
 app.use('/api/application-form', applicationFormRoutes);
 app.use('/api/safe-zone', safeZoneRoutes);
 app.use('/api/pet-location', petLocationRoutes);
+app.use('/api/settings', settingsRoutes);
 
 // Health check
 app.get('/', (req, res) => {
