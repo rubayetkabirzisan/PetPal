@@ -25,6 +25,7 @@ const safeZoneRoutes = require('./routes/SafeZoneScreen');
 const petLocationRoutes = require('./routes/PetLocationScreen');
 const settingsRoutes = require('./routes/SettingsScreen');
 const addPetRoutes = require('./routes/AddPetScreen');
+const editPetRoutes = require('./routes/EditPetScreen');
 const analyticsRoutes = require('./routes/AnalyticsScreen');
 const app = express();
 
@@ -84,6 +85,7 @@ app.use('/api/safe-zone', safeZoneRoutes);
 app.use('/api/pet-location', petLocationRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/add-pet', addPetRoutes);
+app.use('/api/edit-pet', editPetRoutes);
 app.use('/api/analytics', analyticsRoutes);
 
 // Health check
