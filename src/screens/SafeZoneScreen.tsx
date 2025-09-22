@@ -13,6 +13,7 @@ import {
   View
 } from "react-native"
 import MapView, { Circle, Marker, PROVIDER_GOOGLE } from "react-native-maps"
+import NavigationHeader from "../../components/NavigationHeader"
 import { colors, spacing } from "../theme/theme"
 
 // Define the type for the route params
@@ -149,16 +150,12 @@ export default function SafeZoneScreen() {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{petName}'s Safe Zones</Text>
-      </View>
+    <View style={styles.container}>
+      <NavigationHeader 
+        title={`${petName}'s Safe Zones`}
+        showBackButton={true}
+      />
+      <ScrollView style={styles.content}>
 
       {/* Pet Info Card */}
       <View style={styles.petInfoCard}>
@@ -361,7 +358,8 @@ export default function SafeZoneScreen() {
           </Text>
         </View>
       </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -370,21 +368,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: spacing.md,
-    backgroundColor: colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  backButton: {
-    marginRight: spacing.md,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: colors.text,
+  content: {
+    flex: 1,
   },
   petInfoCard: {
     backgroundColor: colors.surface,
