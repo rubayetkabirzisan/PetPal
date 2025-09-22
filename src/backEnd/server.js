@@ -19,6 +19,7 @@ const notificationsRoutes = require('./routes/NotificationsScreen');
 const adoptionHistoryRoutes = require('./routes/AdoptionHistoryScreen');
 const careJournalRoutes = require('./routes/CareJournalScreen');
 const remindersRoutes = require('./routes/RemindersScreen');
+const petProfileRoutes = require('./routes/PetProfileScreen');
 const app = express();
 
 
@@ -71,6 +72,7 @@ app.use('/api/notifications', notificationsRoutes);
 app.use('/api/adoption-history', adoptionHistoryRoutes);
 app.use('/api/care-journal', careJournalRoutes);
 app.use('/api/reminders', remindersRoutes);
+app.use('/api/pet-profile', petProfileRoutes);
 
 // Health check
 app.get('/', (req, res) => {

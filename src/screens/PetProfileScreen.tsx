@@ -563,7 +563,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   bottomSpacing: {
-    height: 120, // Reduced height since action buttons are more compact now
+    height: 140, // Reduced height since action buttons are more compact now
   },
   actionButtons: {
     position: "absolute",
