@@ -89,7 +89,7 @@ export default function App() {
            <Stack.Screen
              name="EditPet"
              component={EditPetScreen}
-             options={{ headerShown: true, title: "Edit Pet" }}
+             options={{ headerShown: false }}
            />
             <Stack.Screen
               name="ApplicationForm"
