@@ -21,6 +21,7 @@ const careJournalRoutes = require('./routes/CareJournalScreen');
 const remindersRoutes = require('./routes/RemindersScreen');
 const petProfileRoutes = require('./routes/PetProfileScreen');
 const applicationFormRoutes = require('./routes/ApplicationFormScreen');
+const safeZoneRoutes = require('./routes/SafeZoneScreen');
 const app = express();
 
 
@@ -75,6 +76,7 @@ app.use('/api/care-journal', careJournalRoutes);
 app.use('/api/reminders', remindersRoutes);
 app.use('/api/pet-profile', petProfileRoutes);
 app.use('/api/application-form', applicationFormRoutes);
+app.use('/api/safe-zone', safeZoneRoutes);
 
 // Health check
 app.get('/', (req, res) => {
