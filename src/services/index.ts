@@ -7,7 +7,14 @@
 export { default as ApiService, apiService } from './ApiService'
 export { default as AuthService } from './AuthService'
 
-// Entity services
+// New backend-integrated services
+export { AdminService } from './AdminService'
+export { AdoptionService } from './AdoptionService'
+export { CareService } from './CareService'
+export { LocationService } from './LocationService'
+export { PetService } from './PetService'
+
+// Entity services (legacy - might need updating)
 export { default as AdoptionHistoryService } from './AdoptionHistoryService'
 export { default as ApplicationsService } from './ApplicationsService'
 export { default as CareEntryService } from './CareEntryService'
@@ -24,3 +31,4 @@ export { default as VerificationService } from './VerificationService'
 // Administrative services  
 export { default as AnalyticsService } from './AnalyticsService'
 export { default as EmergencyService } from './EmergencyService'
+

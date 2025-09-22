@@ -1,11 +1,12 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import {
-  User,
-  authenticateUser,
-  clearStoredAuth,
-  getStoredAuth,
-  initializeDemoUsers,
-  registerUser
+    User,
+    authenticateUser,
+    clearStoredAuth,
+    getStoredAuth,
+    initializeDemoUsers,
+    registerUser,
+    validateAuthToken
 } from '../../lib/auth';
 
 interface AuthContextType {
@@ -28,15 +29,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const loadAuth = async () => {
       try {
-        // Initialize demo users for convenience
+        // Initialize demo users for convenience (legacy)
         await initializeDemoUsers();
         
-        // Load stored auth state
+        // First check if we have stored user data
         const authState = await getStoredAuth();
-        setUser(authState.user);
-        setIsAuthenticated(authState.isAuthenticated);
+        
+        if (authState.isAuthenticated && authState.user) {
+          // Validate token with backend
+          const validatedUser = await validateAuthToken();
+          if (validatedUser) {
+            setUser(validatedUser);
+            setIsAuthenticated(true);
+          } else {
+            // Token invalid, clear state
+            setUser(null);
+            setIsAuthenticated(false);
+          }
+        } else {
+          setUser(null);
+          setIsAuthenticated(false);
+        }
       } catch (error) {
         console.error("Error loading auth state:", error);
+        setUser(null);
+        setIsAuthenticated(false);
       } finally {
         setLoading(false);
       }

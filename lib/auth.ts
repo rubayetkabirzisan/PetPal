@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_CONFIG, apiCall, TokenManager } from '../src/config/api';
 
 export interface User {
   id: string;
@@ -50,6 +51,7 @@ export async function setStoredAuth(user: User): Promise<void> {
 export async function clearStoredAuth(): Promise<void> {
   try {
     await AsyncStorage.removeItem(AUTH_STORAGE_KEY);
+    await TokenManager.clearTokens();
   } catch (error) {
     console.error("Error clearing auth:", error);
   }
@@ -63,19 +65,39 @@ export async function authenticateUser(
   password: string, 
   type: "adopter" | "admin"
 ): Promise<User | null> {
-  // Simulate authentication logic
-  if (email && password.length >= 6) {
-    const user: User = {
-      id: `user-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-      email,
-      name: email.split("@")[0],
-      type,
-      shelterName: type === "admin" ? "Happy Paws Shelter" : undefined,
-    };
-    await setStoredAuth(user);
-    return user;
+  try {
+    const response = await apiCall(API_CONFIG.ENDPOINTS.AUTH.LOGIN, {
+      method: 'POST',
+      body: JSON.stringify({ email, password, userType: type }),
+    });
+
+    if (response.success && response.data) {
+      const { user, token, refreshToken } = response.data;
+      
+      // Store tokens
+      await TokenManager.setToken(token);
+      if (refreshToken) {
+        await TokenManager.setRefreshToken(refreshToken);
+      }
+      
+      // Store user data
+      const userData: User = {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        type: user.userType,
+        shelterName: user.shelterName,
+      };
+      
+      await setStoredAuth(userData);
+      return userData;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Authentication failed:', error);
+    return null;
   }
-  return null;
 }
 
 /**
@@ -86,42 +108,85 @@ export async function registerUser(
   password: string, 
   name: string
 ): Promise<User | null> {
-  // Simulate registration logic
-  if (email && password.length >= 6 && name) {
-    const user: User = {
-      id: `user-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-      email,
-      name,
-      type: "adopter",
-    };
-    await setStoredAuth(user);
-    return user;
+  try {
+    const response = await apiCall(API_CONFIG.ENDPOINTS.AUTH.REGISTER, {
+      method: 'POST',
+      body: JSON.stringify({ email, password, name, userType: 'adopter' }),
+    });
+
+    if (response.success && response.data) {
+      const { user, token, refreshToken } = response.data;
+      
+      // Store tokens
+      await TokenManager.setToken(token);
+      if (refreshToken) {
+        await TokenManager.setRefreshToken(refreshToken);
+      }
+      
+      // Store user data
+      const userData: User = {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        type: user.userType,
+        shelterName: user.shelterName,
+      };
+      
+      await setStoredAuth(userData);
+      return userData;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Registration failed:', error);
+    return null;
   }
-  return null;
 }
 
 /**
- * Initialize demo users
+ * Validate existing token and get user profile
  */
-export async function initializeDemoUsers(): Promise<void> {
+export async function validateAuthToken(): Promise<User | null> {
   try {
-    const stored = await AsyncStorage.getItem(AUTH_STORAGE_KEY);
-    if (!stored) {
-      // Create a demo admin user if no user exists
-      const demoAdmin: User = {
-        id: "admin-demo-123",
-        email: "admin@petpal.com",
-        name: "Admin User",
-        type: "admin",
-        shelterName: "Happy Paws Shelter"
+    const token = await TokenManager.getToken();
+    if (!token) {
+      return null;
+    }
+
+    const response = await apiCall(API_CONFIG.ENDPOINTS.AUTH.PROFILE, {
+      method: 'GET',
+    });
+
+    if (response.success && response.data) {
+      const { user } = response.data;
+      const userData: User = {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        type: user.userType,
+        shelterName: user.shelterName,
       };
       
-      console.log("Initializing demo admin user");
-      // Don't actually store the demo admin - we'll just make it available for demo login
+      await setStoredAuth(userData);
+      return userData;
     }
+    
+    // Token is invalid, clear it
+    await clearStoredAuth();
+    return null;
   } catch (error) {
-    console.error("Error initializing demo users:", error);
+    console.error('Token validation failed:', error);
+    await clearStoredAuth();
+    return null;
   }
+}
+
+/**
+ * Initialize demo users (legacy - now handled by backend)
+ */
+export async function initializeDemoUsers(): Promise<void> {
+  // This function is kept for compatibility but demo users are now handled by the backend
+  console.log("Demo users initialization is handled by the backend");
 }
 
 /**

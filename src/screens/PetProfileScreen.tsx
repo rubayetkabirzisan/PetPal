@@ -4,8 +4,33 @@ import { useEffect, useState } from "react"
 import { Alert, Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import NavigationHeader from "../../components/NavigationHeader"
 import { useAuth } from "../contexts/AuthContext"
-import { getPetById, type Pet } from "../lib/data"
+import { PetService } from "../services"
 import { colors } from "../theme/theme"
+
+// Pet interface for this screen
+interface Pet {
+  id: string;
+  name: string;
+  breed: string;
+  age: number;
+  size: string;
+  gender: string;
+  description: string;
+  images: string[];
+  status: string;
+  adoptionFee: number;
+  location: string;
+  shelter: {
+    id: string;
+    name: string;
+    address: string;
+    phone: string;
+  };
+  healthRecords: any[];
+  isFavorited: boolean;
+  applicationCount: number;
+  viewCount: number;
+}
 
 const { width } = Dimensions.get("window")
 
@@ -18,6 +43,8 @@ export default function PetProfileScreen({ navigation, route }: PetProfileScreen
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [isFavorited, setIsFavorited] = useState(false)
   const [pet, setPet] = useState<Pet | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const { user } = useAuth()
   const petId = route.params?.petId
@@ -27,12 +54,59 @@ export default function PetProfileScreen({ navigation, route }: PetProfileScreen
 
   useEffect(() => {
     if (petId) {
-      const petData = getPetById(petId)
-      if (petData) {
-        setPet(petData)
-      }
+      loadPetProfile()
     }
   }, [petId])
+
+  const loadPetProfile = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      const result = await PetService.getPetProfile(petId, user?.id)
+      
+      if (result.success) {
+        const petData = result.pet
+        
+        // Map backend data to component interface
+        const mappedPet: Pet = {
+          id: petData.id,
+          name: petData.name,
+          breed: petData.breed,
+          age: petData.age,
+          size: petData.size,
+          gender: petData.gender,
+          description: petData.description,
+          images: petData.images || [],
+          status: petData.status,
+          adoptionFee: petData.adoptionFee,
+          location: petData.location,
+          shelter: petData.shelter || {
+            id: 'shelter-1',
+            name: 'Happy Paws Shelter',
+            address: '123 Main St',
+            phone: '(555) 123-4567'
+          },
+          healthRecords: petData.healthRecords || [],
+          isFavorited: petData.isFavorited || false,
+          applicationCount: petData.applicationCount || 0,
+          viewCount: petData.viewCount || 0
+        }
+        
+        setPet(mappedPet)
+        setIsFavorited(mappedPet.isFavorited)
+      } else {
+        setError(result.error || 'Failed to load pet profile')
+        Alert.alert('Error', result.error || 'Failed to load pet profile')
+      }
+    } catch (err) {
+      const errorMessage = 'Network error occurred'
+      setError(errorMessage)
+      Alert.alert('Error', errorMessage)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleApplyForAdoption = () => {
     if (!pet || !user) {
