@@ -1,6 +1,61 @@
-[dotenv@17.2.1] injecting env (0) from .env -- tip: 📡 auto-backup env with Radar: https://dotenvx.com/radar
-(node:75132) [MONGODB DRIVER] Warning: useNewUrlParser is a deprecated option: useNewUrlParser has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
+[dotenv@17.2.1] injecting env (0) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+(node:80927) [MONGODB DRIVER] Warning: useNewUrlParser is a deprecated option: useNewUrlParser has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
 (Use `node --trace-warnings ...` to show where the warning was created)
-(node:75132) [MONGODB DRIVER] Warning: useUnifiedTopology is a deprecated option: useUnifiedTopology has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
+(node:80927) [MONGODB DRIVER] Warning: useUnifiedTopology is a deprecated option: useUnifiedTopology has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
 Server running on http://localhost:3000
 MongoDB connected successfully
+Error uploading images: TypeError: image.replace is not a function
+    at /Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/routes/AddPetScreen.js:448:27
+    at Array.map (<anonymous>)
+    at /Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/routes/AddPetScreen.js:445:36
+    at Layer.handleRequest (/Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/node_modules/router/lib/layer.js:152:17)
+    at next (/Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/node_modules/router/lib/route.js:157:13)
+    at Route.dispatch (/Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/node_modules/router/lib/route.js:117:3)
+    at handle (/Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/node_modules/router/index.js:435:11)
+    at Layer.handleRequest (/Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/node_modules/router/lib/layer.js:152:17)
+    at /Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/node_modules/router/index.js:295:15
+    at processParams (/Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/node_modules/router/index.js:582:12)
+Error uploading images: TypeError: image.replace is not a function
+    at /Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/routes/AddPetScreen.js:448:27
+    at Array.map (<anonymous>)
+    at /Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/routes/AddPetScreen.js:445:36
+    at Layer.handleRequest (/Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/node_modules/router/lib/layer.js:152:17)
+    at next (/Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/node_modules/router/lib/route.js:157:13)
+    at Route.dispatch (/Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/node_modules/router/lib/route.js:117:3)
+    at handle (/Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/node_modules/router/index.js:435:11)
+    at Layer.handleRequest (/Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/node_modules/router/lib/layer.js:152:17)
+    at /Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/node_modules/router/index.js:295:15
+    at processParams (/Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/node_modules/router/index.js:582:12)
+Error uploading images: TypeError: image.replace is not a function
+    at /Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/routes/AddPetScreen.js:448:27
+    at Array.map (<anonymous>)
+    at /Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/routes/AddPetScreen.js:445:36
+    at Layer.handleRequest (/Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/node_modules/router/lib/layer.js:152:17)
+    at next (/Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/node_modules/router/lib/route.js:157:13)
+    at Route.dispatch (/Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/node_modules/router/lib/route.js:117:3)
+    at handle (/Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/node_modules/router/index.js:435:11)
+    at Layer.handleRequest (/Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/node_modules/router/lib/layer.js:152:17)
+    at /Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/node_modules/router/index.js:295:15
+    at processParams (/Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/node_modules/router/index.js:582:12)
+Error uploading images: TypeError: image.replace is not a function
+    at /Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/routes/AddPetScreen.js:448:27
+    at Array.map (<anonymous>)
+    at /Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/routes/AddPetScreen.js:445:36
+    at Layer.handleRequest (/Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/node_modules/router/lib/layer.js:152:17)
+    at next (/Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/node_modules/router/lib/route.js:157:13)
+    at Route.dispatch (/Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/node_modules/router/lib/route.js:117:3)
+    at handle (/Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/node_modules/router/index.js:435:11)
+    at Layer.handleRequest (/Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/node_modules/router/lib/layer.js:152:17)
+    at /Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/node_modules/router/index.js:295:15
+    at processParams (/Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/node_modules/router/index.js:582:12)
+Error uploading images: TypeError: image.replace is not a function
+    at /Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/routes/AddPetScreen.js:448:27
+    at Array.map (<anonymous>)
+    at /Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/routes/AddPetScreen.js:445:36
+    at Layer.handleRequest (/Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/node_modules/router/lib/layer.js:152:17)
+    at next (/Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/node_modules/router/lib/route.js:157:13)
+    at Route.dispatch (/Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/node_modules/router/lib/route.js:117:3)
+    at handle (/Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/node_modules/router/index.js:435:11)
+    at Layer.handleRequest (/Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/node_modules/router/lib/layer.js:152:17)
+    at /Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/node_modules/router/index.js:295:15
+    at processParams (/Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/node_modules/router/index.js:582:12)
