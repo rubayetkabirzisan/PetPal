@@ -32,7 +32,7 @@ export class AdoptionService {
    */
   static async getAdoptionHistory(adoptionId: string, userId: string) {
     try {
-      const endpoint = `${API_CONFIG.ENDPOINTS.ADOPTION.HISTORY(adoptionId)}?userId=${userId}`;
+      const endpoint = `${API_CONFIG.ENDPOINTS.adoption.HISTORY(adoptionId)}?userId=${userId}`;
       
       const response = await apiCall(endpoint, {
         method: 'GET',
@@ -57,7 +57,7 @@ export class AdoptionService {
    */
   static async getAdoptionTracker(userId: string) {
     try {
-      const response = await apiCall(`${API_CONFIG.ENDPOINTS.ADOPTION.TRACKER}?userId=${userId}`, {
+      const response = await apiCall(`${API_CONFIG.ENDPOINTS.adoption.TRACKER}?userId=${userId}`, {
         method: 'GET',
       });
 
@@ -88,7 +88,7 @@ export class AdoptionService {
     references: any;
   }) {
     try {
-      const response = await apiCall(API_CONFIG.ENDPOINTS.ADOPTION.APPLICATION, {
+      const response = await apiCall(API_CONFIG.ENDPOINTS.adoption.APPLICATION, {
         method: 'POST',
         body: JSON.stringify(applicationData),
       });
@@ -113,7 +113,7 @@ export class AdoptionService {
    */
   static async getApplicationList(userId: string, filters?: { status?: string }) {
     try {
-      let endpoint = `${API_CONFIG.ENDPOINTS.ADOPTION.LIST_APPLICATIONS}?userId=${userId}`;
+      let endpoint = `${API_CONFIG.ENDPOINTS.adoption.LIST_APPLICATIONS}?userId=${userId}`;
       
       if (filters?.status) {
         endpoint += `&status=${filters.status}`;
@@ -143,7 +143,7 @@ export class AdoptionService {
    */
   static async getApplicationDetails(applicationId: string, userId: string) {
     try {
-      const endpoint = `${API_CONFIG.ENDPOINTS.ADOPTION.APPLICATION_DETAILS(applicationId)}?userId=${userId}`;
+      const endpoint = `${API_CONFIG.ENDPOINTS.adoption.APPLICATION_DETAILS(applicationId)}?userId=${userId}`;
 
       const response = await apiCall(endpoint, {
         method: 'GET',
@@ -168,7 +168,7 @@ export class AdoptionService {
    */
   static async updateApplicationStatus(applicationId: string, status: string, adminId: string) {
     try {
-      const response = await apiCall(API_CONFIG.ENDPOINTS.ADOPTION.APPLICATION_DETAILS(applicationId), {
+      const response = await apiCall(API_CONFIG.ENDPOINTS.adoption.APPLICATION_DETAILS(applicationId), {
         method: 'PATCH',
         body: JSON.stringify({ status, adminId }),
       });

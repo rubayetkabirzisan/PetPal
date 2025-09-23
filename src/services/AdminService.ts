@@ -30,7 +30,7 @@ export class AdminService {
    */
   static async getDashboardStats(adminId: string) {
     try {
-      const response = await apiCall(`${API_CONFIG.ENDPOINTS.ADMIN.DASHBOARD}?adminId=${adminId}`, {
+          const response = await apiCall(`${API_CONFIG.ENDPOINTS.admin.dashboard}?adminId=${adminId}`, {
         method: 'GET',
       });
 
@@ -54,7 +54,7 @@ export class AdminService {
    */
   static async getAdminPets(adminId: string, filters?: { status?: string; limit?: number }) {
     try {
-      let endpoint = `${API_CONFIG.ENDPOINTS.ADMIN.PETS}?adminId=${adminId}`;
+          let endpoint = `${API_CONFIG.ENDPOINTS.admin.pets}?adminId=${adminId}`;
       
       if (filters?.status) {
         endpoint += `&status=${filters.status}`;
@@ -99,7 +99,7 @@ export class AdminService {
     adminId: string;
   }) {
     try {
-      const response = await apiCall(API_CONFIG.ENDPOINTS.ADMIN.ADD_PET, {
+          const response = await apiCall(API_CONFIG.ENDPOINTS.admin.addPet, {
         method: 'POST',
         body: JSON.stringify(petData),
       });
@@ -123,7 +123,7 @@ export class AdminService {
    */
   static async updatePet(petId: string, petData: Partial<AdminPet>, adminId: string) {
     try {
-      const response = await apiCall(`${API_CONFIG.ENDPOINTS.ADMIN.PETS}/${petId}`, {
+      const response = await apiCall(`${API_CONFIG.ENDPOINTS.admin.PETS}/${petId}`, {
         method: 'PUT',
         body: JSON.stringify({ ...petData, adminId }),
       });
@@ -147,7 +147,7 @@ export class AdminService {
    */
   static async deletePet(petId: string, adminId: string) {
     try {
-      const response = await apiCall(`${API_CONFIG.ENDPOINTS.ADMIN.PETS}/${petId}`, {
+      const response = await apiCall(`${API_CONFIG.ENDPOINTS.admin.PETS}/${petId}`, {
         method: 'DELETE',
         body: JSON.stringify({ adminId }),
       });
@@ -171,7 +171,7 @@ export class AdminService {
    */
   static async getLostPetsReports(adminId: string) {
     try {
-      const response = await apiCall(`${API_CONFIG.ENDPOINTS.ADMIN.LOST_PETS}?adminId=${adminId}`, {
+      const response = await apiCall(`${API_CONFIG.ENDPOINTS.admin.LOST_PETS}?adminId=${adminId}`, {
         method: 'GET',
       });
 
@@ -195,7 +195,7 @@ export class AdminService {
    */
   static async getUsers(adminId: string, filters?: { userType?: string; status?: string }) {
     try {
-      let endpoint = `${API_CONFIG.ENDPOINTS.ADMIN.USERS}?adminId=${adminId}`;
+      let endpoint = `${API_CONFIG.ENDPOINTS.admin.USERS}?adminId=${adminId}`;
       
       if (filters?.userType) {
         endpoint += `&userType=${filters.userType}`;
@@ -228,7 +228,7 @@ export class AdminService {
    */
   static async getAdminApplications(adminId: string, filters?: { status?: string; petId?: string }) {
     try {
-      let endpoint = `${API_CONFIG.ENDPOINTS.ADMIN.APPLICATIONS}?adminId=${adminId}`;
+      let endpoint = `${API_CONFIG.ENDPOINTS.admin.APPLICATIONS}?adminId=${adminId}`;
       
       if (filters?.status) {
         endpoint += `&status=${filters.status}`;

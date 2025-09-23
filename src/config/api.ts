@@ -30,40 +30,72 @@ export const API_CONFIG = {
     },
     
     // Pet management endpoints
-    PETS: {
-      BROWSE: '/api/browse-pets',
-      PROFILE: (petId: string) => `/api/pet-profile/${petId}`,
-      SEARCH: '/api/browse-pets/search',
-      FAVORITES: '/api/browse-pets/favorites',
-      TOGGLE_FAVORITE: (petId: string) => `/api/browse-pets/${petId}/favorite`,
-    },
+    // Pet endpoints
+  pets: {
+    browse: '/api/browse/pets',
+    details: (id: string) => `/api/pets/${id}`,
+    favorite: (id: string) => `/api/pets/${id}/favorite`,
+    unfavorite: (id: string) => `/api/pets/${id}/unfavorite`,
+    search: '/api/pets/search',
+    filter: '/api/pets/filter',
+    BROWSE: '/api/browse/pets',
+    PROFILE: (id: string) => `/api/pet-profile/${id}`,
+    SEARCH: '/api/browse/pets/search',
+    TOGGLE_FAVORITE: (id: string) => `/api/pets/${id}/toggle-favorite`,
+    FAVORITES: '/api/pets/favorites',
+  },
     
     // Adoption endpoints
-    ADOPTION: {
-      HISTORY: (adoptionId: string) => `/api/adoption-history/${adoptionId}`,
-      TRACKER: '/api/adoption-tracker',
-      APPLICATION: '/api/adoption-application',
-      LIST_APPLICATIONS: '/api/application-list',
-      APPLICATION_DETAILS: (applicationId: string) => `/api/application-details/${applicationId}`,
-    },
+  adoption: {
+    applications: '/api/application-list',
+    apply: '/api/application-form',
+    status: (id: string) => `/api/application-details/${id}`,
+    history: '/api/adoption-history',
+    cancel: (id: string) => `/api/application-tracker/${id}/cancel`,
+    approve: (id: string) => `/api/admin-applications/${id}/approve`,
+    reject: (id: string) => `/api/admin-applications/${id}/reject`,
+    HISTORY: (id: string) => `/api/adoption-history/${id}`,
+    TRACKER: '/api/application-tracker',
+    APPLICATION: '/api/application-form',
+    LIST_APPLICATIONS: '/api/application-list',
+    APPLICATION_DETAILS: (id: string) => `/api/application-details/${id}`,
+  },
     
     // Admin endpoints
-    ADMIN: {
-      DASHBOARD: '/api/admin-dashboard',
-      PETS: '/api/admin-pets',
-      ADD_PET: '/api/add-pet',
-      LOST_PETS: '/api/admin-lost-pets',
-      USERS: '/api/admin-users',
-      APPLICATIONS: '/api/admin-applications',
-    },
+    // Admin endpoints
+  admin: {
+    dashboard: '/api/admin-dashboard',
+    pets: '/api/manage-pets',
+    addPet: '/api/add-pet',
+    updatePet: (id: string) => `/api/edit-pet/${id}`,
+    deletePet: (id: string) => `/api/manage-pets/${id}`,
+    applications: '/api/admin-applications',
+    users: '/api/admin-dashboard/users',
+    analytics: '/api/analytics',
+    notifications: '/api/notifications',
+    PETS: '/api/manage-pets',
+    ADD_PET: '/api/add-pet',
+    LOST_PETS: '/api/admin-lost-pets',
+    USERS: '/api/admin-dashboard/users',
+    APPLICATIONS: '/api/admin-applications',
+  },
     
-    // GPS and Location endpoints
-    GPS: {
-      LOCATION: (petId: string) => `/api/pet-location/${petId}`,
-      ANALYTICS: (userId: string) => `/api/pet-location/analytics/${userId}`,
-      UPDATE_LOCATION: (petId: string) => `/api/pet-location/${petId}`,
-      SAFE_ZONE: (petId: string) => `/api/safe-zone/${petId}`,
-    },
+    // GPS and location endpoints
+  location: {
+    track: '/api/gps-tracking',
+    history: '/api/pet-location',
+    safeZone: '/api/safe-zone',
+    alerts: '/api/gps-tracking/alerts',
+    emergency: '/api/emergency-actions',
+  },
+  
+  // GPS endpoints (for LocationService)
+  GPS: {
+    LOCATION: (petId: string) => `/api/pet-location/${petId}`,
+    UPDATE_LOCATION: (petId: string) => `/api/pet-location/${petId}`,
+    ANALYTICS: (userId: string) => `/api/gps-tracking/${userId}/analytics`,
+    SAFE_ZONE: (petId: string) => `/api/safe-zone/${petId}`,
+  },
     
     // Lost pets endpoints
     LOST_PETS: {
@@ -73,12 +105,21 @@ export const API_CONFIG = {
     },
     
     // Care and reminders endpoints
-    CARE: {
-      JOURNAL: '/api/care-journal',
-      JOURNAL_ENTRY: (entryId: string) => `/api/care-journal/${entryId}`,
-      REMINDERS: '/api/reminders',
-      REMINDER: (reminderId: string) => `/api/reminders/${reminderId}`,
-    },
+    // Care and maintenance endpoints
+  care: {
+    journal: '/api/care-journal',
+    reminders: '/api/reminders',
+    addEntry: '/api/care-journal',
+    updateEntry: (id: string) => `/api/care-journal/${id}`,
+    deleteEntry: (id: string) => `/api/care-journal/${id}`,
+    addReminder: '/api/reminders',
+    updateReminder: (id: string) => `/api/reminders/${id}`,
+    deleteReminder: (id: string) => `/api/reminders/${id}`,
+    JOURNAL: '/api/care-journal',
+    JOURNAL_ENTRY: (id: string) => `/api/care-journal/${id}`,
+    REMINDERS: '/api/reminders',
+    REMINDER: (id: string) => `/api/reminders/${id}`,
+  },
     
     // AI and recommendations
     AI: {
@@ -105,7 +146,14 @@ export const API_CONFIG = {
       END_CALL: (chatRoomId: string, callId: string) => `/api/chat/${chatRoomId}/calls/${callId}/end`,
       CALL_STATUS: (chatRoomId: string, callId: string) => `/api/chat/${chatRoomId}/calls/${callId}/status`,
     }
-  }
+  },
+
+  // Additional compatibility endpoints
+  SCHEDULE_VISIT: (id: string) => `/api/appointments/schedule/${id}`,
+  VIEW_APPLICATION: (id: string) => `/api/application-details/${id}`,
+  VOICE_CALL: (id: string) => `/api/calls/voice/${id}`,
+  VIDEO_CALL: (id: string) => `/api/calls/video/${id}`,
+  ATTACH_FILE: (id: string) => `/api/chat/${id}/attach`,
 };
 
 // JWT Token management

@@ -39,7 +39,7 @@ export class PetService {
    */
   static async getBrowsePets(userId?: string, filters?: PetSearchFilters) {
     try {
-      let endpoint = API_CONFIG.ENDPOINTS.PETS.BROWSE;
+      let endpoint = API_CONFIG.ENDPOINTS.pets.BROWSE;
       
       // Add query parameters
       const queryParams = new URLSearchParams();
@@ -78,7 +78,7 @@ export class PetService {
    */
   static async getPetProfile(petId: string, userId?: string) {
     try {
-      let endpoint = API_CONFIG.ENDPOINTS.PETS.PROFILE(petId);
+      let endpoint = API_CONFIG.ENDPOINTS.pets.PROFILE(petId);
       if (userId) {
         endpoint += `?userId=${userId}`;
       }
@@ -116,7 +116,7 @@ export class PetService {
         });
       }
 
-      const response = await apiCall(`${API_CONFIG.ENDPOINTS.PETS.SEARCH}?${queryParams.toString()}`, {
+      const response = await apiCall(`${API_CONFIG.ENDPOINTS.pets.SEARCH}?${queryParams.toString()}`, {
         method: 'GET',
       });
 
@@ -140,7 +140,7 @@ export class PetService {
    */
   static async toggleFavorite(petId: string, userId: string) {
     try {
-      const response = await apiCall(API_CONFIG.ENDPOINTS.PETS.TOGGLE_FAVORITE(petId), {
+      const response = await apiCall(API_CONFIG.ENDPOINTS.pets.TOGGLE_FAVORITE(petId), {
         method: 'POST',
         body: JSON.stringify({ userId }),
       });
@@ -164,7 +164,7 @@ export class PetService {
    */
   static async getFavorites(userId: string) {
     try {
-      const response = await apiCall(`${API_CONFIG.ENDPOINTS.PETS.FAVORITES}?userId=${userId}`, {
+      const response = await apiCall(`${API_CONFIG.ENDPOINTS.pets.FAVORITES}?userId=${userId}`, {
         method: 'GET',
       });
 

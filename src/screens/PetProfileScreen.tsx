@@ -20,11 +20,20 @@ interface Pet {
   status: string;
   adoptionFee: number;
   location: string;
+  distance?: string;
+  color?: string;
+  energyLevel?: string;
+  personality?: string[];
+  vaccinated?: boolean;
+  neutered?: boolean;
+  microchipped?: boolean;
   shelter: {
     id: string;
     name: string;
     address: string;
     phone: string;
+    contact?: string;
+    email?: string;
   };
   healthRecords: any[];
   isFavorited: boolean;
@@ -81,11 +90,20 @@ export default function PetProfileScreen({ navigation, route }: PetProfileScreen
           status: petData.status,
           adoptionFee: petData.adoptionFee,
           location: petData.location,
-          shelter: petData.shelter || {
-            id: 'shelter-1',
-            name: 'Happy Paws Shelter',
-            address: '123 Main St',
-            phone: '(555) 123-4567'
+          distance: '2.5 mi away', // Default distance - would come from location service
+          color: petData.color || 'Mixed',
+          energyLevel: petData.energyLevel || 'Medium',
+          personality: petData.personality || ['Friendly', 'Playful', 'Gentle'],
+          vaccinated: petData.vaccinated !== undefined ? petData.vaccinated : true,
+          neutered: petData.neutered !== undefined ? petData.neutered : true,
+          microchipped: petData.microchipped !== undefined ? petData.microchipped : true,
+          shelter: {
+            id: petData.shelter?.id || 'shelter-1',
+            name: petData.shelter?.name || 'Happy Paws Shelter',
+            address: petData.shelter?.address || '123 Main St',
+            phone: petData.shelter?.phone || '(555) 123-4567',
+            contact: petData.shelter?.contact || '(555) 123-4567',
+            email: petData.shelter?.email || 'info@happypaws.com'
           },
           healthRecords: petData.healthRecords || [],
           isFavorited: petData.isFavorited || false,
@@ -268,7 +286,7 @@ export default function PetProfileScreen({ navigation, route }: PetProfileScreen
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Personality</Text>
           <View style={styles.personalityContainer}>
-            {pet.personality.map((trait, index) => (
+            {pet.personality?.map((trait: string, index: number) => (
               <View key={index} style={styles.personalityTag}>
                 <Ionicons name="star-outline" size={12} color={colors.primary} />
                 <Text style={styles.personalityText}>{trait}</Text>

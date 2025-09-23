@@ -115,7 +115,7 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
   const handleScheduleVisit = async () => {
     try {
       // Make API call to schedule visit
-      const result = await apiCall(API_CONFIG.ENDPOINTS.SCHEDULE_VISIT("1"), {
+      const result = await apiCall(API_CONFIG.ENDPOINTS.CHAT.SCHEDULE_VISIT("1"), {
         method: "POST",
         body: JSON.stringify({
           userId: "user-001",
@@ -157,7 +157,7 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
   const handleViewApplication = async () => {
     try {
       // Make API call to view application status
-      const result = await apiCall(API_CONFIG.ENDPOINTS.VIEW_APPLICATION("1"), {
+      const result = await apiCall(API_CONFIG.ENDPOINTS.CHAT.VIEW_APPLICATION("1"), {
         method: "POST",
         body: JSON.stringify({
           userId: "user-001",
@@ -196,7 +196,7 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
   const handleVoiceCall = async () => {
     try {
       // Make API call to initiate voice call
-      const result = await apiCall(API_CONFIG.ENDPOINTS.VOICE_CALL("1"), {
+      const result = await apiCall(API_CONFIG.ENDPOINTS.CHAT.VOICE_CALL("1"), {
         method: "POST",
         body: JSON.stringify({
           userId: "user-001",
@@ -256,7 +256,7 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
   const handleVideoCall = async () => {
     try {
       // Make API call to initiate video call
-      const result = await apiCall(API_CONFIG.ENDPOINTS.VIDEO_CALL("1"), {
+      const result = await apiCall(API_CONFIG.ENDPOINTS.CHAT.VIDEO_CALL("1"), {
         method: "POST",
         body: JSON.stringify({
           userId: "user-001",
@@ -365,7 +365,7 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
       }
 
       // Make API call to attach file
-      const result = await apiCall(API_CONFIG.ENDPOINTS.ATTACH_FILE("1"), {
+      const result = await apiCall(API_CONFIG.ENDPOINTS.CHAT.ATTACH_FILE("1"), {
         method: "POST",
         body: JSON.stringify({
           userId: "user-001",

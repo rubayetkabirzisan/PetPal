@@ -42,7 +42,7 @@ export class CareService {
    */
   static async getCareJournal(userId: string, petId?: string) {
     try {
-      let endpoint = `${API_CONFIG.ENDPOINTS.CARE.JOURNAL}?userId=${userId}`;
+      let endpoint = `${API_CONFIG.ENDPOINTS.care.JOURNAL}?userId=${userId}`;
       if (petId) {
         endpoint += `&petId=${petId}`;
       }
@@ -83,7 +83,7 @@ export class CareService {
     userId: string;
   }) {
     try {
-      const response = await apiCall(API_CONFIG.ENDPOINTS.CARE.JOURNAL, {
+      const response = await apiCall(API_CONFIG.ENDPOINTS.care.JOURNAL, {
         method: 'POST',
         body: JSON.stringify(entryData),
       });
@@ -107,7 +107,7 @@ export class CareService {
    */
   static async updateCareEntry(entryId: string, entryData: Partial<CareJournalEntry>, userId: string) {
     try {
-      const response = await apiCall(API_CONFIG.ENDPOINTS.CARE.JOURNAL_ENTRY(entryId), {
+      const response = await apiCall(API_CONFIG.ENDPOINTS.care.JOURNAL_ENTRY(entryId), {
         method: 'PUT',
         body: JSON.stringify({ ...entryData, userId }),
       });
@@ -131,7 +131,7 @@ export class CareService {
    */
   static async deleteCareEntry(entryId: string, userId: string) {
     try {
-      const response = await apiCall(API_CONFIG.ENDPOINTS.CARE.JOURNAL_ENTRY(entryId), {
+      const response = await apiCall(API_CONFIG.ENDPOINTS.care.JOURNAL_ENTRY(entryId), {
         method: 'DELETE',
         body: JSON.stringify({ userId }),
       });
@@ -155,7 +155,7 @@ export class CareService {
    */
   static async getReminders(userId: string, filters?: { petId?: string; completed?: boolean; type?: string }) {
     try {
-      let endpoint = `${API_CONFIG.ENDPOINTS.CARE.REMINDERS}?userId=${userId}`;
+      let endpoint = `${API_CONFIG.ENDPOINTS.care.REMINDERS}?userId=${userId}`;
       
       if (filters?.petId) {
         endpoint += `&petId=${filters.petId}`;
@@ -201,7 +201,7 @@ export class CareService {
     userId: string;
   }) {
     try {
-      const response = await apiCall(API_CONFIG.ENDPOINTS.CARE.REMINDERS, {
+      const response = await apiCall(API_CONFIG.ENDPOINTS.care.REMINDERS, {
         method: 'POST',
         body: JSON.stringify(reminderData),
       });
@@ -225,7 +225,7 @@ export class CareService {
    */
   static async updateReminder(reminderId: string, reminderData: Partial<Reminder>, userId: string) {
     try {
-      const response = await apiCall(API_CONFIG.ENDPOINTS.CARE.REMINDER(reminderId), {
+      const response = await apiCall(API_CONFIG.ENDPOINTS.care.REMINDER(reminderId), {
         method: 'PUT',
         body: JSON.stringify({ ...reminderData, userId }),
       });
@@ -249,7 +249,7 @@ export class CareService {
    */
   static async completeReminder(reminderId: string, userId: string) {
     try {
-      const response = await apiCall(`${API_CONFIG.ENDPOINTS.CARE.REMINDER(reminderId)}/complete`, {
+      const response = await apiCall(`${API_CONFIG.ENDPOINTS.care.REMINDER(reminderId)}/complete`, {
         method: 'POST',
         body: JSON.stringify({ userId }),
       });
@@ -273,7 +273,7 @@ export class CareService {
    */
   static async deleteReminder(reminderId: string, userId: string) {
     try {
-      const response = await apiCall(API_CONFIG.ENDPOINTS.CARE.REMINDER(reminderId), {
+      const response = await apiCall(API_CONFIG.ENDPOINTS.care.REMINDER(reminderId), {
         method: 'DELETE',
         body: JSON.stringify({ userId }),
       });
