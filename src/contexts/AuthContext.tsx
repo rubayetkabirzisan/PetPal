@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import {
     User,
     authenticateUser,
+    authenticateUserDemo,
     clearStoredAuth,
     getStoredAuth,
     initializeDemoUsers,
@@ -65,7 +66,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string, userType: "adopter" | "admin"): Promise<boolean> => {
     try {
       setLoading(true);
-      const authenticatedUser = await authenticateUser(email, password, userType);
+      
+      // Try backend authentication first
+      let authenticatedUser = await authenticateUser(email, password, userType);
+      
+      // If backend auth fails, try demo authentication
+      if (!authenticatedUser) {
+        console.log("Backend auth failed, trying demo authentication...");
+        authenticatedUser = await authenticateUserDemo(email, password, userType);
+      }
       
       if (authenticatedUser) {
         setUser(authenticatedUser);

@@ -58,6 +58,43 @@ export async function clearStoredAuth(): Promise<void> {
 }
 
 /**
+ * Temporary demo authentication function for testing
+ * This bypasses backend authentication for development purposes
+ */
+export async function authenticateUserDemo(
+  email: string, 
+  password: string, 
+  type: "adopter" | "admin"
+): Promise<User | null> {
+  // Demo credentials for testing
+  const demoUsers = {
+    'admin@petpal.com': { password: 'admin123', type: 'admin', name: 'Admin User' },
+    'user@petpal.com': { password: 'user123', type: 'adopter', name: 'Demo User' },
+    'test@example.com': { password: '123456', type: 'adopter', name: 'Test User' },
+  };
+
+  const user = demoUsers[email as keyof typeof demoUsers];
+  
+  if (user && user.password === password) {
+    // Create demo user
+    const userData: User = {
+      id: `demo-${type}-${Date.now()}`,
+      email: email,
+      name: user.name,
+      type: user.type as "adopter" | "admin",
+    };
+    
+    // Store demo token
+    await TokenManager.setToken(`demo-token-${Date.now()}`);
+    await setStoredAuth(userData);
+    
+    return userData;
+  }
+  
+  return null;
+}
+
+/**
  * Authenticate a user with email and password
  */
 export async function authenticateUser(
@@ -68,7 +105,7 @@ export async function authenticateUser(
   try {
     const response = await apiCall(API_CONFIG.ENDPOINTS.AUTH.LOGIN, {
       method: 'POST',
-      body: JSON.stringify({ email, password, userType: type }),
+      body: JSON.stringify({ email, password }),
     });
 
     if (response.success && response.data) {
@@ -82,10 +119,10 @@ export async function authenticateUser(
       
       // Store user data
       const userData: User = {
-        id: user.id,
+        id: user._id || user.id,
         email: user.email,
-        name: user.name,
-        type: user.userType,
+        name: user.name || `${user.name?.first || ''} ${user.name?.last || ''}`.trim(),
+        type: user.role || type, // Use backend role or fallback to provided type
         shelterName: user.shelterName,
       };
       
