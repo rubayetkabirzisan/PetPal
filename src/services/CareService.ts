@@ -1,294 +1,344 @@
 import { API_CONFIG, apiCall } from '../config/api';
 
-export interface CareJournalEntry {
-  id: string;
-  title: string;
+export interface CareEntry {
+  _id?: string;
+  id?: string;
   petId: string;
-  petName: string;
-  type: string;
-  description: string;
-  date: string;
-  images: string[];
-  notes: string;
-  veterinarianName?: string;
-  cost?: number;
-  nextAppointment?: string;
-}
-
-export interface Reminder {
-  id: string;
+  userId: string;
   title: string;
-  petId: string;
-  petName: string;
-  type: string;
-  dueDate: string;
-  completed: boolean;
+  type: 'feeding' | 'medication' | 'exercise' | 'grooming' | 'vet_visit' | 'vaccination' | 'behavior' | 'other';
   description: string;
-  priority: string;
-  recurring: boolean;
-  recurringInterval?: string;
+  date: Date;
+  
+  // Type-specific fields
+  feeding?: {
+    foodType: string;
+    amount: string;
+    notes?: string;
+  };
+  
+  medication?: {
+    medicationName: string;
+    dosage: string;
+    frequency: string;
+    duration?: string;
+    veterinarian?: string;
+    notes?: string;
+  };
+  
+  exercise?: {
+    activity: string;
+    duration: number; // in minutes
+    location?: string;
+    notes?: string;
+  };
+  
+  grooming?: {
+    service: string;
+    location?: string;
+    cost?: number;
+    notes?: string;
+  };
+  
+  vetVisit?: {
+    veterinarian: string;
+    clinic: string;
+    reason: string;
+    diagnosis?: string;
+    treatment?: string;
+    followUpDate?: Date;
+    cost?: number;
+    notes?: string;
+  };
+  
+  vaccination?: {
+    vaccineName: string;
+    veterinarian: string;
+    clinic: string;
+    nextDueDate?: Date;
+    batchNumber?: string;
+    notes?: string;
+  };
+  
+  // Attachments
+  attachments?: {
+    type: 'image' | 'document' | 'video';
+    url: string;
+    filename: string;
+    size: number;
+  }[];
+  
+  // Status and tracking
+  isImportant: boolean;
+  tags: string[];
+  
+  // Pet details (populated)
+  pet?: {
+    name: string;
+    type: string;
+    breed: string;
+    images: string[];
+  };
+  
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-export interface ReminderStats {
-  completed: number;
-  overdue: number;
-  upcoming: number;
-  total: number;
+export interface CareResponse {
+  success: boolean;
+  data?: {
+    entry?: CareEntry;
+    entries?: CareEntry[];
+    totalCount?: number;
+    currentPage?: number;
+    totalPages?: number;
+    statistics?: {
+      totalEntries: number;
+      entriesByType: { [key: string]: number };
+      recentEntries: CareEntry[];
+      upcomingReminders: any[];
+    };
+  };
+  message?: string;
+  error?: string;
 }
 
-export class CareService {
+export interface CreateCareEntryData {
+  petId: string;
+  userId: string;
+  title: string;
+  type: CareEntry['type'];
+  description: string;
+  date: Date;
+  feeding?: CareEntry['feeding'];
+  medication?: CareEntry['medication'];
+  exercise?: CareEntry['exercise'];
+  grooming?: CareEntry['grooming'];
+  vetVisit?: CareEntry['vetVisit'];
+  vaccination?: CareEntry['vaccination'];
+  attachments?: CareEntry['attachments'];
+  isImportant?: boolean;
+  tags?: string[];
+}
+
+class CareService {
   /**
    * Get care journal entries
    */
-  static async getCareJournal(userId: string, petId?: string) {
+  async getCareEntries(params: {
+    userId: string;
+    petId?: string;
+    type?: CareEntry['type'];
+    startDate?: Date;
+    endDate?: Date;
+    isImportant?: boolean;
+    tags?: string[];
+    page?: number;
+    limit?: number;
+    sortBy?: 'date' | 'createdAt' | 'type';
+    sortOrder?: 'asc' | 'desc';
+  }): Promise<CareResponse> {
     try {
-      let endpoint = `${API_CONFIG.ENDPOINTS.care.JOURNAL}?userId=${userId}`;
-      if (petId) {
-        endpoint += `&petId=${petId}`;
+      const queryParams = new URLSearchParams();
+      queryParams.append('userId', params.userId);
+      
+      if (params.petId) queryParams.append('petId', params.petId);
+      if (params.type) queryParams.append('type', params.type);
+      if (params.startDate) queryParams.append('startDate', params.startDate.toISOString());
+      if (params.endDate) queryParams.append('endDate', params.endDate.toISOString());
+      if (params.isImportant !== undefined) queryParams.append('isImportant', params.isImportant.toString());
+      if (params.tags) {
+        params.tags.forEach(tag => queryParams.append('tags[]', tag));
       }
+      if (params.page) queryParams.append('page', params.page.toString());
+      if (params.limit) queryParams.append('limit', params.limit.toString());
+      if (params.sortBy) queryParams.append('sortBy', params.sortBy);
+      if (params.sortOrder) queryParams.append('sortOrder', params.sortOrder);
 
-      const response = await apiCall(endpoint, {
+      const response = await apiCall(`${API_CONFIG.ENDPOINTS.CARE.JOURNAL}?${queryParams.toString()}`, {
         method: 'GET',
       });
 
-      if (response.success) {
-        return {
-          success: true,
-          entries: response.data.entries || [],
-          summary: response.data.summary,
-        };
-      }
-      
-      return { success: false, error: response.error || 'Failed to fetch care journal' };
+      return response;
     } catch (error) {
-      console.error('Error fetching care journal:', error);
-      return { success: false, error: 'Network error occurred' };
+      console.error('Get care entries error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get care entries',
+      };
     }
   }
 
   /**
-   * Add care journal entry
+   * Get a specific care entry
    */
-  static async addCareEntry(entryData: {
-    title: string;
-    petId: string;
-    type: string;
-    description: string;
-    date: string;
-    images?: string[];
-    notes?: string;
-    veterinarianName?: string;
-    cost?: number;
-    nextAppointment?: string;
-    userId: string;
-  }) {
+  async getCareEntry(entryId: string, userId: string): Promise<CareResponse> {
     try {
-      const response = await apiCall(API_CONFIG.ENDPOINTS.care.JOURNAL, {
+      const response = await apiCall(`${API_CONFIG.ENDPOINTS.CARE.JOURNAL_ENTRY(entryId)}?userId=${userId}`, {
+        method: 'GET',
+      });
+
+      return response;
+    } catch (error) {
+      console.error('Get care entry error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get care entry',
+      };
+    }
+  }
+
+  /**
+   * Create a new care entry
+   */
+  async createCareEntry(entryData: CreateCareEntryData): Promise<CareResponse> {
+    try {
+      const response = await apiCall(API_CONFIG.ENDPOINTS.CARE.ADD_ENTRY, {
         method: 'POST',
         body: JSON.stringify(entryData),
       });
 
-      if (response.success) {
-        return {
-          success: true,
-          entry: response.data.entry,
-        };
-      }
-      
-      return { success: false, error: response.error || 'Failed to add care entry' };
+      return response;
     } catch (error) {
-      console.error('Error adding care entry:', error);
-      return { success: false, error: 'Network error occurred' };
+      console.error('Create care entry error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to create care entry',
+      };
     }
   }
 
   /**
-   * Update care journal entry
+   * Update a care entry
    */
-  static async updateCareEntry(entryId: string, entryData: Partial<CareJournalEntry>, userId: string) {
+  async updateCareEntry(entryId: string, updateData: Partial<CreateCareEntryData>): Promise<CareResponse> {
     try {
-      const response = await apiCall(API_CONFIG.ENDPOINTS.care.JOURNAL_ENTRY(entryId), {
+      const response = await apiCall(API_CONFIG.ENDPOINTS.CARE.UPDATE_ENTRY(entryId), {
         method: 'PUT',
-        body: JSON.stringify({ ...entryData, userId }),
+        body: JSON.stringify(updateData),
       });
 
-      if (response.success) {
-        return {
-          success: true,
-          entry: response.data.entry,
-        };
-      }
-      
-      return { success: false, error: response.error || 'Failed to update care entry' };
+      return response;
     } catch (error) {
-      console.error('Error updating care entry:', error);
-      return { success: false, error: 'Network error occurred' };
+      console.error('Update care entry error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to update care entry',
+      };
     }
   }
 
   /**
-   * Delete care journal entry
+   * Delete a care entry
    */
-  static async deleteCareEntry(entryId: string, userId: string) {
+  async deleteCareEntry(entryId: string, userId: string): Promise<CareResponse> {
     try {
-      const response = await apiCall(API_CONFIG.ENDPOINTS.care.JOURNAL_ENTRY(entryId), {
+      const response = await apiCall(`${API_CONFIG.ENDPOINTS.CARE.DELETE_ENTRY(entryId)}?userId=${userId}`, {
         method: 'DELETE',
-        body: JSON.stringify({ userId }),
       });
 
-      if (response.success) {
-        return {
-          success: true,
-          message: response.data.message,
-        };
-      }
-      
-      return { success: false, error: response.error || 'Failed to delete care entry' };
+      return response;
     } catch (error) {
-      console.error('Error deleting care entry:', error);
-      return { success: false, error: 'Network error occurred' };
+      console.error('Delete care entry error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to delete care entry',
+      };
     }
   }
 
   /**
-   * Get reminders
+   * Get care statistics
    */
-  static async getReminders(userId: string, filters?: { petId?: string; completed?: boolean; type?: string }) {
+  async getCareStatistics(userId: string, params?: {
+    petId?: string;
+    period?: '7d' | '30d' | '90d' | '1y';
+  }): Promise<CareResponse> {
     try {
-      let endpoint = `${API_CONFIG.ENDPOINTS.care.REMINDERS}?userId=${userId}`;
+      const queryParams = new URLSearchParams();
+      queryParams.append('userId', userId);
       
-      if (filters?.petId) {
-        endpoint += `&petId=${filters.petId}`;
-      }
-      if (filters?.completed !== undefined) {
-        endpoint += `&completed=${filters.completed}`;
-      }
-      if (filters?.type) {
-        endpoint += `&type=${filters.type}`;
-      }
+      if (params?.petId) queryParams.append('petId', params.petId);
+      if (params?.period) queryParams.append('period', params.period);
 
-      const response = await apiCall(endpoint, {
+      const response = await apiCall(`${API_CONFIG.ENDPOINTS.CARE.JOURNAL}/statistics?${queryParams.toString()}`, {
         method: 'GET',
       });
 
-      if (response.success) {
-        return {
-          success: true,
-          reminders: response.data.reminders || [],
-          statistics: response.data.statistics,
-        };
-      }
-      
-      return { success: false, error: response.error || 'Failed to fetch reminders' };
+      return response;
     } catch (error) {
-      console.error('Error fetching reminders:', error);
-      return { success: false, error: 'Network error occurred' };
+      console.error('Get care statistics error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get care statistics',
+      };
     }
   }
 
   /**
-   * Add reminder
+   * Upload attachment for care entry
    */
-  static async addReminder(reminderData: {
-    title: string;
-    petId: string;
-    type: string;
-    dueDate: string;
-    description: string;
-    priority: string;
-    recurring: boolean;
-    recurringInterval?: string;
+  async uploadAttachment(entryId: string, data: {
     userId: string;
-  }) {
+    file: File;
+    type: 'image' | 'document' | 'video';
+  }): Promise<CareResponse> {
     try {
-      const response = await apiCall(API_CONFIG.ENDPOINTS.care.REMINDERS, {
+      const formData = new FormData();
+      formData.append('userId', data.userId);
+      formData.append('file', data.file);
+      formData.append('type', data.type);
+
+      const response = await apiCall(`${API_CONFIG.ENDPOINTS.CARE.JOURNAL_ENTRY(entryId)}/attachment`, {
         method: 'POST',
-        body: JSON.stringify(reminderData),
+        body: formData,
+        headers: {
+          // Remove Content-Type to let browser set it for FormData
+        },
       });
 
-      if (response.success) {
-        return {
-          success: true,
-          reminder: response.data.reminder,
-        };
-      }
-      
-      return { success: false, error: response.error || 'Failed to add reminder' };
+      return response;
     } catch (error) {
-      console.error('Error adding reminder:', error);
-      return { success: false, error: 'Network error occurred' };
+      console.error('Upload attachment error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to upload attachment',
+      };
     }
   }
 
   /**
-   * Update reminder
+   * Search care entries
    */
-  static async updateReminder(reminderId: string, reminderData: Partial<Reminder>, userId: string) {
+  async searchCareEntries(params: {
+    userId: string;
+    query: string;
+    petId?: string;
+    type?: CareEntry['type'];
+    limit?: number;
+  }): Promise<CareResponse> {
     try {
-      const response = await apiCall(API_CONFIG.ENDPOINTS.care.REMINDER(reminderId), {
-        method: 'PUT',
-        body: JSON.stringify({ ...reminderData, userId }),
+      const queryParams = new URLSearchParams();
+      queryParams.append('userId', params.userId);
+      queryParams.append('q', params.query);
+      
+      if (params.petId) queryParams.append('petId', params.petId);
+      if (params.type) queryParams.append('type', params.type);
+      if (params.limit) queryParams.append('limit', params.limit.toString());
+
+      const response = await apiCall(`${API_CONFIG.ENDPOINTS.CARE.JOURNAL}/search?${queryParams.toString()}`, {
+        method: 'GET',
       });
 
-      if (response.success) {
-        return {
-          success: true,
-          reminder: response.data.reminder,
-        };
-      }
-      
-      return { success: false, error: response.error || 'Failed to update reminder' };
+      return response;
     } catch (error) {
-      console.error('Error updating reminder:', error);
-      return { success: false, error: 'Network error occurred' };
-    }
-  }
-
-  /**
-   * Complete reminder
-   */
-  static async completeReminder(reminderId: string, userId: string) {
-    try {
-      const response = await apiCall(`${API_CONFIG.ENDPOINTS.care.REMINDER(reminderId)}/complete`, {
-        method: 'POST',
-        body: JSON.stringify({ userId }),
-      });
-
-      if (response.success) {
-        return {
-          success: true,
-          reminder: response.data.reminder,
-        };
-      }
-      
-      return { success: false, error: response.error || 'Failed to complete reminder' };
-    } catch (error) {
-      console.error('Error completing reminder:', error);
-      return { success: false, error: 'Network error occurred' };
-    }
-  }
-
-  /**
-   * Delete reminder
-   */
-  static async deleteReminder(reminderId: string, userId: string) {
-    try {
-      const response = await apiCall(API_CONFIG.ENDPOINTS.care.REMINDER(reminderId), {
-        method: 'DELETE',
-        body: JSON.stringify({ userId }),
-      });
-
-      if (response.success) {
-        return {
-          success: true,
-          message: response.data.message,
-        };
-      }
-      
-      return { success: false, error: response.error || 'Failed to delete reminder' };
-    } catch (error) {
-      console.error('Error deleting reminder:', error);
-      return { success: false, error: 'Network error occurred' };
+      console.error('Search care entries error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to search care entries',
+      };
     }
   }
 }
+
+export default new CareService();

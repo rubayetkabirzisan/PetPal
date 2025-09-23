@@ -37,9 +37,9 @@ export default function SettingsScreen() {
   }, [user])
 
   const loadUserPreferences = async () => {
-    if (user?.id) {
+    if (user?.uid) {
       try {
-        const userPrefs = await getUserPreferences(user.id)
+        const userPrefs = await getUserPreferences(user.uid)
         setPreferences(userPrefs)
       } catch (error) {
         console.error("Error loading preferences:", error)
@@ -49,7 +49,7 @@ export default function SettingsScreen() {
   }
 
   const updatePreferences = async (updates: Partial<UserPreferences>) => {
-    if (!preferences || !user?.id) return
+    if (!preferences || !user?.uid) return
 
     const updatedPrefs = { ...preferences, ...updates }
     setPreferences(updatedPrefs)
@@ -116,9 +116,9 @@ export default function SettingsScreen() {
           style: "destructive", 
           onPress: async () => {
             try {
-              if (user?.id) {
-                await clearUserPreferences(user.id)
-                await clearUserNotifications(user.id)
+              if (user?.uid) {
+                await clearUserPreferences(user.uid)
+                await clearUserNotifications(user.uid)
               }
               Alert.alert("Success", "All data cleared successfully.")
               await loadUserPreferences()

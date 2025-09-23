@@ -5,7 +5,7 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 
 // Import and initialize models
-const { initializeModels, createIndexes, seedDatabase } = require('./models/index');
+// Models are automatically loaded through the individual route files
 const adopterRoutes = require('./routes/AdopterDashboardScreen');
 const browseRoutes = require('./routes/BrowsePetsScreen');
 const lostPetsRoutes = require('./routes/LostPetsScreen');
@@ -38,7 +38,9 @@ const aiPetRoutes = require('./routes/AiPetScreen');
 const applicationDetailsRoutes = require('./routes/ApplicationDetailsScreen');
 const applicationListRoutes = require('./routes/ApplicationListScreen');
 const applicationTrackerRoutes = require('./routes/ApplicationTrackerScreen');
-const authRoutes = require('./routes/AuthScreen');
+const authScreenRoutes = require('./routes/AuthScreen');
+const authApiRoutes = require('./routes/auth');
+const usersRoutes = require('./routes/users');
 const backendTestRoutes = require('./routes/BackendTestScreen');
 const landingRoutes = require('./routes/LandingScreen');
 
@@ -263,27 +265,6 @@ mongoose.connect(mongoUrl)
   .then(async () => {
     console.log("✅ MongoDB connected successfully");
     
-    // Initialize models and create indexes
-    initializeModels();
-    
-    // Create indexes with error handling
-    try {
-      await createIndexes();
-      console.log("✅ Database indexes created successfully");
-    } catch (indexError) {
-      console.warn("⚠️ Index creation warning (non-blocking):", indexError.message);
-    }
-    
-    // Seed database if in development
-    if (process.env.NODE_ENV !== 'production') {
-      try {
-        await seedDatabase();
-        console.log("✅ Database seeding complete");
-      } catch (seedError) {
-        console.warn("⚠️ Database seeding warning:", seedError.message);
-      }
-    }
-    
     console.log("🚀 Database setup complete!");
   })
   .catch((e) => {
@@ -345,7 +326,9 @@ app.use('/api/ai-pet', aiPetRoutes);
 app.use('/api/application-details', applicationDetailsRoutes);
 app.use('/api/application-list', applicationListRoutes);
 app.use('/api/application-tracker', applicationTrackerRoutes);
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', authApiRoutes);
+app.use('/api/users', usersRoutes);
+app.use('/api/auth-screen', authScreenRoutes);
 app.use('/api/backend-test', backendTestRoutes);
 app.use('/api/landing', landingRoutes);
 

@@ -4,7 +4,7 @@ const Pet = require('../models/Pet');
 const User = require('../models/User');
 const Application = require('../models/Application');
 const Shelter = require('../models/Shelter');
-const Analytics = require('../models/analytics');
+// const Analytics = require('../models/Analytics');
 
 // Authentication middleware
 const authenticateUser = (req, res, next) => {

@@ -1,0 +1,323 @@
+const mongoose = require('mongoose');
+
+const emergencyActionSchema = new mongoose.Schema({
+  // Emergency identification
+  title: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  description: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  emergencyType: {
+    type: String,
+    required: true,
+    enum: [
+      'injury',
+      'illness',
+      'poisoning',
+      'choking',
+      'heatstroke',
+      'hypothermia',
+      'seizure',
+      'allergic_reaction',
+      'bleeding',
+      'fracture',
+      'bite_wound',
+      'eye_injury',
+      'respiratory_distress',
+      'cardiac_emergency',
+      'neurological',
+      'gastrointestinal',
+      'urinary_blockage',
+      'birthing_emergency',
+      'lost_pet',
+      'natural_disaster',
+      'fire',
+      'flood',
+      'other'
+    ]
+  },
+  severity: {
+    type: String,
+    required: true,
+    enum: ['low', 'medium', 'high', 'critical', 'life_threatening']
+  },
+  urgency: {
+    type: String,
+    required: true,
+    enum: ['routine', 'urgent', 'emergency', 'immediate']
+  },
+  // Pet and owner information
+  petId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Pet'
+  },
+  petName: String,
+  petType: String,
+  petBreed: String,
+  petAge: String,
+  ownerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  // Location information
+  location: {
+    address: String,
+    city: String,
+    state: String,
+    zipCode: String,
+    country: String,
+    coordinates: {
+      latitude: Number,
+      longitude: Number
+    },
+    landmarks: String,
+    accessInstructions: String
+  },
+  // Emergency details
+  symptoms: [String],
+  timeline: {
+    startTime: { type: Date, required: true },
+    discoveredTime: Date,
+    reportedTime: { type: Date, default: Date.now },
+    lastUpdate: Date
+  },
+  // Immediate actions taken
+  actionsTaken: [{
+    action: { type: String, required: true },
+    timestamp: { type: Date, default: Date.now },
+    performedBy: String,
+    result: String,
+    effectiveness: {
+      type: String,
+      enum: ['ineffective', 'somewhat_effective', 'effective', 'very_effective']
+    }
+  }],
+  // First aid and treatment
+  firstAidProvided: {
+    type: Boolean,
+    default: false
+  },
+  firstAidDetails: [{
+    procedure: String,
+    timestamp: Date,
+    providedBy: String,
+    supplies: [String],
+    effectiveness: String,
+    notes: String
+  }],
+  // Professional help
+  veterinaryContact: {
+    contacted: { type: Boolean, default: false },
+    contactTime: Date,
+    veterinarianName: String,
+    clinicName: String,
+    phone: String,
+    address: String,
+    instructions: String,
+    appointmentScheduled: Boolean,
+    appointmentTime: Date
+  },
+  emergencyServices: [{
+    service: {
+      type: String,
+      enum: ['animal_control', 'fire_department', 'police', 'paramedics', 'poison_control']
+    },
+    contacted: Boolean,
+    contactTime: Date,
+    responseTime: Date,
+    caseNumber: String,
+    instructions: String,
+    outcome: String
+  }],
+  // Transportation
+  transportation: {
+    method: {
+      type: String,
+      enum: ['personal_vehicle', 'ambulance', 'taxi', 'friend_family', 'other']
+    },
+    departureTime: Date,
+    arrivalTime: Date,
+    destination: String,
+    specialInstructions: String
+  },
+  // Status tracking
+  status: {
+    type: String,
+    required: true,
+    enum: ['active', 'in_progress', 'resolved', 'transferred', 'closed'],
+    default: 'active'
+  },
+  outcome: {
+    type: String,
+    enum: ['recovered', 'stable', 'improving', 'worsening', 'deceased', 'transferred', 'unknown']
+  },
+  resolution: {
+    description: String,
+    resolvedAt: Date,
+    finalLocation: String,
+    treatment: String,
+    followUpRequired: Boolean,
+    followUpInstructions: String
+  },
+  // People involved
+  contacts: [{
+    name: { type: String, required: true },
+    relationship: {
+      type: String,
+      enum: ['owner', 'family', 'friend', 'neighbor', 'veterinarian', 'emergency_contact', 'witness', 'responder']
+    },
+    phone: String,
+    email: String,
+    role: String,
+    contacted: Boolean,
+    contactTime: Date,
+    response: String
+  }],
+  // Documentation
+  images: [{
+    url: String,
+    description: String,
+    timestamp: Date,
+    type: {
+      type: String,
+      enum: ['injury', 'scene', 'treatment', 'recovery', 'evidence']
+    }
+  }],
+  videos: [{
+    url: String,
+    description: String,
+    timestamp: Date,
+    duration: Number
+  }],
+  documents: [{
+    name: String,
+    type: String,
+    url: String,
+    description: String,
+    uploadedAt: Date
+  }],
+  // Medical information
+  medicalHistory: {
+    knownConditions: [String],
+    medications: [String],
+    allergies: [String],
+    recentTreatments: [String],
+    lastVetVisit: Date,
+    vaccinationStatus: String
+  },
+  vitalSigns: [{
+    timestamp: { type: Date, default: Date.now },
+    temperature: Number,
+    heartRate: Number,
+    respiratoryRate: Number,
+    bloodPressure: String,
+    consciousness: {
+      type: String,
+      enum: ['alert', 'responsive', 'unresponsive', 'unconscious']
+    },
+    notes: String,
+    recordedBy: String
+  }],
+  // Costs and insurance
+  costs: {
+    emergencyFee: Number,
+    treatmentCost: Number,
+    medicationCost: Number,
+    followUpCost: Number,
+    totalCost: Number,
+    currency: { type: String, default: 'USD' },
+    insuranceCovered: Boolean,
+    insuranceClaimNumber: String
+  },
+  // Communication log
+  communicationLog: [{
+    timestamp: { type: Date, default: Date.now },
+    type: {
+      type: String,
+      enum: ['call', 'text', 'email', 'in_person', 'app_notification']
+    },
+    fromContact: String,
+    toContact: String,
+    message: String,
+    response: String,
+    outcome: String
+  }],
+  // Learning and improvement
+  lessonsLearned: String,
+  preventionMeasures: [String],
+  improvementSuggestions: String,
+  // Follow-up tracking
+  followUp: {
+    required: { type: Boolean, default: false },
+    schedule: [{
+      date: Date,
+      type: String,
+      completed: Boolean,
+      notes: String
+    }],
+    instructions: String,
+    medications: [{
+      name: String,
+      dosage: String,
+      frequency: String,
+      duration: String
+    }]
+  },
+  // Administrative
+  reportNumber: {
+    type: String,
+    unique: true
+  },
+  priority: {
+    type: String,
+    enum: ['low', 'medium', 'high', 'critical'],
+    default: 'high'
+  },
+  assignedTo: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  tags: [String],
+  isConfidential: {
+    type: Boolean,
+    default: false
+  },
+  // External references
+  relatedIncidents: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'EmergencyAction'
+  }],
+  caseReferences: [String],
+  // Metadata
+  source: {
+    type: String,
+    enum: ['owner_report', 'witness_report', 'professional_report', 'system_generated'],
+    default: 'owner_report'
+  },
+  reportedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  metadata: mongoose.Schema.Types.Mixed,
+  notes: String
+}, {
+  timestamps: true
+});
+
+emergencyActionSchema.index({ ownerId: 1, createdAt: -1 });
+emergencyActionSchema.index({ petId: 1 });
+emergencyActionSchema.index({ emergencyType: 1 });
+emergencyActionSchema.index({ severity: 1 });
+emergencyActionSchema.index({ status: 1 });
+emergencyActionSchema.index({ urgency: 1 });
+emergencyActionSchema.index({ reportNumber: 1 });
+emergencyActionSchema.index({ 'location.coordinates': '2dsphere' });
+emergencyActionSchema.index({ 'timeline.startTime': -1 });
+
+module.exports = mongoose.model('EmergencyAction', emergencyActionSchema);

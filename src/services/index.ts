@@ -1,34 +1,27 @@
-/**
- * Services Index - Centralized export for all API services
- * Import services from this file for consistent access to backend functionality
- */
+// Service exports for easy importing
+export { default as AdminService } from './AdminService';
+export { default as AdoptionService } from './AdoptionService';
+export { default as AnalyticsService } from './AnalyticsService';
+export { default as AuthService } from './AuthService';
+export { default as CareService } from './CareService';
+export { default as EmergencyService } from './EmergencyService';
+export { default as LocationService } from './LocationService';
+export { default as LostPetService } from './LostPetService';
+export { default as MessageService } from './MessageService';
+export { default as NotificationService } from './NotificationService';
+export { default as PetService } from './PetService';
+export { default as ReminderService } from './ReminderService';
 
-// Core services
-export { default as ApiService, apiService } from './ApiService'
-export { default as AuthService } from './AuthService'
-
-// New backend-integrated services
-export { AdminService } from './AdminService'
-export { AdoptionService } from './AdoptionService'
-export { CareService } from './CareService'
-export { LocationService } from './LocationService'
-export { PetService } from './PetService'
-
-// Entity services (legacy - might need updating)
-export { default as AdoptionHistoryService } from './AdoptionHistoryService'
-export { default as ApplicationsService } from './ApplicationsService'
-export { default as CareEntryService } from './CareEntryService'
-export { default as LostPetsService } from './LostPetsService'
-export { default as MessagesService } from './MessagesService'
-export { default as PetsService } from './PetsService'
-export { default as RemindersService } from './RemindersService'
-
-// User and profile services
-export { default as NotificationService } from './NotificationService'
-export { default as ProfileService } from './ProfileService'
-export { default as VerificationService } from './VerificationService'
-
-// Administrative services  
-export { default as AnalyticsService } from './AnalyticsService'
-export { default as EmergencyService } from './EmergencyService'
+// Type exports
+export type { AdoptionResponse, Application, ApplicationFormData } from './AdoptionService';
+export type { AnalyticsData, AnalyticsResponse, DashboardMetrics } from './AnalyticsService';
+export type { AuthResponse, LoginCredentials, RegisterData, User } from './AuthService';
+export type { CareEntry, CareResponse, CreateCareEntryData } from './CareService';
+export type { CreateEmergencyData, EmergencyAction, EmergencyResponse } from './EmergencyService';
+export type { GPSTracking, LocationResponse, SafeZone } from './LocationService';
+export type { CreateLostPetData, CreateSightingData, LostPet, LostPetResponse } from './LostPetService';
+export type { ChatRoom, Message, MessageResponse } from './MessageService';
+export type { Notification, NotificationResponse } from './NotificationService';
+export type { Pet, PetFilter, PetResponse } from './PetService';
+export type { CreateReminderData, Reminder, ReminderResponse } from './ReminderService';
 

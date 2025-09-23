@@ -11,7 +11,7 @@ const LostPet = require('../models/LostPet');
 const Notification = require('../models/Notification');
 const Reminder = require('../models/Reminder');
 const CareEntry = require('../models/careEntry');
-const Analytics = require('../models/analytics');
+// const Analytics = require('../models/Analytics');
 const EmergencyAction = require('../models/EmergencyAction');
 const GPSTracking = require('../models/GPSTracking');
 

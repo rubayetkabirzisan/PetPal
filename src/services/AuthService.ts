@@ -1,99 +1,188 @@
-/**
- * Authentication API Service
- * Handles user authentication with the backend
- */
+import { API_CONFIG, apiCall, TokenManager } from '../config/api';
 
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import apiService from './ApiService'
-
-export interface BackendUser {
-  uid: string
-  name: string
-  email: string
-  phone?: string
-  location?: string
-  bio?: string
-  userType: 'adopter' | 'shelter' | 'admin'
-  createdAt: string
+export interface LoginCredentials {
+  email: string;
+  password: string;
+  type?: 'admin' | 'adopter'; // What frontend expects
+  userType?: 'admin' | 'adopter'; // For backend compatibility
 }
 
-export interface LoginRequest {
-  email: string
-  password: string
-  userType?: 'adopter' | 'shelter' | 'admin'
+export interface RegisterData {
+  name: string;
+  email: string;
+  password: string;
+  phone?: string;
+  location?: string;
+  bio?: string;
+  type: 'admin' | 'adopter'; // What frontend expects
+  userType?: 'admin' | 'adopter'; // For backend compatibility
 }
 
-export interface SignupRequest {
-  name: string
-  email: string
-  password: string
-  phone?: string
-  location?: string
-  bio?: string
-  userType: 'adopter' | 'shelter' | 'admin'
+export interface User {
+  id: string;
+  uid?: string; // Keep for compatibility with backend
+  name: string;
+  email: string;
+  phone?: string;
+  location?: string;
+  bio?: string;
+  type: 'admin' | 'adopter'; // What frontend expects
+  userType?: 'admin' | 'adopter'; // Keep for compatibility with backend
+  isVerified: boolean;
+  avatar?: string;
+  preferences?: any;
+  shelterName?: string; // For admin users
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface AuthResponse {
-  message: string
-  user?: BackendUser
-  token?: string
+  success: boolean;
+  data?: {
+    user: User;
+    token: string;
+    refreshToken?: string;
+  };
+  message?: string;
+  error?: string;
+}
+
+export interface VerificationData {
+  userId: string;
+  code: string;
 }
 
 class AuthService {
   /**
-   * Login user
+   * Login user with email and password
    */
-  async login(credentials: LoginRequest): Promise<AuthResponse> {
+  async login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
-      const response = await apiService.post('/users/login', credentials)
-      
-      if (response.token) {
-        await apiService.setAuthToken(response.token)
+      const response = await apiCall(API_CONFIG.ENDPOINTS.AUTH.LOGIN, {
+        method: 'POST',
+        body: JSON.stringify(credentials),
+      });
+
+      if (response.success && response.data?.token) {
+        await TokenManager.setToken(response.data.token);
+        if (response.data.refreshToken) {
+          await TokenManager.setRefreshToken(response.data.refreshToken);
+        }
       }
-      
-      return response
+
+      return response;
     } catch (error) {
-      console.error('Login failed:', error)
-      throw error
+      console.error('Login error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Login failed',
+      };
     }
   }
 
   /**
    * Register new user
    */
-  async signup(userData: SignupRequest): Promise<AuthResponse> {
+  async register(userData: RegisterData): Promise<AuthResponse> {
     try {
-      const response = await apiService.post('/users/signup', userData)
-      return response
+      const response = await apiCall(API_CONFIG.ENDPOINTS.AUTH.REGISTER, {
+        method: 'POST',
+        body: JSON.stringify(userData),
+      });
+
+      return response;
     } catch (error) {
-      console.error('Signup failed:', error)
-      throw error
+      console.error('Registration error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Registration failed',
+      };
     }
   }
 
   /**
-   * Logout user
+   * Logout user and clear tokens
    */
-  async logout(): Promise<void> {
+  async logout(): Promise<AuthResponse> {
     try {
-      await apiService.removeAuthToken()
-      // Clear any other stored user data
-      await AsyncStorage.removeItem('@petpal/user')
+      const response = await apiCall(API_CONFIG.ENDPOINTS.AUTH.LOGOUT, {
+        method: 'POST',
+      });
+
+      // Clear tokens regardless of API response
+      await TokenManager.clearTokens();
+
+      return {
+        success: true,
+        message: 'Logged out successfully',
+      };
     } catch (error) {
-      console.error('Logout error:', error)
+      console.error('Logout error:', error);
+      // Still clear tokens on error
+      await TokenManager.clearTokens();
+      return {
+        success: true,
+        message: 'Logged out successfully',
+      };
     }
   }
 
   /**
    * Get current user profile
    */
-  async getCurrentUser(): Promise<BackendUser> {
+  async getProfile(): Promise<AuthResponse> {
     try {
-      const response = await apiService.get('/users/profile')
-      return response.user
+      const response = await apiCall(API_CONFIG.ENDPOINTS.AUTH.PROFILE, {
+        method: 'GET',
+      });
+
+      return response;
     } catch (error) {
-      console.error('Get current user failed:', error)
-      throw error
+      console.error('Get profile error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get profile',
+      };
+    }
+  }
+
+  /**
+   * Verify user email/phone with verification code
+   */
+  async verifyUser(verificationData: VerificationData): Promise<AuthResponse> {
+    try {
+      const response = await apiCall(API_CONFIG.ENDPOINTS.AUTH.VERIFY, {
+        method: 'POST',
+        body: JSON.stringify(verificationData),
+      });
+
+      return response;
+    } catch (error) {
+      console.error('Verification error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Verification failed',
+      };
+    }
+  }
+
+  /**
+   * Resend verification code
+   */
+  async resendVerification(userId: string): Promise<AuthResponse> {
+    try {
+      const response = await apiCall(API_CONFIG.ENDPOINTS.AUTH.RESEND_VERIFICATION, {
+        method: 'POST',
+        body: JSON.stringify({ userId }),
+      });
+
+      return response;
+    } catch (error) {
+      console.error('Resend verification error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to resend verification',
+      };
     }
   }
 
@@ -102,24 +191,17 @@ class AuthService {
    */
   async isAuthenticated(): Promise<boolean> {
     try {
-      const token = await apiService.getAuthToken()
-      return !!token
-    } catch (error) {
-      return false
-    }
-  }
+      const token = await TokenManager.getToken();
+      if (!token) return false;
 
-  static async authenticate(username: string, password: string): Promise<boolean> {
-    // Mock authentication logic
-    if (username === 'validUser' && password === 'validPassword') {
-      return true;
+      // Optionally verify token with backend
+      const profileResponse = await this.getProfile();
+      return profileResponse.success;
+    } catch (error) {
+      console.error('Authentication check error:', error);
+      return false;
     }
-    return false;
   }
 }
 
-export const authService = new AuthService()
-export default authService
-
-// Export the class as well for testing
-export { AuthService }
+export default new AuthService();

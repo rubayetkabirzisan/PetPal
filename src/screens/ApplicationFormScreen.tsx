@@ -2,6 +2,8 @@
 import { Ionicons, MaterialIcons } from "@expo/vector-icons"
 import { useState } from "react"
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from "react-native"
+import { AdoptionService } from "../services"
+import { useAuth } from "../contexts/AuthContext"
 import data from "../lib/data"
 import { colors } from "../theme/theme"
 

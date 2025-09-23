@@ -1,0 +1,195 @@
+const mongoose = require('mongoose');
+
+const messageSchema = new mongoose.Schema({
+  // Conversation/Thread information
+  conversationId: {
+    type: String,
+    required: true,
+    index: true
+  },
+  threadId: String,
+  // Participants
+  senderId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  recipientId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  senderRole: {
+    type: String,
+    enum: ['admin', 'adopter', 'shelter'],
+    required: true
+  },
+  recipientRole: {
+    type: String,
+    enum: ['admin', 'adopter', 'shelter'],
+    required: true
+  },
+  // Message content
+  content: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  messageType: {
+    type: String,
+    enum: ['text', 'image', 'file', 'system', 'automated'],
+    default: 'text'
+  },
+  // Attachments
+  attachments: [{
+    type: {
+      type: String,
+      enum: ['image', 'document', 'video', 'audio']
+    },
+    url: String,
+    filename: String,
+    size: Number,
+    mimeType: String
+  }],
+  // Related entities
+  relatedEntityType: {
+    type: String,
+    enum: ['pet', 'application', 'lostPet', 'adoption']
+  },
+  relatedEntityId: {
+    type: mongoose.Schema.Types.ObjectId
+  },
+  // Status tracking
+  status: {
+    type: String,
+    enum: ['pending', 'sent', 'delivered', 'read', 'failed'],
+    default: 'sent'
+  },
+  readStatus: {
+    isRead: { type: Boolean, default: false },
+    readAt: Date,
+    readBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    }
+  },
+  // Delivery tracking
+  deliveredAt: Date,
+  sentAt: {
+    type: Date,
+    default: Date.now
+  },
+  // Message features
+  isSystem: {
+    type: Boolean,
+    default: false
+  },
+  isAutomated: {
+    type: Boolean,
+    default: false
+  },
+  isUrgent: {
+    type: Boolean,
+    default: false
+  },
+  isEncrypted: {
+    type: Boolean,
+    default: false
+  },
+  // Editing and deletion
+  isEdited: {
+    type: Boolean,
+    default: false
+  },
+  editedAt: Date,
+  originalContent: String,
+  isDeleted: {
+    type: Boolean,
+    default: false
+  },
+  deletedAt: Date,
+  deletedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  // Reply information
+  isReply: {
+    type: Boolean,
+    default: false
+  },
+  replyToMessageId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Message'
+  },
+  // Conversation metadata
+  conversationMetadata: {
+    subject: String,
+    petName: String,
+    applicationId: String,
+    priority: {
+      type: String,
+      enum: ['low', 'medium', 'high', 'urgent'],
+      default: 'medium'
+    }
+  },
+  // Flags and moderation
+  flags: [{
+    type: String,
+    flaggedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    flaggedAt: { type: Date, default: Date.now },
+    reason: String
+  }],
+  isReported: {
+    type: Boolean,
+    default: false
+  },
+  moderationStatus: {
+    type: String,
+    enum: ['pending', 'approved', 'rejected', 'hidden'],
+    default: 'approved'
+  },
+  // Template information (for automated messages)
+  templateId: String,
+  templateData: mongoose.Schema.Types.Mixed,
+  // Scheduling
+  scheduledFor: Date,
+  isScheduled: {
+    type: Boolean,
+    default: false
+  },
+  // Analytics
+  clickCount: {
+    type: Number,
+    default: 0
+  },
+  lastClicked: Date,
+  // Language and localization
+  language: {
+    type: String,
+    default: 'en'
+  },
+  // Metadata
+  metadata: mongoose.Schema.Types.Mixed,
+  source: {
+    type: String,
+    default: 'app'
+  },
+  userAgent: String,
+  ipAddress: String
+}, {
+  timestamps: true
+});
+
+messageSchema.index({ conversationId: 1, createdAt: -1 });
+messageSchema.index({ senderId: 1 });
+messageSchema.index({ recipientId: 1 });
+messageSchema.index({ relatedEntityType: 1, relatedEntityId: 1 });
+messageSchema.index({ 'readStatus.isRead': 1 });
+messageSchema.index({ status: 1 });
+messageSchema.index({ isSystem: 1 });
+messageSchema.index({ scheduledFor: 1 });
+
+module.exports = mongoose.model('Message', messageSchema);

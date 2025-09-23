@@ -1,202 +1,337 @@
 import { API_CONFIG, apiCall } from '../config/api';
 
-export interface PetLocation {
+export interface GPSLocation {
+  latitude: number;
+  longitude: number;
+  altitude?: number;
+  accuracy?: number;
+  heading?: number;
+  speed?: number;
+  timestamp: Date;
+}
+
+export interface GPSTracking {
+  _id?: string;
+  id?: string;
   petId: string;
-  petName: string;
+  userId: string;
+  deviceId: string;
   location: {
-    latitude: number;
-    longitude: number;
-    accuracy: number;
-    timestamp: string;
+    type: 'Point';
+    coordinates: [number, number]; // [longitude, latitude]
   };
+  accuracy: number;
+  altitude?: number;
+  speed?: number;
+  heading?: number;
   batteryLevel: number;
-  signalStrength: string;
-  isInSafeZone: boolean;
-  lastUpdate: string;
+  signalStrength: number;
+  isInsideSafeZone: boolean;
+  safeZoneId?: string;
+  timestamp: Date;
+  createdAt?: Date;
 }
 
 export interface SafeZone {
-  id: string;
+  _id?: string;
+  id?: string;
+  petId: string;
+  userId: string;
   name: string;
-  centerLat: number;
-  centerLng: number;
-  radius: number;
+  center: {
+    type: 'Point';
+    coordinates: [number, number]; // [longitude, latitude]
+  };
+  radius: number; // in meters
   isActive: boolean;
+  description?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface LocationResponse {
+  success: boolean;
+  data?: {
+    location?: GPSTracking;
+    locations?: GPSTracking[];
+    safeZone?: SafeZone;
+    safeZones?: SafeZone[];
+    analytics?: any;
+    summary?: any;
+    petAnalytics?: any[];
+    period?: string;
+  };
+  message?: string;
+  error?: string;
 }
 
 export interface LocationAnalytics {
-  petId: string;
-  petName: string;
-  distanceTraveled: number;
-  batteryLevel: number;
-  signalStrength: string;
-  locationCount: number;
-  lastUpdate: string;
+  totalPets: number;
+  activeTrackers: number;
+  lowBatteryTrackers: number;
+  totalDistanceTraveled: number;
+  averageAccuracy: number;
+  petAnalytics: {
+    petId: string;
+    petName: string;
+    distanceTraveled: number;
+    batteryLevel: number;
+    signalStrength: number;
+    locationCount: number;
+    lastUpdate: Date;
+  }[];
 }
 
-export class LocationService {
+class LocationService {
   /**
-   * Get current pet location
+   * Get current location for a pet
    */
-  static async getPetLocation(petId: string, userId: string) {
+  async getPetLocation(petId: string, userId?: string): Promise<LocationResponse> {
     try {
-      const endpoint = `${API_CONFIG.ENDPOINTS.GPS.LOCATION(petId)}?userId=${userId}`;
-
-      const response = await apiCall(endpoint, {
+      const url = `${API_CONFIG.ENDPOINTS.GPS.LOCATION(petId)}${userId ? `?userId=${userId}` : ''}`;
+      const response = await apiCall(url, {
         method: 'GET',
       });
 
-      if (response.success) {
-        return {
-          success: true,
-          location: response.data.location,
-        };
-      }
-      
-      return { success: false, error: response.error || 'Failed to fetch pet location' };
+      return response;
     } catch (error) {
-      console.error('Error fetching pet location:', error);
-      return { success: false, error: 'Network error occurred' };
+      console.error('Get pet location error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get pet location',
+      };
     }
   }
 
   /**
    * Update pet location
    */
-  static async updatePetLocation(petId: string, locationData: {
+  async updatePetLocation(petId: string, locationData: {
+    userId: string;
+    deviceId: string;
     latitude: number;
     longitude: number;
     accuracy: number;
-    batteryLevel?: number;
-    signalStrength?: string;
-    userId: string;
-  }) {
+    altitude?: number;
+    speed?: number;
+    heading?: number;
+    batteryLevel: number;
+    signalStrength: number;
+  }): Promise<LocationResponse> {
     try {
       const response = await apiCall(API_CONFIG.ENDPOINTS.GPS.UPDATE_LOCATION(petId), {
         method: 'PUT',
         body: JSON.stringify(locationData),
       });
 
-      if (response.success) {
-        return {
-          success: true,
-          location: response.data.location,
-        };
-      }
-      
-      return { success: false, error: response.error || 'Failed to update pet location' };
+      return response;
     } catch (error) {
-      console.error('Error updating pet location:', error);
-      return { success: false, error: 'Network error occurred' };
+      console.error('Update pet location error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to update pet location',
+      };
+    }
+  }
+
+  /**
+   * Get location history for a pet
+   */
+  async getLocationHistory(petId: string, params?: {
+    userId?: string;
+    startDate?: Date;
+    endDate?: Date;
+    limit?: number;
+  }): Promise<LocationResponse> {
+    try {
+      const queryParams = new URLSearchParams();
+      if (params?.userId) queryParams.append('userId', params.userId);
+      if (params?.startDate) queryParams.append('startDate', params.startDate.toISOString());
+      if (params?.endDate) queryParams.append('endDate', params.endDate.toISOString());
+      if (params?.limit) queryParams.append('limit', params.limit.toString());
+
+      const url = `${API_CONFIG.ENDPOINTS.GPS.HISTORY}/${petId}${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+      const response = await apiCall(url, {
+        method: 'GET',
+      });
+
+      return response;
+    } catch (error) {
+      console.error('Get location history error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get location history',
+      };
+    }
+  }
+
+  /**
+   * Get GPS tracking data for admin or user
+   */
+  async getGPSTracking(userId: string, params?: {
+    petId?: string;
+    period?: string;
+    isAdmin?: boolean;
+  }): Promise<LocationResponse> {
+    try {
+      const queryParams = new URLSearchParams();
+      queryParams.append('userId', userId);
+      
+      if (params?.petId) queryParams.append('petId', params.petId);
+      if (params?.period) queryParams.append('period', params.period);
+      if (params?.isAdmin) queryParams.append('isAdmin', params.isAdmin.toString());
+
+      const response = await apiCall(`${API_CONFIG.ENDPOINTS.GPS.TRACKING}?${queryParams.toString()}`, {
+        method: 'GET',
+      });
+
+      return response;
+    } catch (error) {
+      console.error('Get GPS tracking error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get GPS tracking data',
+      };
     }
   }
 
   /**
    * Get location analytics
    */
-  static async getLocationAnalytics(userId: string, period: string = '7d') {
+  async getLocationAnalytics(userId: string, params?: {
+    period?: '1d' | '7d' | '30d' | '90d';
+    petId?: string;
+  }): Promise<LocationResponse> {
     try {
-      const endpoint = `${API_CONFIG.ENDPOINTS.GPS.ANALYTICS(userId)}?period=${period}`;
+      const queryParams = new URLSearchParams();
+      if (params?.period) queryParams.append('period', params.period);
+      if (params?.petId) queryParams.append('petId', params.petId);
 
-      const response = await apiCall(endpoint, {
+      const response = await apiCall(`${API_CONFIG.ENDPOINTS.GPS.ANALYTICS(userId)}?${queryParams.toString()}`, {
         method: 'GET',
       });
 
-      if (response.success) {
-        return {
-          success: true,
-          summary: response.data.summary,
-          petAnalytics: response.data.petAnalytics || [],
-          period: response.data.period,
-        };
-      }
-      
-      return { success: false, error: response.error || 'Failed to fetch location analytics' };
+      return response;
     } catch (error) {
-      console.error('Error fetching location analytics:', error);
-      return { success: false, error: 'Network error occurred' };
+      console.error('Get location analytics error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get location analytics',
+      };
     }
   }
 
   /**
-   * Get safe zones for a pet
+   * Get safe zone for a pet
    */
-  static async getSafeZones(petId: string, userId: string) {
+  async getSafeZone(petId: string, userId?: string): Promise<LocationResponse> {
     try {
-      const endpoint = `${API_CONFIG.ENDPOINTS.GPS.SAFE_ZONE(petId)}?userId=${userId}`;
-
-      const response = await apiCall(endpoint, {
+      const url = `${API_CONFIG.ENDPOINTS.GPS.SAFE_ZONE(petId)}${userId ? `?userId=${userId}` : ''}`;
+      const response = await apiCall(url, {
         method: 'GET',
       });
 
-      if (response.success) {
-        return {
-          success: true,
-          safeZones: response.data.safeZones || [],
-        };
-      }
-      
-      return { success: false, error: response.error || 'Failed to fetch safe zones' };
+      return response;
     } catch (error) {
-      console.error('Error fetching safe zones:', error);
-      return { success: false, error: 'Network error occurred' };
+      console.error('Get safe zone error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get safe zone',
+      };
     }
   }
 
   /**
-   * Create or update safe zone
+   * Update safe zone for a pet
    */
-  static async updateSafeZone(petId: string, safeZoneData: {
+  async updateSafeZone(petId: string, safeZoneData: {
+    userId: string;
     name: string;
-    centerLat: number;
-    centerLng: number;
+    latitude: number;
+    longitude: number;
     radius: number;
     isActive: boolean;
-    userId: string;
-    safeZoneId?: string;
-  }) {
+    description?: string;
+  }): Promise<LocationResponse> {
     try {
-      const method = safeZoneData.safeZoneId ? 'PUT' : 'POST';
-      const response = await apiCall(API_CONFIG.ENDPOINTS.GPS.SAFE_ZONE(petId), {
-        method,
+      const response = await apiCall(API_CONFIG.ENDPOINTS.GPS.UPDATE_SAFE_ZONE(petId), {
+        method: 'PUT',
         body: JSON.stringify(safeZoneData),
       });
 
-      if (response.success) {
-        return {
-          success: true,
-          safeZone: response.data.safeZone,
-        };
-      }
-      
-      return { success: false, error: response.error || 'Failed to update safe zone' };
+      return response;
     } catch (error) {
-      console.error('Error updating safe zone:', error);
-      return { success: false, error: 'Network error occurred' };
+      console.error('Update safe zone error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to update safe zone',
+      };
     }
   }
 
   /**
-   * Delete safe zone
+   * Get GPS alerts
    */
-  static async deleteSafeZone(petId: string, safeZoneId: string, userId: string) {
+  async getGPSAlerts(userId: string, params?: {
+    petId?: string;
+    type?: 'safe_zone_exit' | 'low_battery' | 'device_offline';
+    read?: boolean;
+    limit?: number;
+  }): Promise<LocationResponse> {
     try {
-      const response = await apiCall(`${API_CONFIG.ENDPOINTS.GPS.SAFE_ZONE(petId)}/${safeZoneId}`, {
-        method: 'DELETE',
-        body: JSON.stringify({ userId }),
+      const queryParams = new URLSearchParams();
+      queryParams.append('userId', userId);
+      
+      if (params?.petId) queryParams.append('petId', params.petId);
+      if (params?.type) queryParams.append('type', params.type);
+      if (params?.read !== undefined) queryParams.append('read', params.read.toString());
+      if (params?.limit) queryParams.append('limit', params.limit.toString());
+
+      const response = await apiCall(`${API_CONFIG.ENDPOINTS.GPS.ALERTS}?${queryParams.toString()}`, {
+        method: 'GET',
       });
 
-      if (response.success) {
-        return {
-          success: true,
-          message: response.data.message,
-        };
-      }
-      
-      return { success: false, error: response.error || 'Failed to delete safe zone' };
+      return response;
     } catch (error) {
-      console.error('Error deleting safe zone:', error);
-      return { success: false, error: 'Network error occurred' };
+      console.error('Get GPS alerts error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get GPS alerts',
+      };
     }
   }
+
+  /**
+   * Calculate distance between two points (Haversine formula)
+   */
+  calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 6371e3; // metres
+    const φ1 = (lat1 * Math.PI) / 180; // φ, λ in radians
+    const φ2 = (lat2 * Math.PI) / 180;
+    const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+    const Δλ = ((lon2 - lon1) * Math.PI) / 180;
+
+    const a =
+      Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+      Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return R * c; // in metres
+  }
+
+  /**
+   * Check if location is within safe zone
+   */
+  isWithinSafeZone(
+    petLat: number,
+    petLon: number,
+    safeZoneLat: number,
+    safeZoneLon: number,
+    radius: number
+  ): boolean {
+    const distance = this.calculateDistance(petLat, petLon, safeZoneLat, safeZoneLon);
+    return distance <= radius;
+  }
 }
+
+export default new LocationService();

@@ -1,0 +1,271 @@
+const mongoose = require('mongoose');
+
+const careEntrySchema = new mongoose.Schema({
+  // Pet and owner information
+  petId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Pet',
+    required: true
+  },
+  petName: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  ownerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  // Entry details
+  type: {
+    type: String,
+    required: true,
+    enum: [
+      'medical',
+      'feeding',
+      'grooming',
+      'exercise',
+      'training',
+      'vet_visit',
+      'vaccination',
+      'medication',
+      'weight_check',
+      'dental',
+      'behavior',
+      'socialization',
+      'general',
+      'other'
+    ]
+  },
+  title: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  description: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  date: {
+    type: Date,
+    required: true
+  },
+  // Detailed information based on type
+  details: {
+    // Medical details
+    veterinarian: {
+      name: String,
+      clinic: String,
+      phone: String,
+      email: String
+    },
+    diagnosis: String,
+    treatment: String,
+    medications: [{
+      name: String,
+      dosage: String,
+      frequency: String,
+      startDate: Date,
+      endDate: Date,
+      instructions: String
+    }],
+    vaccinations: [{
+      type: String,
+      manufacturer: String,
+      batchNumber: String,
+      expiryDate: Date,
+      nextDue: Date
+    }],
+    // Physical measurements
+    weight: {
+      value: Number,
+      unit: { type: String, default: 'lbs' }
+    },
+    temperature: {
+      value: Number,
+      unit: { type: String, default: 'F' }
+    },
+    heartRate: Number,
+    // Feeding details
+    foodType: String,
+    amount: String,
+    mealTime: String,
+    appetite: {
+      type: String,
+      enum: ['poor', 'normal', 'good', 'excellent']
+    },
+    // Exercise details
+    activity: String,
+    duration: Number, // minutes
+    intensity: {
+      type: String,
+      enum: ['low', 'medium', 'high']
+    },
+    distance: Number, // miles or km
+    location: String,
+    // Grooming details
+    services: [String], // ['bath', 'nail_trim', 'brush', 'teeth_clean']
+    groomer: String,
+    products: [String],
+    condition: String,
+    // Training details
+    skills: [String],
+    commands: [String],
+    behavior: String,
+    progress: {
+      type: String,
+      enum: ['poor', 'fair', 'good', 'excellent']
+    },
+    trainer: String
+  },
+  // Attachments and media
+  attachments: [{
+    type: {
+      type: String,
+      enum: ['image', 'document', 'video', 'audio']
+    },
+    url: String,
+    filename: String,
+    size: Number,
+    description: String
+  }],
+  images: [String],
+  // Cost and financial tracking
+  cost: {
+    amount: Number,
+    currency: { type: String, default: 'USD' },
+    category: String,
+    receiptUrl: String,
+    insurance: {
+      covered: { type: Boolean, default: false },
+      claimNumber: String,
+      reimbursement: Number
+    }
+  },
+  // Scheduling and reminders
+  isScheduled: {
+    type: Boolean,
+    default: false
+  },
+  scheduledFor: Date,
+  reminderSet: {
+    type: Boolean,
+    default: false
+  },
+  reminderDate: Date,
+  isRecurring: {
+    type: Boolean,
+    default: false
+  },
+  recurrence: {
+    frequency: {
+      type: String,
+      enum: ['daily', 'weekly', 'monthly', 'yearly']
+    },
+    interval: Number,
+    endDate: Date
+  },
+  // Follow-up and next steps
+  followUp: {
+    required: { type: Boolean, default: false },
+    date: Date,
+    description: String,
+    completed: { type: Boolean, default: false },
+    completedDate: Date
+  },
+  nextAppointment: {
+    date: Date,
+    type: String,
+    veterinarian: String,
+    clinic: String,
+    notes: String
+  },
+  // Mood and behavior tracking
+  mood: {
+    type: String,
+    enum: ['very_poor', 'poor', 'neutral', 'good', 'excellent']
+  },
+  energyLevel: {
+    type: String,
+    enum: ['very_low', 'low', 'normal', 'high', 'very_high']
+  },
+  behaviorNotes: String,
+  symptoms: [String],
+  // Quality and ratings
+  rating: {
+    type: Number,
+    min: 1,
+    max: 5
+  },
+  satisfaction: {
+    type: String,
+    enum: ['very_poor', 'poor', 'neutral', 'good', 'excellent']
+  },
+  // Administrative
+  priority: {
+    type: String,
+    enum: ['low', 'medium', 'high', 'urgent'],
+    default: 'medium'
+  },
+  status: {
+    type: String,
+    enum: ['pending', 'in_progress', 'completed', 'cancelled'],
+    default: 'completed'
+  },
+  tags: [String],
+  category: String,
+  isPrivate: {
+    type: Boolean,
+    default: false
+  },
+  // Sharing and permissions
+  sharedWith: [{
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    role: {
+      type: String,
+      enum: ['viewer', 'editor']
+    },
+    sharedAt: { type: Date, default: Date.now }
+  }],
+  // Location information
+  location: {
+    name: String,
+    address: String,
+    coordinates: {
+      latitude: Number,
+      longitude: Number
+    }
+  },
+  // Integration with other systems
+  externalId: String,
+  source: {
+    type: String,
+    enum: ['manual', 'vet_system', 'device', 'import'],
+    default: 'manual'
+  },
+  syncStatus: {
+    type: String,
+    enum: ['pending', 'synced', 'failed'],
+    default: 'synced'
+  },
+  // Metadata
+  metadata: mongoose.Schema.Types.Mixed,
+  notes: String
+}, {
+  timestamps: true
+});
+
+careEntrySchema.index({ petId: 1, date: -1 });
+careEntrySchema.index({ ownerId: 1 });
+careEntrySchema.index({ type: 1 });
+careEntrySchema.index({ date: -1 });
+careEntrySchema.index({ status: 1 });
+careEntrySchema.index({ priority: 1 });
+careEntrySchema.index({ tags: 1 });
+
+module.exports = mongoose.model('CareEntry', careEntrySchema);

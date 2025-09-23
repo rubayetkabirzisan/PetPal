@@ -1,184 +1,227 @@
 import { API_CONFIG, apiCall } from '../config/api';
 
 export interface Pet {
-  id: string;
+  _id?: string;
+  id?: string;
   name: string;
+  type: 'Dog' | 'Cat' | 'Bird' | 'Other';
   breed: string;
-  age: number;
-  size: string;
-  gender: string;
+  age: string;
+  gender: 'Male' | 'Female';
+  size: 'Small' | 'Medium' | 'Large';
+  weight: string;
+  color: string;
   description: string;
-  images: string[];
-  status: string;
+  personality: string[];
+  vaccinated: boolean;
+  neutered: boolean;
+  microchipped: boolean;
+  houseTrained: boolean;
+  goodWithKids: boolean;
+  goodWithPets: boolean;
+  energyLevel: 'Low' | 'Medium' | 'High';
+  medicalHistory?: string;
+  specialNeeds?: string;
   adoptionFee: number;
-  location: string;
-  shelter: {
-    id: string;
+  images: string[];
+  healthRecords?: any[];
+  status: 'available' | 'pending' | 'adopted' | 'unavailable';
+  shelterId?: string;
+  shelter?: {
     name: string;
-    address: string;
-    phone: string;
+    location: string;
+    contact: string;
   };
-  healthRecords: any[];
-  isFavorited: boolean;
-  applicationCount: number;
-  viewCount: number;
+  isFavorited?: boolean;
+  applicationCount?: number;
+  viewCount?: number;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-export interface PetSearchFilters {
+export interface PetFilter {
+  type?: string;
   breed?: string;
   size?: string;
   age?: string;
   gender?: string;
   location?: string;
-  maxFee?: number;
+  adoptionFee?: {
+    min?: number;
+    max?: number;
+  };
+  personality?: string[];
+  goodWithKids?: boolean;
+  goodWithPets?: boolean;
+  energyLevel?: string;
 }
 
-export class PetService {
+export interface PetResponse {
+  success: boolean;
+  data?: {
+    pet?: Pet;
+    pets?: Pet[];
+    totalCount?: number;
+    currentPage?: number;
+    totalPages?: number;
+  };
+  isFavorited?: boolean; // For toggleFavorite response
+  message?: string;
+  error?: string;
+}
+
+export interface BrowsePetsParams {
+  page?: number;
+  limit?: number;
+  filter?: PetFilter;
+  search?: string;
+  sortBy?: 'name' | 'age' | 'adoptionFee' | 'createdAt';
+  sortOrder?: 'asc' | 'desc';
+}
+
+class PetService {
   /**
-   * Get all available pets for adoption
+   * Browse all pets with filtering and pagination
    */
-  static async getBrowsePets(userId?: string, filters?: PetSearchFilters) {
+  async browsePets(params: BrowsePetsParams = {}): Promise<PetResponse> {
     try {
-      let endpoint = API_CONFIG.ENDPOINTS.pets.BROWSE;
-      
-      // Add query parameters
       const queryParams = new URLSearchParams();
-      if (userId) queryParams.append('userId', userId);
-      if (filters) {
-        Object.entries(filters).forEach(([key, value]) => {
-          if (value) queryParams.append(key, value.toString());
+      
+      if (params.page) queryParams.append('page', params.page.toString());
+      if (params.limit) queryParams.append('limit', params.limit.toString());
+      if (params.search) queryParams.append('search', params.search);
+      if (params.sortBy) queryParams.append('sortBy', params.sortBy);
+      if (params.sortOrder) queryParams.append('sortOrder', params.sortOrder);
+      
+      if (params.filter) {
+        Object.entries(params.filter).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            if (typeof value === 'object' && !Array.isArray(value)) {
+              Object.entries(value).forEach(([subKey, subValue]) => {
+                if (subValue !== undefined) {
+                  if (subValue !== null) {
+                    queryParams.append(`filter[${key}][${subKey}]`, subValue.toString());
+                  }
+                }
+              });
+            } else if (Array.isArray(value)) {
+              value.forEach(item => {
+                queryParams.append(`filter[${key}][]`, item.toString());
+              });
+            } else {
+              queryParams.append(`filter[${key}]`, value.toString());
+            }
+          }
         });
       }
-      
-      if (queryParams.toString()) {
-        endpoint += `?${queryParams.toString()}`;
-      }
 
-      const response = await apiCall(endpoint, {
+      const url = `${API_CONFIG.ENDPOINTS.PETS.BROWSE}${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+      const response = await apiCall(url, {
         method: 'GET',
       });
 
-      if (response.success) {
-        return {
-          success: true,
-          pets: response.data.pets || [],
-          totalCount: response.data.totalCount || 0,
-        };
-      }
-      
-      return { success: false, error: response.error || 'Failed to fetch pets' };
+      return response;
     } catch (error) {
-      console.error('Error fetching pets:', error);
-      return { success: false, error: 'Network error occurred' };
+      console.error('Browse pets error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to browse pets',
+      };
     }
   }
 
   /**
-   * Get detailed pet profile
+   * Get pet profile by ID
    */
-  static async getPetProfile(petId: string, userId?: string) {
+  async getPetProfile(petId: string, userId?: string): Promise<PetResponse> {
     try {
-      let endpoint = API_CONFIG.ENDPOINTS.pets.PROFILE(petId);
-      if (userId) {
-        endpoint += `?userId=${userId}`;
-      }
-
-      const response = await apiCall(endpoint, {
+      const url = `${API_CONFIG.ENDPOINTS.PETS.PROFILE(petId)}${userId ? `?userId=${userId}` : ''}`;
+      const response = await apiCall(url, {
         method: 'GET',
       });
 
-      if (response.success) {
-        return {
-          success: true,
-          pet: response.data.pet,
-        };
-      }
-      
-      return { success: false, error: response.error || 'Failed to fetch pet profile' };
+      return response;
     } catch (error) {
-      console.error('Error fetching pet profile:', error);
-      return { success: false, error: 'Network error occurred' };
+      console.error('Get pet profile error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get pet profile',
+      };
     }
   }
 
   /**
-   * Search pets with filters
+   * Search pets
    */
-  static async searchPets(query: string, filters?: PetSearchFilters, userId?: string) {
+  async searchPets(query: string, filters?: PetFilter): Promise<PetResponse> {
     try {
-      const queryParams = new URLSearchParams();
-      queryParams.append('q', query);
-      if (userId) queryParams.append('userId', userId);
+      const params = new URLSearchParams();
+      params.append('q', query);
       
       if (filters) {
         Object.entries(filters).forEach(([key, value]) => {
-          if (value) queryParams.append(key, value.toString());
+          if (value !== undefined && value !== null) {
+            if (Array.isArray(value)) {
+              value.forEach(item => params.append(`${key}[]`, item.toString()));
+            } else {
+              params.append(key, value.toString());
+            }
+          }
         });
       }
 
-      const response = await apiCall(`${API_CONFIG.ENDPOINTS.pets.SEARCH}?${queryParams.toString()}`, {
+      const response = await apiCall(`${API_CONFIG.ENDPOINTS.PETS.SEARCH}?${params.toString()}`, {
         method: 'GET',
       });
 
-      if (response.success) {
-        return {
-          success: true,
-          pets: response.data.pets || [],
-          totalCount: response.data.totalCount || 0,
-        };
-      }
-      
-      return { success: false, error: response.error || 'Failed to search pets' };
+      return response;
     } catch (error) {
-      console.error('Error searching pets:', error);
-      return { success: false, error: 'Network error occurred' };
+      console.error('Search pets error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to search pets',
+      };
     }
   }
 
   /**
    * Toggle pet favorite status
    */
-  static async toggleFavorite(petId: string, userId: string) {
+  async toggleFavorite(petId: string, userId: string): Promise<PetResponse> {
     try {
-      const response = await apiCall(API_CONFIG.ENDPOINTS.pets.TOGGLE_FAVORITE(petId), {
+      const response = await apiCall(API_CONFIG.ENDPOINTS.PETS.TOGGLE_FAVORITE(petId), {
         method: 'POST',
         body: JSON.stringify({ userId }),
       });
 
-      if (response.success) {
-        return {
-          success: true,
-          isFavorited: response.data.isFavorited,
-        };
-      }
-      
-      return { success: false, error: response.error || 'Failed to update favorite status' };
+      return response;
     } catch (error) {
-      console.error('Error toggling favorite:', error);
-      return { success: false, error: 'Network error occurred' };
+      console.error('Toggle favorite error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to toggle favorite',
+      };
     }
   }
 
   /**
    * Get user's favorite pets
    */
-  static async getFavorites(userId: string) {
+  async getFavorites(userId: string): Promise<PetResponse> {
     try {
-      const response = await apiCall(`${API_CONFIG.ENDPOINTS.pets.FAVORITES}?userId=${userId}`, {
+      const response = await apiCall(`${API_CONFIG.ENDPOINTS.PETS.FAVORITES}?userId=${userId}`, {
         method: 'GET',
       });
 
-      if (response.success) {
-        return {
-          success: true,
-          favorites: response.data.favorites || [],
-        };
-      }
-      
-      return { success: false, error: response.error || 'Failed to fetch favorites' };
+      return response;
     } catch (error) {
-      console.error('Error fetching favorites:', error);
-      return { success: false, error: 'Network error occurred' };
+      console.error('Get favorites error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get favorites',
+      };
     }
   }
 }
+
+export default new PetService();

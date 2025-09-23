@@ -3,29 +3,11 @@ import { Ionicons } from "@expo/vector-icons"
 import React, { useEffect, useState } from "react"
 import { ActivityIndicator, Alert, FlatList, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
 import NavigationHeader from "../../components/NavigationHeader"
+import { getPets, type Pet } from "../../lib/data"
 import { useAuth } from "../hooks/useAuth"
-import { PetService } from "../services"
 import { colors, spacing } from "../theme/theme"
 
-// Pet interface for this screen
-interface Pet {
-  id: string;
-  name: string;
-  breed: string;
-  age: number;
-  size: string;
-  gender: string;
-  type: string;
-  location: string;
-  status: string;
-  images: string[];
-  adoptionFee: number;
-  isFavorited: boolean;
-  distance?: string;
-  vaccinated?: boolean;
-  neutered?: boolean;
-}
-
+// Using the Pet interface from lib/data.ts directly
 interface BrowsePetsScreenProps {
   navigation: any
 }
@@ -64,35 +46,18 @@ export default function BrowsePetsScreen({ navigation }: BrowsePetsScreenProps) 
       setLoading(true)
       setError(null)
       
-      const result = await PetService.getBrowsePets(user?.id)
+      // Simulate loading delay
+      await new Promise(resolve => setTimeout(resolve, 500))
       
-      if (result.success) {
-        // Map backend pet data to component pet interface
-        const mappedPets: Pet[] = result.pets.map((pet: any) => ({
-          id: pet.id,
-          name: pet.name,
-          breed: pet.breed,
-          age: pet.age,
-          size: pet.size,
-          gender: pet.gender,
-          type: pet.breed.toLowerCase().includes('dog') ? 'Dog' : 'Cat', // Simple heuristic
-          location: pet.location,
-          status: pet.status,
-          images: pet.images || [],
-          adoptionFee: pet.adoptionFee,
-          isFavorited: pet.isFavorited || false,
-          distance: '2.5 mi away', // Default distance - would come from location service
-          vaccinated: true, // Default - would come from health records
-          neutered: true, // Default - would come from health records
-        }))
-        
-        setPets(mappedPets.filter(pet => pet.status === "Available"))
-      } else {
-        setError(result.error || 'Failed to load pets')
-        Alert.alert('Error', result.error || 'Failed to load pets')
-      }
+      // Get pets from mock data
+      const allPets = await getPets()
+      
+      // Filter available pets
+      const availablePets = allPets.filter(pet => pet.status === "Available")
+      
+      setPets(availablePets)
     } catch (err) {
-      const errorMessage = 'Network error occurred'
+      const errorMessage = 'Failed to load pets'
       setError(errorMessage)
       Alert.alert('Error', errorMessage)
     } finally {
@@ -110,7 +75,11 @@ export default function BrowsePetsScreen({ navigation }: BrowsePetsScreenProps) 
     if (selectedFilter === "dog") matchesFilter = pet.type.toLowerCase() === "dog"
     else if (selectedFilter === "cat") matchesFilter = pet.type.toLowerCase() === "cat"
     else if (selectedFilter === "small") matchesFilter = pet.size === "Small"
-    else if (selectedFilter === "young") matchesFilter = pet.age <= 2
+    else if (selectedFilter === "young") {
+      // Extract number from age string (e.g., "2 years" -> 2)
+      const ageNumber = parseInt(pet.age.split(' ')[0])
+      matchesFilter = ageNumber <= 2
+    }
 
     return matchesSearch && matchesFilter
   })
@@ -122,29 +91,16 @@ export default function BrowsePetsScreen({ navigation }: BrowsePetsScreenProps) 
     }
 
     try {
-      const result = await PetService.toggleFavorite(petId, user.id)
+      const isFavorited = favorites.includes(petId)
       
-      if (result.success) {
-        // Update local state
-        setPets(prevPets => 
-          prevPets.map(pet => 
-            pet.id === petId 
-              ? { ...pet, isFavorited: result.isFavorited }
-              : pet
-          )
-        )
-        
-        // Update favorites list
-        if (result.isFavorited) {
-          setFavorites(prev => [...prev, petId])
-        } else {
-          setFavorites(prev => prev.filter(id => id !== petId))
-        }
+      // Update favorites list
+      if (isFavorited) {
+        setFavorites(prev => prev.filter(id => id !== petId))
       } else {
-        Alert.alert('Error', result.error || 'Failed to update favorite status')
+        setFavorites(prev => [...prev, petId])
       }
     } catch (error) {
-      Alert.alert('Error', 'Network error occurred')
+      Alert.alert('Error', 'Failed to update favorite status')
     }
   }
 

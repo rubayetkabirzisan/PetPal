@@ -1,0 +1,283 @@
+const mongoose = require('mongoose');
+
+const userVerificationSchema = new mongoose.Schema({
+  // User information
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  userType: {
+    type: String,
+    enum: ['adopter', 'shelter', 'admin'],
+    required: true
+  },
+  // Verification details
+  verificationType: {
+    type: String,
+    required: true,
+    enum: [
+      'email',
+      'phone',
+      'identity',
+      'address',
+      'income',
+      'employment',
+      'background_check',
+      'references',
+      'home_inspection',
+      'veterinary_references',
+      'shelter_license',
+      'nonprofit_status',
+      'insurance',
+      'banking'
+    ]
+  },
+  status: {
+    type: String,
+    required: true,
+    enum: ['pending', 'in_progress', 'verified', 'rejected', 'expired', 'cancelled'],
+    default: 'pending'
+  },
+  priority: {
+    type: String,
+    enum: ['low', 'medium', 'high', 'urgent'],
+    default: 'medium'
+  },
+  // Verification process
+  requestedAt: {
+    type: Date,
+    default: Date.now
+  },
+  submittedAt: Date,
+  reviewedAt: Date,
+  verifiedAt: Date,
+  expiresAt: Date,
+  // Verification data
+  verificationData: {
+    // Email verification
+    emailToken: String,
+    emailTokenExpires: Date,
+    emailVerified: { type: Boolean, default: false },
+    
+    // Phone verification
+    phoneToken: String,
+    phoneTokenExpires: Date,
+    phoneVerified: { type: Boolean, default: false },
+    
+    // Identity verification
+    idType: {
+      type: String,
+      enum: ['drivers_license', 'passport', 'state_id', 'other']
+    },
+    idNumber: String,
+    idExpiryDate: Date,
+    idImages: [String],
+    
+    // Address verification
+    addressDocument: String,
+    addressType: {
+      type: String,
+      enum: ['utility_bill', 'bank_statement', 'lease', 'mortgage', 'other']
+    },
+    
+    // Income verification
+    incomeRange: String,
+    incomeDocuments: [String],
+    employmentStatus: String,
+    employerName: String,
+    employerPhone: String,
+    workYears: Number,
+    
+    // Background check
+    backgroundCheckProvider: String,
+    backgroundCheckId: String,
+    criminalHistory: { type: Boolean, default: false },
+    animalAbuseHistory: { type: Boolean, default: false },
+    
+    // References
+    personalReferences: [{
+      name: String,
+      relationship: String,
+      phone: String,
+      email: String,
+      verified: { type: Boolean, default: false },
+      verifiedAt: Date,
+      notes: String
+    }],
+    veterinaryReferences: [{
+      clinicName: String,
+      veterinarianName: String,
+      phone: String,
+      relationship: String,
+      verified: { type: Boolean, default: false },
+      verifiedAt: Date,
+      notes: String
+    }],
+    
+    // Home inspection
+    inspectionScheduled: { type: Boolean, default: false },
+    inspectionDate: Date,
+    inspectorName: String,
+    inspectorNotes: String,
+    homePhotos: [String],
+    safetyChecklist: mongoose.Schema.Types.Mixed,
+    
+    // Shelter specific
+    businessLicense: String,
+    nonprofitCertificate: String,
+    taxId: String,
+    insuranceCertificate: String,
+    facilityInspectionCertificate: String,
+    
+    // Banking information
+    bankAccountVerified: { type: Boolean, default: false },
+    paymentMethodVerified: { type: Boolean, default: false }
+  },
+  // Documents submitted
+  documents: [{
+    name: String,
+    type: {
+      type: String,
+      enum: ['image', 'pdf', 'document', 'certificate', 'form']
+    },
+    url: String,
+    uploadedAt: { type: Date, default: Date.now },
+    fileSize: Number,
+    mimeType: String,
+    verified: { type: Boolean, default: false },
+    verifiedAt: Date,
+    verifiedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    rejectionReason: String
+  }],
+  // Review and approval
+  reviewedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  reviewNotes: String,
+  rejectionReason: String,
+  rejectionDetails: String,
+  approvalNotes: String,
+  verificationScore: {
+    type: Number,
+    min: 0,
+    max: 100
+  },
+  // Verification attempts
+  attempts: [{
+    attemptDate: { type: Date, default: Date.now },
+    method: String,
+    result: {
+      type: String,
+      enum: ['success', 'failure', 'partial']
+    },
+    details: String,
+    ipAddress: String,
+    userAgent: String
+  }],
+  attemptCount: {
+    type: Number,
+    default: 0
+  },
+  maxAttempts: {
+    type: Number,
+    default: 3
+  },
+  // Communication
+  notifications: [{
+    type: {
+      type: String,
+      enum: ['email', 'sms', 'push', 'in_app']
+    },
+    sentAt: { type: Date, default: Date.now },
+    template: String,
+    status: {
+      type: String,
+      enum: ['sent', 'delivered', 'failed']
+    },
+    content: String
+  }],
+  // Security and compliance
+  complianceFlags: [String],
+  riskAssessment: {
+    score: Number,
+    factors: [String],
+    assessedAt: Date,
+    assessedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    }
+  },
+  fraudIndicators: [String],
+  // External verification services
+  externalVerifications: [{
+    provider: String,
+    serviceType: String,
+    externalId: String,
+    result: String,
+    confidence: Number,
+    verifiedAt: Date,
+    rawResponse: mongoose.Schema.Types.Mixed
+  }],
+  // Verification requirements
+  requirements: [{
+    type: String,
+    status: {
+      type: String,
+      enum: ['pending', 'completed', 'failed', 'waived']
+    },
+    completedAt: Date,
+    notes: String
+  }],
+  // Workflow tracking
+  workflow: {
+    currentStep: String,
+    totalSteps: Number,
+    completedSteps: Number,
+    nextAction: String,
+    assignedTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    }
+  },
+  // Renewal and maintenance
+  renewalRequired: {
+    type: Boolean,
+    default: false
+  },
+  renewalDate: Date,
+  renewalNotificationSent: {
+    type: Boolean,
+    default: false
+  },
+  // Metadata and tracking
+  source: {
+    type: String,
+    enum: ['self_service', 'admin_initiated', 'automated', 'required'],
+    default: 'self_service'
+  },
+  metadata: mongoose.Schema.Types.Mixed,
+  tags: [String],
+  isActive: {
+    type: Boolean,
+    default: true
+  },
+  notes: String
+}, {
+  timestamps: true
+});
+
+userVerificationSchema.index({ userId: 1, verificationType: 1 });
+userVerificationSchema.index({ status: 1 });
+userVerificationSchema.index({ priority: 1 });
+userVerificationSchema.index({ requestedAt: -1 });
+userVerificationSchema.index({ verifiedAt: -1 });
+userVerificationSchema.index({ expiresAt: 1 });
+userVerificationSchema.index({ userType: 1 });
+userVerificationSchema.index({ reviewedBy: 1 });
+
+module.exports = mongoose.model('UserVerification', userVerificationSchema);

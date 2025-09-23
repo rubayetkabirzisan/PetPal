@@ -15,8 +15,8 @@ import {
     View
 } from "react-native"
 import NavigationHeader from "../../components/NavigationHeader"
-import { addPet } from "../../lib/data"
 import { useAuth } from "../contexts/AuthContext"
+import { AdminService } from "../services"
 import { colors, spacing } from "../theme/theme"
 
 interface AddPetScreenProps {
@@ -179,12 +179,12 @@ export default function AddPetScreen({ navigation: navProp }: AddPetScreenProps)
         adoptionFee: 150,
         status: "Available" as const,
         shelterId: "shelter-1",
-        shelterName: user?.shelterName || "Local Animal Shelter",
+        shelterName: user?.name || "Local Animal Shelter",
         shelterPhone: "(555) 123-4567",
         shelterEmail: "info@shelter.com",
         dateAdded: new Date().toISOString(),
         shelter: {
-          name: user?.shelterName || "Local Animal Shelter",
+          name: user?.name || "Local Animal Shelter",
           contact: "(555) 123-4567",
           email: "info@shelter.com",
           address: "123 Pet Street, Austin, TX 78701"
@@ -192,8 +192,46 @@ export default function AddPetScreen({ navigation: navProp }: AddPetScreenProps)
         healthRecords: []
       }
 
-      // Add pet to the system
-      await addPet(newPet)
+      // Add pet to the system using AdminService
+      const result = await AdminService.addPet({
+        userId: user?.uid || 'admin',
+        shelterId: 'shelter-001',
+        petData: {
+          name: newPet.name,
+          type: newPet.type,
+          breed: newPet.breed,
+          age: newPet.age,
+          gender: newPet.gender,
+          size: newPet.size,
+          weight: formData.weight,
+          color: newPet.color,
+          description: newPet.description,
+          personality: newPet.personality,
+          vaccinated: newPet.vaccinated,
+          neutered: newPet.neutered,
+          microchipped: newPet.microchipped,
+          houseTrained: newPet.houseTrained,
+          goodWithKids: newPet.goodWithKids,
+          goodWithPets: newPet.goodWithPets,
+          energyLevel: newPet.energyLevel,
+          medicalHistory: newPet.medicalHistory,
+          specialNeeds: newPet.specialNeeds,
+          adoptionFee: newPet.adoptionFee,
+          images: newPet.images,
+          healthRecords: [],
+          status: 'available',
+          shelterId: 'shelter-001',
+          shelter: {
+            name: user?.name || 'Local Animal Shelter',
+            location: 'Austin, TX',
+            contact: '(555) 123-4567'
+          }
+        }
+      });
+
+      if (!result.success) {
+        throw new Error(result.message || 'Failed to add pet');
+      }
 
       Alert.alert(
         "Success", 

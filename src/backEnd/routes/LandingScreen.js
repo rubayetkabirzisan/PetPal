@@ -4,7 +4,7 @@ const Pet = require('../models/Pet');
 const Shelter = require('../models/Shelter');
 const Application = require('../models/Application');
 const LostPet = require('../models/LostPet');
-const Analytics = require('../models/analytics');
+// const Analytics = require('../models/Analytics');
 
 // GET /api/landing/stats - Get landing page statistics
 router.get('/stats', async (req, res) => {

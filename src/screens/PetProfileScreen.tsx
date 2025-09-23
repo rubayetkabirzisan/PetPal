@@ -4,42 +4,8 @@ import { useEffect, useState } from "react"
 import { Alert, Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import NavigationHeader from "../../components/NavigationHeader"
 import { useAuth } from "../contexts/AuthContext"
-import { PetService } from "../services"
+import { getPetById, Pet } from "../data/mockPetData"
 import { colors } from "../theme/theme"
-
-// Pet interface for this screen
-interface Pet {
-  id: string;
-  name: string;
-  breed: string;
-  age: number;
-  size: string;
-  gender: string;
-  description: string;
-  images: string[];
-  status: string;
-  adoptionFee: number;
-  location: string;
-  distance?: string;
-  color?: string;
-  energyLevel?: string;
-  personality?: string[];
-  vaccinated?: boolean;
-  neutered?: boolean;
-  microchipped?: boolean;
-  shelter: {
-    id: string;
-    name: string;
-    address: string;
-    phone: string;
-    contact?: string;
-    email?: string;
-  };
-  healthRecords: any[];
-  isFavorited: boolean;
-  applicationCount: number;
-  viewCount: number;
-}
 
 const { width } = Dimensions.get("window")
 
@@ -59,7 +25,7 @@ export default function PetProfileScreen({ navigation, route }: PetProfileScreen
   const petId = route.params?.petId
   
   // Determine if user is a shelter (admin)
-  const isShelter = user?.type === "admin"
+  const isShelter = user?.userType === "admin"
 
   useEffect(() => {
     if (petId) {
@@ -68,62 +34,27 @@ export default function PetProfileScreen({ navigation, route }: PetProfileScreen
   }, [petId])
 
   const loadPetProfile = async () => {
-    try {
-      setLoading(true)
-      setError(null)
-      
-      const result = await PetService.getPetProfile(petId, user?.id)
-      
-      if (result.success) {
-        const petData = result.pet
-        
-        // Map backend data to component interface
-        const mappedPet: Pet = {
-          id: petData.id,
-          name: petData.name,
-          breed: petData.breed,
-          age: petData.age,
-          size: petData.size,
-          gender: petData.gender,
-          description: petData.description,
-          images: petData.images || [],
-          status: petData.status,
-          adoptionFee: petData.adoptionFee,
-          location: petData.location,
-          distance: '2.5 mi away', // Default distance - would come from location service
-          color: petData.color || 'Mixed',
-          energyLevel: petData.energyLevel || 'Medium',
-          personality: petData.personality || ['Friendly', 'Playful', 'Gentle'],
-          vaccinated: petData.vaccinated !== undefined ? petData.vaccinated : true,
-          neutered: petData.neutered !== undefined ? petData.neutered : true,
-          microchipped: petData.microchipped !== undefined ? petData.microchipped : true,
-          shelter: {
-            id: petData.shelter?.id || 'shelter-1',
-            name: petData.shelter?.name || 'Happy Paws Shelter',
-            address: petData.shelter?.address || '123 Main St',
-            phone: petData.shelter?.phone || '(555) 123-4567',
-            contact: petData.shelter?.contact || '(555) 123-4567',
-            email: petData.shelter?.email || 'info@happypaws.com'
-          },
-          healthRecords: petData.healthRecords || [],
-          isFavorited: petData.isFavorited || false,
-          applicationCount: petData.applicationCount || 0,
-          viewCount: petData.viewCount || 0
-        }
-        
-        setPet(mappedPet)
-        setIsFavorited(mappedPet.isFavorited)
-      } else {
-        setError(result.error || 'Failed to load pet profile')
-        Alert.alert('Error', result.error || 'Failed to load pet profile')
-      }
-    } catch (err) {
-      const errorMessage = 'Network error occurred'
-      setError(errorMessage)
-      Alert.alert('Error', errorMessage)
-    } finally {
-      setLoading(false)
+    setLoading(true)
+    setError(null)
+    
+    // Simulate loading delay
+    await new Promise(resolve => setTimeout(resolve, 500))
+    
+    // Get pet data using the getPetById function
+    console.log(`Loading pet profile for ID: ${petId}`)
+    const petData = getPetById(petId) || getPetById("1") // Default to pet with ID "1"
+    
+    if (petData) {
+      console.log(`Found pet: ${petData.name}`)
+      setPet(petData)
+      setIsFavorited(petData.isFavorited)
+    } else {
+      console.log('Pet not found')
+      setError('Pet not found')
+      Alert.alert('Error', 'Pet not found')
     }
+    
+    setLoading(false)
   }
 
   const handleApplyForAdoption = () => {

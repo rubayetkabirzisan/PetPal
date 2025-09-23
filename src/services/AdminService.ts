@@ -1,258 +1,329 @@
 import { API_CONFIG, apiCall } from '../config/api';
+import { Pet } from './PetService';
 
 export interface AdminDashboardStats {
   totalPets: number;
-  availablePets: number;
-  adoptedPets: number;
+  totalApplications: number;
+  totalUsers: number;
   pendingApplications: number;
-  totalAdopters: number;
-  activeAdmins: number;
-  monthlyAdoptions: number;
-  recentActivity: any[];
+  adoptedPets: number;
+  availablePets: number;
+  recentApplications: any[];
+  recentPets: Pet[];
 }
 
-export interface AdminPet {
-  id: string;
-  name: string;
-  breed: string;
-  age: number;
-  status: string;
-  dateAdded: string;
-  lastUpdated: string;
-  images: string[];
-  adoptionFee: number;
-  applicationCount: number;
+export interface AdminResponse {
+  success: boolean;
+  data?: any;
+  message?: string;
+  error?: string;
 }
 
-export class AdminService {
+export interface PetFormData {
+  userId: string;
+  shelterId?: string;
+  petData: Omit<Pet, '_id' | 'id' | 'createdAt' | 'updatedAt'>;
+}
+
+class AdminService {
   /**
-   * Get admin dashboard statistics
+   * Get admin dashboard stats
    */
-  static async getDashboardStats(adminId: string) {
+  async getDashboardStats(userId: string): Promise<AdminResponse> {
     try {
-          const response = await apiCall(`${API_CONFIG.ENDPOINTS.admin.dashboard}?adminId=${adminId}`, {
+      const response = await apiCall(`${API_CONFIG.ENDPOINTS.ADMIN.DASHBOARD_STATS}?userId=${userId}`, {
         method: 'GET',
       });
 
-      if (response.success) {
-        return {
-          success: true,
-          stats: response.data.stats,
-          recentActivity: response.data.recentActivity || [],
-        };
-      }
-      
-      return { success: false, error: response.error || 'Failed to fetch dashboard stats' };
+      return response;
     } catch (error) {
-      console.error('Error fetching dashboard stats:', error);
-      return { success: false, error: 'Network error occurred' };
+      console.error('Get dashboard stats error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get dashboard stats',
+      };
     }
   }
 
   /**
-   * Get all pets (admin view)
+   * Get all pets for management
    */
-  static async getAdminPets(adminId: string, filters?: { status?: string; limit?: number }) {
+  async getAllPets(adminId: string, params?: { page?: number; limit?: number; status?: string }): Promise<AdminResponse> {
     try {
-          let endpoint = `${API_CONFIG.ENDPOINTS.admin.pets}?adminId=${adminId}`;
+      const queryParams = new URLSearchParams();
+      queryParams.append('adminId', adminId);
       
-      if (filters?.status) {
-        endpoint += `&status=${filters.status}`;
-      }
-      if (filters?.limit) {
-        endpoint += `&limit=${filters.limit}`;
-      }
+      if (params?.page) queryParams.append('page', params.page.toString());
+      if (params?.limit) queryParams.append('limit', params.limit.toString());
+      if (params?.status) queryParams.append('status', params.status);
 
-      const response = await apiCall(endpoint, {
+      const response = await apiCall(`${API_CONFIG.ENDPOINTS.ADMIN.PETS}?${queryParams.toString()}`, {
         method: 'GET',
       });
 
-      if (response.success) {
-        return {
-          success: true,
-          pets: response.data.pets || [],
-          totalCount: response.data.totalCount || 0,
-          summary: response.data.summary,
-        };
-      }
-      
-      return { success: false, error: response.error || 'Failed to fetch admin pets' };
+      return response;
     } catch (error) {
-      console.error('Error fetching admin pets:', error);
-      return { success: false, error: 'Network error occurred' };
+      console.error('Get all pets error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get pets',
+      };
     }
   }
 
   /**
    * Add new pet
    */
-  static async addPet(petData: {
-    name: string;
-    breed: string;
-    age: number;
-    size: string;
-    gender: string;
-    description: string;
-    adoptionFee: number;
-    images: string[];
-    healthRecords: any[];
-    adminId: string;
-  }) {
+  async addPet(petFormData: PetFormData): Promise<AdminResponse> {
     try {
-          const response = await apiCall(API_CONFIG.ENDPOINTS.admin.addPet, {
+      const response = await apiCall(API_CONFIG.ENDPOINTS.ADMIN.ADD_PET, {
         method: 'POST',
-        body: JSON.stringify(petData),
+        body: JSON.stringify(petFormData),
       });
 
-      if (response.success) {
-        return {
-          success: true,
-          pet: response.data.pet,
-        };
-      }
-      
-      return { success: false, error: response.error || 'Failed to add pet' };
+      return response;
     } catch (error) {
-      console.error('Error adding pet:', error);
-      return { success: false, error: 'Network error occurred' };
+      console.error('Add pet error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to add pet',
+      };
     }
   }
 
   /**
    * Update pet information
    */
-  static async updatePet(petId: string, petData: Partial<AdminPet>, adminId: string) {
+  async updatePet(petId: string, petData: Partial<Pet>, userId: string): Promise<AdminResponse> {
     try {
-      const response = await apiCall(`${API_CONFIG.ENDPOINTS.admin.PETS}/${petId}`, {
+      const response = await apiCall(API_CONFIG.ENDPOINTS.ADMIN.EDIT_PET(petId), {
         method: 'PUT',
-        body: JSON.stringify({ ...petData, adminId }),
+        body: JSON.stringify({ petData, userId }),
       });
 
-      if (response.success) {
-        return {
-          success: true,
-          pet: response.data.pet,
-        };
-      }
-      
-      return { success: false, error: response.error || 'Failed to update pet' };
+      return response;
     } catch (error) {
-      console.error('Error updating pet:', error);
-      return { success: false, error: 'Network error occurred' };
+      console.error('Update pet error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to update pet',
+      };
     }
   }
 
   /**
    * Delete pet
    */
-  static async deletePet(petId: string, adminId: string) {
+  async deletePet(petId: string, adminId: string): Promise<AdminResponse> {
     try {
-      const response = await apiCall(`${API_CONFIG.ENDPOINTS.admin.PETS}/${petId}`, {
+      const response = await apiCall(API_CONFIG.ENDPOINTS.ADMIN.DELETE_PET(petId), {
         method: 'DELETE',
         body: JSON.stringify({ adminId }),
       });
 
-      if (response.success) {
-        return {
-          success: true,
-          message: response.data.message,
-        };
-      }
-      
-      return { success: false, error: response.error || 'Failed to delete pet' };
+      return response;
     } catch (error) {
-      console.error('Error deleting pet:', error);
-      return { success: false, error: 'Network error occurred' };
+      console.error('Delete pet error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to delete pet',
+      };
     }
   }
 
   /**
-   * Get lost pets reports (admin view)
+   * Get all applications for admin review
    */
-  static async getLostPetsReports(adminId: string) {
+  async getAllApplications(adminId: string, params?: { status?: string; page?: number; limit?: number }): Promise<AdminResponse> {
     try {
-      const response = await apiCall(`${API_CONFIG.ENDPOINTS.admin.LOST_PETS}?adminId=${adminId}`, {
+      const queryParams = new URLSearchParams();
+      queryParams.append('adminId', adminId);
+      
+      if (params?.status) queryParams.append('status', params.status);
+      if (params?.page) queryParams.append('page', params.page.toString());
+      if (params?.limit) queryParams.append('limit', params.limit.toString());
+
+      const response = await apiCall(`${API_CONFIG.ENDPOINTS.ADMIN.APPLICATIONS}?${queryParams.toString()}`, {
         method: 'GET',
       });
 
-      if (response.success) {
-        return {
-          success: true,
-          reports: response.data.reports || [],
-          summary: response.data.summary,
-        };
-      }
-      
-      return { success: false, error: response.error || 'Failed to fetch lost pets reports' };
+      return response;
     } catch (error) {
-      console.error('Error fetching lost pets reports:', error);
-      return { success: false, error: 'Network error occurred' };
+      console.error('Get all applications error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get applications',
+      };
     }
   }
 
   /**
-   * Get all users (admin view)
+   * Approve application
    */
-  static async getUsers(adminId: string, filters?: { userType?: string; status?: string }) {
+  async approveApplication(applicationId: string, adminId: string, notes?: string): Promise<AdminResponse> {
     try {
-      let endpoint = `${API_CONFIG.ENDPOINTS.admin.USERS}?adminId=${adminId}`;
-      
-      if (filters?.userType) {
-        endpoint += `&userType=${filters.userType}`;
-      }
-      if (filters?.status) {
-        endpoint += `&status=${filters.status}`;
-      }
-
-      const response = await apiCall(endpoint, {
-        method: 'GET',
+      const response = await apiCall(`${API_CONFIG.ENDPOINTS.ADMIN.APPLICATIONS}/${applicationId}/approve`, {
+        method: 'PUT',
+        body: JSON.stringify({ adminId, notes }),
       });
 
-      if (response.success) {
-        return {
-          success: true,
-          users: response.data.users || [],
-          summary: response.data.summary,
-        };
-      }
-      
-      return { success: false, error: response.error || 'Failed to fetch users' };
+      return response;
     } catch (error) {
-      console.error('Error fetching users:', error);
-      return { success: false, error: 'Network error occurred' };
+      console.error('Approve application error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to approve application',
+      };
     }
   }
 
   /**
-   * Get adoption applications (admin view)
+   * Reject application
    */
-  static async getAdminApplications(adminId: string, filters?: { status?: string; petId?: string }) {
+  async rejectApplication(applicationId: string, adminId: string, rejectionReason: string): Promise<AdminResponse> {
     try {
-      let endpoint = `${API_CONFIG.ENDPOINTS.admin.APPLICATIONS}?adminId=${adminId}`;
-      
-      if (filters?.status) {
-        endpoint += `&status=${filters.status}`;
-      }
-      if (filters?.petId) {
-        endpoint += `&petId=${filters.petId}`;
-      }
+      const response = await apiCall(`${API_CONFIG.ENDPOINTS.ADMIN.APPLICATIONS}/${applicationId}/reject`, {
+        method: 'PUT',
+        body: JSON.stringify({ adminId, rejectionReason }),
+      });
 
-      const response = await apiCall(endpoint, {
+      return response;
+    } catch (error) {
+      console.error('Reject application error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to reject application',
+      };
+    }
+  }
+
+  /**
+   * Get all users for admin management
+   */
+  async getAllUsers(adminId: string, params?: { userType?: string; page?: number; limit?: number }): Promise<AdminResponse> {
+    try {
+      const queryParams = new URLSearchParams();
+      queryParams.append('adminId', adminId);
+      
+      if (params?.userType) queryParams.append('userType', params.userType);
+      if (params?.page) queryParams.append('page', params.page.toString());
+      if (params?.limit) queryParams.append('limit', params.limit.toString());
+
+      const response = await apiCall(`${API_CONFIG.ENDPOINTS.ADMIN.USERS}?${queryParams.toString()}`, {
         method: 'GET',
       });
 
-      if (response.success) {
-        return {
-          success: true,
-          applications: response.data.applications || [],
-          summary: response.data.summary,
-        };
-      }
-      
-      return { success: false, error: response.error || 'Failed to fetch applications' };
+      return response;
     } catch (error) {
-      console.error('Error fetching applications:', error);
-      return { success: false, error: 'Network error occurred' };
+      console.error('Get all users error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get users',
+      };
+    }
+  }
+
+  /**
+   * Get admin GPS tracking data
+   */
+  async getGPSTracking(adminId: string, params?: { petId?: string; period?: string }): Promise<AdminResponse> {
+    try {
+      const queryParams = new URLSearchParams();
+      queryParams.append('adminId', adminId);
+      
+      if (params?.petId) queryParams.append('petId', params.petId);
+      if (params?.period) queryParams.append('period', params.period);
+
+      const response = await apiCall(`${API_CONFIG.ENDPOINTS.ADMIN.GPS_TRACKING}?${queryParams.toString()}`, {
+        method: 'GET',
+      });
+
+      return response;
+    } catch (error) {
+      console.error('Get GPS tracking error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get GPS tracking data',
+      };
+    }
+  }
+
+  /**
+   * Get admin lost pets
+   */
+  async getLostPets(adminId: string, params?: { status?: string; page?: number; limit?: number }): Promise<AdminResponse> {
+    try {
+      const queryParams = new URLSearchParams();
+      queryParams.append('adminId', adminId);
+      
+      if (params?.status) queryParams.append('status', params.status);
+      if (params?.page) queryParams.append('page', params.page.toString());
+      if (params?.limit) queryParams.append('limit', params.limit.toString());
+
+      const response = await apiCall(`${API_CONFIG.ENDPOINTS.ADMIN.LOST_PETS}?${queryParams.toString()}`, {
+        method: 'GET',
+      });
+
+      return response;
+    } catch (error) {
+      console.error('Get lost pets error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get lost pets',
+      };
+    }
+  }
+
+  /**
+   * Get admin notifications
+   */
+  async getNotifications(adminId: string, params?: { read?: boolean; page?: number; limit?: number }): Promise<AdminResponse> {
+    try {
+      const queryParams = new URLSearchParams();
+      queryParams.append('adminId', adminId);
+      
+      if (params?.read !== undefined) queryParams.append('read', params.read.toString());
+      if (params?.page) queryParams.append('page', params.page.toString());
+      if (params?.limit) queryParams.append('limit', params.limit.toString());
+
+      const response = await apiCall(`${API_CONFIG.ENDPOINTS.ADMIN.NOTIFICATIONS}?${queryParams.toString()}`, {
+        method: 'GET',
+      });
+
+      return response;
+    } catch (error) {
+      console.error('Get notifications error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get notifications',
+      };
+    }
+  }
+
+  /**
+   * Get admin statistics
+   */
+  async getStatistics(adminId: string, params?: { period?: string; type?: string }): Promise<AdminResponse> {
+    try {
+      const queryParams = new URLSearchParams();
+      queryParams.append('adminId', adminId);
+      
+      if (params?.period) queryParams.append('period', params.period);
+      if (params?.type) queryParams.append('type', params.type);
+
+      const response = await apiCall(`${API_CONFIG.ENDPOINTS.ADMIN.STATISTICS}?${queryParams.toString()}`, {
+        method: 'GET',
+      });
+
+      return response;
+    } catch (error) {
+      console.error('Get statistics error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get statistics',
+      };
     }
   }
 }
+
+export default new AdminService();

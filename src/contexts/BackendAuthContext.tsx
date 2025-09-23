@@ -7,7 +7,7 @@ import {
     initializeDemoUsers,
     registerUser
 } from '../../lib/auth';
-import authService, { BackendUser } from '../services/AuthService';
+import authService, { User as BackendUser } from '../services/AuthService';
 
 // Union type to support both local and backend users
 export type User = LocalUser | BackendUser;
@@ -40,10 +40,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const isAuth = await authService.isAuthenticated();
           if (isAuth) {
             try {
-              const backendUser = await authService.getCurrentUser();
-              setUser(backendUser);
-              setIsAuthenticated(true);
-              console.log('AuthContext: Loaded backend user:', backendUser);
+              const profile = await authService.getProfile();
+              if (profile.success && profile.data?.user) {
+                setUser(profile.data.user);
+                setIsAuthenticated(true);
+                console.log('AuthContext: Loaded backend user:', profile.data.user);
+              } else {
+                await loadLocalAuth();
+              }
             } catch (error) {
               console.log('AuthContext: Failed to get backend user, falling back to local');
               await loadLocalAuth();
@@ -87,11 +91,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const response = await authService.login({ 
             email, 
             password, 
-            userType: userType === 'admin' ? 'shelter' : userType // Map admin to shelter for backend
+            type: userType === 'admin' ? 'admin' : 'adopter' // Use the proper frontend type
           });
           
-          if (response.user) {
-            setUser(response.user);
+          if (response.success && response.data?.user) {
+            setUser(response.data.user);
             setIsAuthenticated(true);
             return true;
           }
@@ -125,11 +129,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (useBackend) {
         // Try backend registration first
         try {
-          await authService.signup({
+          await authService.register({
             name,
             email,
             password,
-            userType: userType === 'admin' ? 'shelter' : userType // Map admin to shelter for backend
+            type: userType === 'admin' ? 'admin' : 'adopter' // Use the proper frontend type
           });
           return true;
         } catch (error) {

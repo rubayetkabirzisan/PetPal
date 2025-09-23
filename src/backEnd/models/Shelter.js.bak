@@ -1,0 +1,146 @@
+const mongoose = require('mongoose');
+
+const shelterSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  registrationNumber: {
+    type: String,
+    unique: true,
+    required: true
+  },
+  type: {
+    type: String,
+    enum: ['shelter', 'rescue', 'foster', 'sanctuary'],
+    required: true
+  },
+  contactInfo: {
+    email: { type: String, required: true, lowercase: true, trim: true },
+    phone: { type: String, required: true, trim: true },
+    website: { type: String, trim: true },
+    socialMedia: {
+      facebook: String,
+      instagram: String,
+      twitter: String
+    }
+  },
+  address: {
+    street: { type: String, required: true, trim: true },
+    city: { type: String, required: true, trim: true },
+    state: { type: String, required: true, trim: true },
+    zipCode: { type: String, required: true, trim: true },
+    country: { type: String, default: 'USA' },
+    coordinates: {
+      latitude: Number,
+      longitude: Number
+    }
+  },
+  operatingHours: {
+    monday: { open: String, close: String, closed: { type: Boolean, default: false } },
+    tuesday: { open: String, close: String, closed: { type: Boolean, default: false } },
+    wednesday: { open: String, close: String, closed: { type: Boolean, default: false } },
+    thursday: { open: String, close: String, closed: { type: Boolean, default: false } },
+    friday: { open: String, close: String, closed: { type: Boolean, default: false } },
+    saturday: { open: String, close: String, closed: { type: Boolean, default: false } },
+    sunday: { open: String, close: String, closed: { type: Boolean, default: false } }
+  },
+  capacity: {
+    total: { type: Number, required: true },
+    current: { type: Number, default: 0 },
+    available: { type: Number, default: 0 }
+  },
+  facilities: {
+    hasVetClinic: { type: Boolean, default: false },
+    hasGrooming: { type: Boolean, default: false },
+    hasTraining: { type: Boolean, default: false },
+    hasQuarantine: { type: Boolean, default: false },
+    hasPlayAreas: { type: Boolean, default: false },
+    hasOutdoorRuns: { type: Boolean, default: false }
+  },
+  specializations: [String], // ['cats', 'dogs', 'seniors', 'special needs', etc.]
+  description: {
+    type: String,
+    trim: true
+  },
+  mission: {
+    type: String,
+    trim: true
+  },
+  // Staff and volunteers
+  staff: [{
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    role: {
+      type: String,
+      enum: ['director', 'manager', 'veterinarian', 'caretaker', 'volunteer']
+    },
+    permissions: [String]
+  }],
+  // Verification and licensing
+  isVerified: {
+    type: Boolean,
+    default: false
+  },
+  verificationDate: Date,
+  licenses: [{
+    type: String,
+    number: String,
+    issueDate: Date,
+    expiryDate: Date,
+    issuingAuthority: String
+  }],
+  // Statistics
+  statistics: {
+    totalPetsRescued: { type: Number, default: 0 },
+    totalAdoptions: { type: Number, default: 0 },
+    currentAnimals: { type: Number, default: 0 },
+    successRate: { type: Number, default: 0 }
+  },
+  // Financial
+  donationInfo: {
+    acceptsDonations: { type: Boolean, default: true },
+    paypalEmail: String,
+    bankAccount: String,
+    taxId: String
+  },
+  // Settings
+  settings: {
+    autoApproval: { type: Boolean, default: false },
+    requireHomeVisit: { type: Boolean, default: true },
+    allowOnlineApplications: { type: Boolean, default: true },
+    publicProfile: { type: Boolean, default: true }
+  },
+  // Status and activity
+  isActive: {
+    type: Boolean,
+    default: true
+  },
+  lastActivity: {
+    type: Date,
+    default: Date.now
+  },
+  // Relations
+  pets: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Pet'
+  }],
+  applications: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Application'
+  }]
+}, {
+  timestamps: true
+});
+
+shelterSchema.index({ name: 1 });
+shelterSchema.index({ type: 1 });
+shelterSchema.index({ 'address.city': 1 });
+shelterSchema.index({ 'address.state': 1 });
+shelterSchema.index({ isVerified: 1 });
+shelterSchema.index({ isActive: 1 });
+
+module.exports = mongoose.model('Shelter', shelterSchema);

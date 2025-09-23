@@ -1,189 +1,331 @@
 import { API_CONFIG, apiCall } from '../config/api';
 
-export interface AdoptionApplication {
-  id: string;
-  petId: string;
-  petName: string;
-  petImage: string;
+export interface Application {
+  _id?: string;
+  id?: string;
   userId: string;
-  status: string;
-  statusDisplay: string;
-  applicationDate: string;
-  lastUpdated: string;
-  shelterName: string;
-  progress: {
-    step: number;
-    totalSteps: number;
-    completedSteps: string[];
-    nextStep: string;
+  petId: string;
+  status: 'pending' | 'approved' | 'rejected' | 'cancelled';
+  applicationDate: Date;
+  approvalDate?: Date;
+  rejectionDate?: Date;
+  rejectionReason?: string;
+  notes?: string;
+  
+  // Applicant information
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  address: {
+    street: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
   };
+  
+  // Application details
+  housingType: 'house' | 'apartment' | 'condo' | 'other';
+  hasYard: boolean;
+  hasOtherPets: boolean;
+  otherPetsDetails?: string;
+  hasChildren: boolean;
+  childrenAges?: string;
+  experience: string;
+  reasonForAdoption: string;
+  activityLevel: string;
+  timeAvailable: string;
+  veterinarianContact?: {
+    name: string;
+    phone: string;
+    clinic: string;
+  };
+  
+  // References
+  references: {
+    name: string;
+    relationship: string;
+    phone: string;
+    email?: string;
+  }[];
+  
+  // Pet and user details (populated)
+  pet?: {
+    name: string;
+    type: string;
+    breed: string;
+    images: string[];
+  };
+  user?: {
+    name: string;
+    email: string;
+    avatar?: string;
+  };
+  
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-export interface AdoptionHistory {
-  adoption: AdoptionApplication;
-  timeline: any[];
-  documents: any[];
-  nextSteps: string[];
+export interface AdoptionResponse {
+  success: boolean;
+  data?: {
+    application?: Application;
+    applications?: Application[];
+    totalCount?: number;
+    currentPage?: number;
+    totalPages?: number;
+    adoption?: any;
+  };
+  message?: string;
+  error?: string;
 }
 
-export class AdoptionService {
+export interface ApplicationFormData {
+  userId: string;
+  petId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  address: {
+    street: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+  };
+  housingType: 'house' | 'apartment' | 'condo' | 'other';
+  hasYard: boolean;
+  hasOtherPets: boolean;
+  otherPetsDetails?: string;
+  hasChildren: boolean;
+  childrenAges?: string;
+  experience: string;
+  reasonForAdoption: string;
+  activityLevel: string;
+  timeAvailable: string;
+  veterinarianContact?: {
+    name: string;
+    phone: string;
+    clinic: string;
+  };
+  references: {
+    name: string;
+    relationship: string;
+    phone: string;
+    email?: string;
+  }[];
+}
+
+class AdoptionService {
   /**
-   * Get adoption history for a specific adoption
+   * Submit a new adoption application
    */
-  static async getAdoptionHistory(adoptionId: string, userId: string) {
+  async submitApplication(applicationData: ApplicationFormData): Promise<AdoptionResponse> {
     try {
-      const endpoint = `${API_CONFIG.ENDPOINTS.adoption.HISTORY(adoptionId)}?userId=${userId}`;
-      
-      const response = await apiCall(endpoint, {
-        method: 'GET',
-      });
-
-      if (response.success) {
-        return {
-          success: true,
-          data: response.data,
-        };
-      }
-      
-      return { success: false, error: response.error || 'Failed to fetch adoption history' };
-    } catch (error) {
-      console.error('Error fetching adoption history:', error);
-      return { success: false, error: 'Network error occurred' };
-    }
-  }
-
-  /**
-   * Get adoption tracker (all user's applications)
-   */
-  static async getAdoptionTracker(userId: string) {
-    try {
-      const response = await apiCall(`${API_CONFIG.ENDPOINTS.adoption.TRACKER}?userId=${userId}`, {
-        method: 'GET',
-      });
-
-      if (response.success) {
-        return {
-          success: true,
-          applications: response.data.applications || [],
-          summary: response.data.summary,
-        };
-      }
-      
-      return { success: false, error: response.error || 'Failed to fetch adoption tracker' };
-    } catch (error) {
-      console.error('Error fetching adoption tracker:', error);
-      return { success: false, error: 'Network error occurred' };
-    }
-  }
-
-  /**
-   * Submit adoption application
-   */
-  static async submitApplication(applicationData: {
-    petId: string;
-    userId: string;
-    personalInfo: any;
-    livingInfo: any;
-    petExperience: any;
-    references: any;
-  }) {
-    try {
-      const response = await apiCall(API_CONFIG.ENDPOINTS.adoption.APPLICATION, {
+      const response = await apiCall(API_CONFIG.ENDPOINTS.APPLICATIONS.FORM, {
         method: 'POST',
         body: JSON.stringify(applicationData),
       });
 
-      if (response.success) {
-        return {
-          success: true,
-          applicationId: response.data.applicationId,
-          application: response.data.application,
-        };
-      }
-      
-      return { success: false, error: response.error || 'Failed to submit application' };
+      return response;
     } catch (error) {
-      console.error('Error submitting application:', error);
-      return { success: false, error: 'Network error occurred' };
+      console.error('Submit application error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to submit application',
+      };
     }
   }
 
   /**
-   * Get application list
+   * Get all applications for a user
    */
-  static async getApplicationList(userId: string, filters?: { status?: string }) {
+  async getUserApplications(userId: string, params?: { status?: string; page?: number; limit?: number }): Promise<AdoptionResponse> {
     try {
-      let endpoint = `${API_CONFIG.ENDPOINTS.adoption.LIST_APPLICATIONS}?userId=${userId}`;
+      const queryParams = new URLSearchParams();
+      queryParams.append('userId', userId);
       
-      if (filters?.status) {
-        endpoint += `&status=${filters.status}`;
-      }
+      if (params?.status) queryParams.append('status', params.status);
+      if (params?.page) queryParams.append('page', params.page.toString());
+      if (params?.limit) queryParams.append('limit', params.limit.toString());
 
-      const response = await apiCall(endpoint, {
+      const response = await apiCall(`${API_CONFIG.ENDPOINTS.APPLICATIONS.LIST}?${queryParams.toString()}`, {
         method: 'GET',
       });
 
-      if (response.success) {
-        return {
-          success: true,
-          applications: response.data.applications || [],
-          summary: response.data.summary,
-        };
-      }
-      
-      return { success: false, error: response.error || 'Failed to fetch applications' };
+      return response;
     } catch (error) {
-      console.error('Error fetching applications:', error);
-      return { success: false, error: 'Network error occurred' };
+      console.error('Get user applications error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get applications',
+      };
     }
   }
 
   /**
    * Get application details
    */
-  static async getApplicationDetails(applicationId: string, userId: string) {
+  async getApplicationDetails(applicationId: string, userId?: string): Promise<AdoptionResponse> {
     try {
-      const endpoint = `${API_CONFIG.ENDPOINTS.adoption.APPLICATION_DETAILS(applicationId)}?userId=${userId}`;
-
-      const response = await apiCall(endpoint, {
+      const url = `${API_CONFIG.ENDPOINTS.APPLICATIONS.DETAILS(applicationId)}${userId ? `?userId=${userId}` : ''}`;
+      const response = await apiCall(url, {
         method: 'GET',
       });
 
-      if (response.success) {
-        return {
-          success: true,
-          application: response.data.application,
-        };
-      }
-      
-      return { success: false, error: response.error || 'Failed to fetch application details' };
+      return response;
     } catch (error) {
-      console.error('Error fetching application details:', error);
-      return { success: false, error: 'Network error occurred' };
+      console.error('Get application details error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get application details',
+      };
     }
   }
 
   /**
-   * Update application status (for admin)
+   * Update application
    */
-  static async updateApplicationStatus(applicationId: string, status: string, adminId: string) {
+  async updateApplication(applicationId: string, updateData: Partial<ApplicationFormData>): Promise<AdoptionResponse> {
     try {
-      const response = await apiCall(API_CONFIG.ENDPOINTS.adoption.APPLICATION_DETAILS(applicationId), {
-        method: 'PATCH',
-        body: JSON.stringify({ status, adminId }),
+      const response = await apiCall(API_CONFIG.ENDPOINTS.APPLICATIONS.UPDATE(applicationId), {
+        method: 'PUT',
+        body: JSON.stringify(updateData),
       });
 
-      if (response.success) {
-        return {
-          success: true,
-          application: response.data.application,
-        };
-      }
-      
-      return { success: false, error: response.error || 'Failed to update application status' };
+      return response;
     } catch (error) {
-      console.error('Error updating application status:', error);
-      return { success: false, error: 'Network error occurred' };
+      console.error('Update application error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to update application',
+      };
+    }
+  }
+
+  /**
+   * Cancel application
+   */
+  async cancelApplication(applicationId: string, userId: string, reason?: string): Promise<AdoptionResponse> {
+    try {
+      const response = await apiCall(API_CONFIG.ENDPOINTS.APPLICATIONS.CANCEL(applicationId), {
+        method: 'PUT',
+        body: JSON.stringify({ userId, reason }),
+      });
+
+      return response;
+    } catch (error) {
+      console.error('Cancel application error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to cancel application',
+      };
+    }
+  }
+
+  /**
+   * Get adoption history for a user
+   */
+  async getAdoptionHistory(userId: string, params?: { page?: number; limit?: number }): Promise<AdoptionResponse> {
+    try {
+      const queryParams = new URLSearchParams();
+      queryParams.append('userId', userId);
+      
+      if (params?.page) queryParams.append('page', params.page.toString());
+      if (params?.limit) queryParams.append('limit', params.limit.toString());
+
+      const response = await apiCall(`${API_CONFIG.ENDPOINTS.APPLICATIONS.HISTORY}?${queryParams.toString()}`, {
+        method: 'GET',
+      });
+
+      return response;
+    } catch (error) {
+      console.error('Get adoption history error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get adoption history',
+      };
+    }
+  }
+
+  /**
+   * Get specific adoption history item
+   */
+  async getAdoptionHistoryItem(adoptionId: string, userId: string): Promise<AdoptionResponse> {
+    try {
+      const response = await apiCall(`${API_CONFIG.ENDPOINTS.APPLICATIONS.HISTORY}/${adoptionId}?userId=${userId}`, {
+        method: 'GET',
+      });
+
+      return response;
+    } catch (error) {
+      console.error('Get adoption history item error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get adoption history item',
+      };
+    }
+  }
+
+  /**
+   * Track application status
+   */
+  async trackApplication(applicationId: string, userId: string): Promise<AdoptionResponse> {
+    try {
+      const response = await apiCall(`${API_CONFIG.ENDPOINTS.APPLICATIONS.TRACKER}/${applicationId}?userId=${userId}`, {
+        method: 'GET',
+      });
+
+      return response;
+    } catch (error) {
+      console.error('Track application error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to track application',
+      };
+    }
+  }
+
+  /**
+   * Get application tracker for user
+   */
+  async getApplicationTracker(userId: string): Promise<AdoptionResponse> {
+    try {
+      const response = await apiCall(`${API_CONFIG.ENDPOINTS.APPLICATIONS.TRACKER}?userId=${userId}`, {
+        method: 'GET',
+      });
+
+      return response;
+    } catch (error) {
+      console.error('Get application tracker error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get application tracker',
+      };
+    }
+  }
+
+  /**
+   * Get adoption statistics
+   */
+  async getAdoptionStats(userId?: string): Promise<AdoptionResponse> {
+    try {
+      const url = userId ? `/api/adoption-stats?userId=${userId}` : '/api/adoption-stats';
+      const response = await apiCall(url, {
+        method: 'GET',
+      });
+
+      return response;
+    } catch (error) {
+      console.error('Get adoption stats error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get adoption stats',
+      };
     }
   }
 }
+
+export default new AdoptionService();

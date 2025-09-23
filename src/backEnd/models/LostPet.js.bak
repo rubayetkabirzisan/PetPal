@@ -1,0 +1,221 @@
+const mongoose = require('mongoose');
+
+const lostPetSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  type: {
+    type: String,
+    required: true,
+    enum: ['dog', 'cat', 'bird', 'rabbit', 'small-mammal', 'reptile', 'farm', 'other']
+  },
+  breed: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  color: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  age: {
+    type: String,
+    trim: true
+  },
+  gender: {
+    type: String,
+    enum: ['Male', 'Female', 'Unknown']
+  },
+  size: {
+    type: String,
+    enum: ['Small', 'Medium', 'Large']
+  },
+  description: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  images: [{
+    type: String,
+    required: true
+  }],
+  // Location information
+  lastSeenLocation: {
+    address: { type: String, required: true, trim: true },
+    city: { type: String, required: true, trim: true },
+    state: { type: String, required: true, trim: true },
+    zipCode: String,
+    coordinates: {
+      latitude: { type: Number, required: true },
+      longitude: { type: Number, required: true }
+    },
+    landmarks: String
+  },
+  lastSeenDate: {
+    type: Date,
+    required: true
+  },
+  // Owner information
+  ownerInfo: {
+    name: { type: String, required: true, trim: true },
+    phone: { type: String, required: true, trim: true },
+    email: { type: String, lowercase: true, trim: true },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    }
+  },
+  // Status and tracking
+  status: {
+    type: String,
+    enum: ['lost', 'found', 'reunited', 'closed'],
+    default: 'lost'
+  },
+  reportedDate: {
+    type: Date,
+    default: Date.now
+  },
+  foundDate: Date,
+  reunitedDate: Date,
+  // Identifying features
+  identifyingFeatures: {
+    microchipped: { type: Boolean, default: false },
+    microchipId: String,
+    collar: {
+      has: { type: Boolean, default: false },
+      color: String,
+      description: String,
+      tags: Boolean
+    },
+    distinctiveMarks: String,
+    tattoos: String,
+    scars: String
+  },
+  // Behavior and personality
+  behavior: {
+    temperament: String,
+    friendlyToStrangers: { type: Boolean, default: true },
+    friendlyToAnimals: { type: Boolean, default: true },
+    respondToName: { type: Boolean, default: true },
+    specialBehaviors: String,
+    medications: String,
+    medicalConditions: String
+  },
+  // Search information
+  searchRadius: {
+    type: Number,
+    default: 5 // miles
+  },
+  reward: {
+    offered: { type: Boolean, default: false },
+    amount: Number,
+    description: String
+  },
+  urgency: {
+    type: String,
+    enum: ['low', 'medium', 'high', 'critical'],
+    default: 'medium'
+  },
+  // Sightings
+  sightings: [{
+    reporterId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    reporterName: String,
+    reporterPhone: String,
+    reporterEmail: String,
+    location: {
+      address: String,
+      coordinates: {
+        latitude: Number,
+        longitude: Number
+      }
+    },
+    sightingDate: { type: Date, required: true },
+    reportDate: { type: Date, default: Date.now },
+    description: String,
+    images: [String],
+    verified: { type: Boolean, default: false },
+    verifiedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    verificationDate: Date,
+    confidence: {
+      type: String,
+      enum: ['low', 'medium', 'high'],
+      default: 'medium'
+    }
+  }],
+  // Contact log
+  contactLog: [{
+    date: { type: Date, default: Date.now },
+    type: { type: String, enum: ['call', 'email', 'visit', 'message', 'sighting'] },
+    description: String,
+    contactedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    }
+  }],
+  // Search efforts
+  searchEfforts: [{
+    date: { type: Date, default: Date.now },
+    type: { type: String, enum: ['flyer', 'social_media', 'shelter_check', 'search_party', 'other'] },
+    description: String,
+    area: String,
+    volunteers: Number
+  }],
+  // Visibility and sharing
+  isPublic: {
+    type: Boolean,
+    default: true
+  },
+  shareOnSocialMedia: {
+    type: Boolean,
+    default: true
+  },
+  notifyRadius: {
+    type: Number,
+    default: 10 // miles
+  },
+  // Analytics
+  viewCount: {
+    type: Number,
+    default: 0
+  },
+  shareCount: {
+    type: Number,
+    default: 0
+  },
+  // Administrative
+  isActive: {
+    type: Boolean,
+    default: true
+  },
+  priority: {
+    type: String,
+    enum: ['low', 'medium', 'high', 'urgent'],
+    default: 'medium'
+  },
+  assignedTo: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  tags: [String],
+  notes: String
+}, {
+  timestamps: true
+});
+
+lostPetSchema.index({ type: 1 });
+lostPetSchema.index({ status: 1 });
+lostPetSchema.index({ reportedDate: -1 });
+lostPetSchema.index({ 'lastSeenLocation.coordinates': '2dsphere' });
+lostPetSchema.index({ 'ownerInfo.userId': 1 });
+lostPetSchema.index({ isActive: 1 });
+
+module.exports = mongoose.model('LostPet', lostPetSchema);

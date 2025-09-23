@@ -11,28 +11,28 @@ export default function AdminDashboardScreen({ navigation }: AdminDashboardScree
   const stats = [
     { 
       label: "Available Pets", 
-      value: "24", 
+      value: "9", 
       icon: "heart-outline", 
       color: colors.primary,
       onPress: () => navigation.navigate("Pets") 
     },
     { 
       label: "Pending Applications", 
-      value: "8", 
+      value: "2", 
       icon: "document-text-outline", 
       color: colors.warning,
       onPress: () => navigation.navigate("Applications", { status: "Pending" }) 
     },
     { 
       label: "Successful Adoptions", 
-      value: "156", 
+      value: "2", 
       icon: "checkmark-circle-outline", 
       color: colors.success,
       onPress: () => navigation.navigate("AdoptionHistory") 
     },
     { 
       label: "Lost Pet Reports", 
-      value: "3", 
+      value: "4", 
       icon: "alert-circle-outline", 
       color: colors.error,
       onPress: () => navigation.navigate("LostPets") 

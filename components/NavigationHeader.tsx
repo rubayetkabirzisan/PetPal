@@ -31,7 +31,7 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
   const [notificationCount, setNotificationCount] = useState(3) // Default to 3 notifications for demo
   
   // Determine if user is admin
-  const isAdmin = user?.type === "admin"
+  const isAdmin = user?.userType === "admin"
 
   useEffect(() => {
     // You could fetch actual notification count from your backend here

@@ -52,7 +52,7 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
           onPress={() => navigation.navigate("ModernApplicationList")}
         >
           <Ionicons name="calendar-outline" size={24} color={colors.primary} />
-          <Text style={styles.quickActionNumber}>3</Text>
+          <Text style={styles.quickActionNumber}>4</Text>
           <Text style={styles.quickActionLabel}>Applications</Text>
         </TouchableOpacity>
 
@@ -62,7 +62,7 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
           onPress={() => navigation.getParent()?.navigate("Messages")}
         >
           <Ionicons name="chatbubble-outline" size={24} color={colors.primary} />
-          <Text style={styles.quickActionNumber}>5</Text>
+          <Text style={styles.quickActionNumber}>3</Text>
           <Text style={styles.quickActionLabel}>Messages</Text>
         </TouchableOpacity>
       </View>
@@ -84,7 +84,7 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
           onPress={() => navigation.navigate("Reminders")}
         >
           <Ionicons name="book-outline" size={24} color={colors.primary} />
-          <Text style={styles.quickActionNumber}>4</Text>
+          <Text style={styles.quickActionNumber}>2</Text>
           <Text style={styles.quickActionLabel}>Reminders</Text>
         </TouchableOpacity>
       </View>

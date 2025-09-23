@@ -1,14 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import {
-    User,
-    authenticateUser,
-    authenticateUserDemo,
-    clearStoredAuth,
-    getStoredAuth,
-    initializeDemoUsers,
-    registerUser,
-    validateAuthToken
-} from '../../lib/auth';
+import type { LoginCredentials, RegisterData, User } from '../services';
+import { AuthService } from '../services';
 
 interface AuthContextType {
   user: User | null;
@@ -30,23 +22,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const loadAuth = async () => {
       try {
-        // Initialize demo users for convenience (legacy)
-        await initializeDemoUsers();
-        
-        // First check if we have stored user data
-        const authState = await getStoredAuth();
-        
-        if (authState.isAuthenticated && authState.user) {
-          // Validate token with backend
-          const validatedUser = await validateAuthToken();
-          if (validatedUser) {
-            setUser(validatedUser);
-            setIsAuthenticated(true);
-          } else {
-            // Token invalid, clear state
-            setUser(null);
-            setIsAuthenticated(false);
-          }
+        // Check if user is already authenticated
+        const profile = await AuthService.getProfile();
+        if (profile.success && profile.data) {
+          setUser(profile.data.user);
+          setIsAuthenticated(true);
         } else {
           setUser(null);
           setIsAuthenticated(false);
@@ -67,17 +47,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setLoading(true);
       
-      // Try backend authentication first
-      let authenticatedUser = await authenticateUser(email, password, userType);
+      const credentials: LoginCredentials = {
+        email,
+        password,
+        userType
+      };
       
-      // If backend auth fails, try demo authentication
-      if (!authenticatedUser) {
-        console.log("Backend auth failed, trying demo authentication...");
-        authenticatedUser = await authenticateUserDemo(email, password, userType);
-      }
+      const result = await AuthService.login(credentials);
       
-      if (authenticatedUser) {
-        setUser(authenticatedUser);
+      if (result.success && result.data) {
+        setUser(result.data.user);
         setIsAuthenticated(true);
         return true;
       }
@@ -93,10 +72,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (email: string, password: string, name: string): Promise<boolean> => {
     try {
       setLoading(true);
-      const registeredUser = await registerUser(email, password, name);
       
-      if (registeredUser) {
-        setUser(registeredUser);
+      const registerData: RegisterData = {
+        name,
+        email,
+        password,
+        type: 'adopter', // Add the missing type property
+        userType: 'adopter',
+      };
+      
+      const result = await AuthService.register(registerData);
+      
+      if (result.success && result.data) {
+        setUser(result.data.user);
         setIsAuthenticated(true);
         return true;
       }
@@ -112,7 +100,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     try {
       setLoading(true);
-      await clearStoredAuth();
+      await AuthService.logout();
       setUser(null);
       setIsAuthenticated(false);
     } catch (error) {

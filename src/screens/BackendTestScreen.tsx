@@ -5,9 +5,10 @@
 
 import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { API_BASE_URL } from '../services/ApiService';
+import { API_CONFIG } from '../config/api';
+import { AdminService, PetService } from '../services';
+import { PetFormData } from '../services/AdminService';
 import authService from '../services/AuthService';
-import petsService from '../services/PetsService';
 
 interface TestResult {
   name: string;
@@ -53,7 +54,7 @@ const BackendTestScreen: React.FC = () => {
 
     // Test 1: Basic API connection
     await runTest('API Connection', async () => {
-      const response = await fetch(`${API_BASE_URL.replace('/api', '')}/`);
+      const response = await fetch(`${API_CONFIG.BASE_URL.replace('/api', '')}/`);
       if (!response.ok) throw new Error('Server not responding');
     });
 
@@ -63,9 +64,9 @@ const BackendTestScreen: React.FC = () => {
         name: 'Test User',
         email: `test${Date.now()}@example.com`,
         password: 'testpassword123',
-        userType: 'adopter' as const
+        type: 'adopter' as const
       };
-      await authService.signup(testUser);
+      await authService.register(testUser);
     });
 
     // Test 3: User login
@@ -85,21 +86,46 @@ const BackendTestScreen: React.FC = () => {
 
     // Test 4: Fetch pets
     await runTest('Fetch Pets', async () => {
-      const pets = await petsService.getAllPets();
+      const pets = await PetService.browsePets();
       if (!Array.isArray(pets)) throw new Error('Invalid response format');
     });
 
     // Test 5: Create pet
     await runTest('Create Pet', async () => {
-      const testPet = {
-        name: 'Test Pet',
-        type: 'Dog',
-        breed: 'Test Breed',
-        color: 'Brown',
-        location: 'Test Location',
-        description: 'Test pet for API testing'
+      const testPetData: PetFormData = {
+        userId: 'test-admin',
+        shelterId: 'test-shelter',
+        petData: {
+          name: 'Test Pet',
+          type: 'Dog' as const,
+          breed: 'Test Breed',
+          age: '2 years',
+          gender: 'Male' as const,
+          size: 'Medium' as const,
+          weight: '30 lbs',
+          color: 'Brown',
+          description: 'Test pet for API testing',
+          personality: ['Friendly', 'Playful'],
+          images: [],
+          vaccinated: true,
+          neutered: true,
+          microchipped: true,
+          houseTrained: true,
+          goodWithKids: true,
+          goodWithPets: true,
+          energyLevel: 'Medium' as const,
+          status: 'available' as const,
+          adoptionFee: 200,
+          medicalHistory: 'Healthy and up to date on vaccines',
+          specialNeeds: 'None',
+          shelter: {
+            name: 'Test Shelter',
+            location: '123 Shelter St, Pet City',
+            contact: '555-0123',
+          }
+        }
       };
-      await petsService.createPet(testPet);
+      await AdminService.addPet(testPetData);
     });
 
     setIsRunning(false);
@@ -159,7 +185,7 @@ const BackendTestScreen: React.FC = () => {
           This test verifies the backend connection. Make sure your backend server is running on port 5000.
         </Text>
         <Text style={styles.infoText}>
-          Backend URL: {API_BASE_URL}
+          Backend URL: {API_CONFIG.BASE_URL}
         </Text>
       </View>
     </View>

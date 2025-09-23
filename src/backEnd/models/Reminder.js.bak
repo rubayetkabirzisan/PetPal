@@ -1,0 +1,257 @@
+const mongoose = require('mongoose');
+
+const reminderSchema = new mongoose.Schema({
+  // Owner and pet information
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  petId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Pet'
+  },
+  petName: String,
+  // Reminder details
+  title: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  description: {
+    type: String,
+    trim: true
+  },
+  type: {
+    type: String,
+    required: true,
+    enum: [
+      'feeding',
+      'medication',
+      'veterinary',
+      'grooming',
+      'exercise',
+      'training',
+      'vaccination',
+      'checkup',
+      'dental',
+      'weight_check',
+      'nail_trim',
+      'flea_treatment',
+      'heartworm',
+      'license_renewal',
+      'insurance',
+      'boarding',
+      'custom'
+    ]
+  },
+  category: {
+    type: String,
+    enum: ['health', 'care', 'administrative', 'training', 'social'],
+    required: true
+  },
+  // Scheduling
+  scheduledDate: {
+    type: Date,
+    required: true
+  },
+  scheduledTime: String,
+  dueDate: Date,
+  // Recurrence
+  isRecurring: {
+    type: Boolean,
+    default: false
+  },
+  recurrence: {
+    frequency: {
+      type: String,
+      enum: ['daily', 'weekly', 'monthly', 'yearly']
+    },
+    interval: { type: Number, default: 1 },
+    daysOfWeek: [{ type: Number, min: 0, max: 6 }], // 0 = Sunday
+    dayOfMonth: Number,
+    endDate: Date,
+    occurrences: Number
+  },
+  // Status and completion
+  status: {
+    type: String,
+    enum: ['pending', 'completed', 'missed', 'cancelled', 'snoozed'],
+    default: 'pending'
+  },
+  completedDate: Date,
+  completedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  completionNotes: String,
+  // Priority and importance
+  priority: {
+    type: String,
+    enum: ['low', 'medium', 'high', 'urgent'],
+    default: 'medium'
+  },
+  importance: {
+    type: String,
+    enum: ['optional', 'recommended', 'important', 'critical'],
+    default: 'recommended'
+  },
+  // Notification settings
+  notifications: {
+    enabled: { type: Boolean, default: true },
+    advance: [{ type: Number }], // minutes before
+    methods: [{
+      type: String,
+      enum: ['push', 'email', 'sms']
+    }],
+    lastSent: Date,
+    sentCount: { type: Number, default: 0 }
+  },
+  // Snooze functionality
+  snooze: {
+    until: Date,
+    count: { type: Number, default: 0 },
+    maxSnoozes: { type: Number, default: 3 }
+  },
+  // Related information
+  relatedEntityType: {
+    type: String,
+    enum: ['careEntry', 'appointment', 'medication', 'vaccination']
+  },
+  relatedEntityId: {
+    type: mongoose.Schema.Types.ObjectId
+  },
+  // Medication specific details
+  medicationDetails: {
+    name: String,
+    dosage: String,
+    instructions: String,
+    quantity: Number,
+    refillNeeded: { type: Boolean, default: false },
+    prescriptionNumber: String,
+    veterinarian: String
+  },
+  // Appointment details
+  appointmentDetails: {
+    veterinarian: String,
+    clinic: String,
+    address: String,
+    phone: String,
+    appointmentType: String,
+    duration: Number,
+    cost: Number,
+    notes: String
+  },
+  // Activity details
+  activityDetails: {
+    duration: Number, // minutes
+    location: String,
+    equipment: String,
+    weather: String,
+    notes: String
+  },
+  // Attachments and resources
+  attachments: [{
+    type: String,
+    url: String,
+    filename: String,
+    description: String
+  }],
+  links: [{
+    title: String,
+    url: String,
+    description: String
+  }],
+  // Location information
+  location: {
+    name: String,
+    address: String,
+    coordinates: {
+      latitude: Number,
+      longitude: Number
+    }
+  },
+  // History and tracking
+  history: [{
+    date: { type: Date, default: Date.now },
+    action: {
+      type: String,
+      enum: ['created', 'completed', 'missed', 'snoozed', 'cancelled', 'rescheduled']
+    },
+    notes: String,
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    }
+  }],
+  // Sharing and delegation
+  assignedTo: [{
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    role: {
+      type: String,
+      enum: ['primary', 'backup', 'observer']
+    },
+    notifyAssignee: { type: Boolean, default: true }
+  }],
+  // Template and automation
+  templateId: String,
+  isTemplate: {
+    type: Boolean,
+    default: false
+  },
+  autoComplete: {
+    enabled: { type: Boolean, default: false },
+    conditions: mongoose.Schema.Types.Mixed
+  },
+  // Tags and organization
+  tags: [String],
+  color: String,
+  icon: String,
+  // Analytics
+  viewCount: {
+    type: Number,
+    default: 0
+  },
+  lastViewed: Date,
+  // Settings
+  isPrivate: {
+    type: Boolean,
+    default: false
+  },
+  allowDelegation: {
+    type: Boolean,
+    default: true
+  },
+  // External integration
+  externalId: String,
+  source: {
+    type: String,
+    enum: ['manual', 'imported', 'automated', 'template'],
+    default: 'manual'
+  },
+  syncStatus: {
+    type: String,
+    enum: ['pending', 'synced', 'failed'],
+    default: 'synced'
+  },
+  // Metadata and custom fields
+  metadata: mongoose.Schema.Types.Mixed,
+  customFields: mongoose.Schema.Types.Mixed,
+  notes: String
+}, {
+  timestamps: true
+});
+
+reminderSchema.index({ userId: 1, scheduledDate: 1 });
+reminderSchema.index({ petId: 1 });
+reminderSchema.index({ type: 1 });
+reminderSchema.index({ status: 1 });
+reminderSchema.index({ priority: 1 });
+reminderSchema.index({ scheduledDate: 1 });
+reminderSchema.index({ isRecurring: 1 });
+reminderSchema.index({ tags: 1 });
+
+module.exports = mongoose.model('Reminder', reminderSchema);

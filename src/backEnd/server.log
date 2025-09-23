@@ -1,7 +1,32 @@
-[dotenv@17.2.1] injecting env (0) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+[dotenv@17.2.1] injecting env (1) from .env -- tip: ⚙️  override existing env vars with { override: true }
 Analytics data initialized
-(node:90416) [MONGODB DRIVER] Warning: useNewUrlParser is a deprecated option: useNewUrlParser has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
+(node:93957) [MONGOOSE] Warning: Duplicate schema index on {"email":1} found. This is often due to declaring an index using both "index: true" and "schema.index()". Please remove the duplicate index definition.
 (Use `node --trace-warnings ...` to show where the warning was created)
-(node:90416) [MONGODB DRIVER] Warning: useUnifiedTopology is a deprecated option: useUnifiedTopology has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
-Server running on http://localhost:3000
-MongoDB connected successfully
+(node:93957) [MONGOOSE] Warning: Duplicate schema index on {"uid":1} found. This is often due to declaring an index using both "index: true" and "schema.index()". Please remove the duplicate index definition.
+(node:93957) [MONGOOSE] Warning: Duplicate schema index on {"applicationId":1} found. This is often due to declaring an index using both "index: true" and "schema.index()". Please remove the duplicate index definition.
+(node:93957) [MONGOOSE] Warning: Duplicate schema index on {"reportNumber":1} found. This is often due to declaring an index using both "index: true" and "schema.index()". Please remove the duplicate index definition.
+(node:93957) [MONGOOSE] Warning: Duplicate schema index on {"deviceInfo.deviceId":1} found. This is often due to declaring an index using both "index: true" and "schema.index()". Please remove the duplicate index definition.
+🚀 Server running on http://localhost:3000
+🌍 Environment: development
+🔒 Security middleware enabled
+📊 Rate limiting active
+❌ Server error: Error: listen EADDRINUSE: address already in use :::3000
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at Function.listen (/Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/node_modules/express/lib/application.js:605:24)
+    at Object.<anonymous> (/Users/rasiulhasan/Downloads/Development/PetPal/src/backEnd/server.js:388:20)
+    at Module._compile (node:internal/modules/cjs/loader:1706:14)
+    at Object..js (node:internal/modules/cjs/loader:1839:10)
+    at Module.load (node:internal/modules/cjs/loader:1441:32)
+    at Function._load (node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14) {
+  code: 'EADDRINUSE',
+  errno: -48,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+📡 MongoDB connection established
+✅ MongoDB connected successfully
+🚀 Database setup complete!

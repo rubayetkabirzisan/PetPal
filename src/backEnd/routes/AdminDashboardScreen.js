@@ -5,7 +5,7 @@ const User = require('../models/User');
 const Application = require('../models/Application');
 const Shelter = require('../models/Shelter');
 const LostPet = require('../models/LostPet');
-const Analytics = require('../models/analytics');
+// const Analytics = require('../models/Analytics');
 
 // Admin authentication middleware
 const authenticateAdmin = (req, res, next) => {

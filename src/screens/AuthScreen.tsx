@@ -2,15 +2,15 @@
 import { Ionicons } from "@expo/vector-icons"
 import { useState } from "react"
 import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native"
 import { useAuth } from "../contexts/AuthContext"
 import { colors, spacing } from "../theme/theme"
@@ -32,7 +32,7 @@ export default function AuthScreen({ navigation, route }: AuthScreenProps) {
   const [location, setLocation] = useState("")
   const [bio, setBio] = useState("")
   
-  const { login } = useAuth()
+  const { login, register } = useAuth()
 
   const userType = route.params?.userType || "adopter"
 
@@ -89,45 +89,28 @@ export default function AuthScreen({ navigation, route }: AuthScreenProps) {
 
     setLoading(true)
     try {
-      // Generate a unique ID (in a real app, this would come from Firebase or your backend)
-      const uid = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-      
-      // Create user object
-      const userData = {
-        uid,
-        name,
-        email,
-        phone: phone || "",
-        location: location || "",
-        bio: bio || "",
-        userType,
-        createdAt: new Date().toISOString()
-      }
-
-      // In a real app, you would save this to your database
-      console.log("Creating user:", userData)
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(() => resolve(undefined), 1000))
-      
-      Alert.alert(
-        "Account Created",
-        "Your account has been created successfully! Please log in with your credentials.",
-        [
-          {
-            text: "OK",
-            onPress: () => {
-              // Clear form and switch to login
-              setName("")
-              setPhone("")
-              setLocation("")
-              setBio("")
-              setPassword("")
-              setIsLogin(true)
+      const success = await register(email, password, name)
+      if (success) {
+        Alert.alert(
+          "Account Created",
+          "Your account has been created successfully! You are now logged in.",
+          [
+            {
+              text: "OK",
+              onPress: () => {
+                // Navigate to appropriate screen based on user type
+                if (userType === "adopter") {
+                  navigation.navigate("AdopterTabs")
+                } else {
+                  navigation.navigate("AdminTabs") 
+                }
+              }
             }
-          }
-        ]
-      )
+          ]
+        )
+      } else {
+        Alert.alert("Error", "Failed to create account. Please try again.")
+      }
     } catch (error) {
       Alert.alert("Error", "Failed to create account. Please try again.")
     } finally {

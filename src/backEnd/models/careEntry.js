@@ -1,166 +1,271 @@
 const mongoose = require('mongoose');
 
-const attachmentSchema = new mongoose.Schema({
-  type: { 
-    type: String, 
-    enum: ['photo', 'document', 'receipt', 'medical_record'],
-    required: true 
-  },
-  url: { type: String, required: true },
-  filename: { type: String, required: true },
-  uploadedAt: { type: Date, default: Date.now }
-}, { _id: false });
-
-const medicationSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  dosage: { type: String, required: true },
-  frequency: { type: String, required: true },
-  startDate: { type: Date, required: true },
-  endDate: { type: Date },
-  prescribedBy: { type: String } // Veterinarian name
-}, { _id: false });
-
 const careEntrySchema = new mongoose.Schema({
-  // Basic Information
-  petId: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: 'Pet', 
-    required: true,
-    index: true
+  // Pet and owner information
+  petId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Pet',
+    required: true
   },
-  petName: { type: String, required: true }, // Keep for compatibility
-  
-  // Entry Classification
-  type: { 
-    type: String, 
-    enum: ['medical', 'feeding', 'grooming', 'exercise', 'training', 'vet_visit', 'general', 'other'], 
-    default: 'general',
-    index: true
-  },
-  subType: { 
+  petName: {
     type: String,
-    validate: {
-      validator: function(value) {
-        if (!value) return true;
-        
-        const validSubTypes = {
-          medical: ['vaccination', 'medication', 'treatment', 'surgery', 'dental', 'checkup'],
-          feeding: ['meal', 'treat', 'supplement', 'diet_change', 'weight_check'],
-          grooming: ['bath', 'nail_trim', 'brushing', 'ear_cleaning', 'flea_treatment'],
-          exercise: ['walk', 'play_session', 'training_exercise', 'agility'],
-          training: ['obedience', 'house_training', 'socialization', 'behavior_modification'],
-          vet_visit: ['routine_checkup', 'emergency', 'follow_up', 'consultation'],
-          general: ['behavior_observation', 'milestone', 'incident'],
-          other: ['other']
-        };
-        
-        return validSubTypes[this.type]?.includes(value);
-      },
-      message: 'Invalid subType for the selected type'
+    required: true,
+    trim: true
+  },
+  ownerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  // Entry details
+  type: {
+    type: String,
+    required: true,
+    enum: [
+      'medical',
+      'feeding',
+      'grooming',
+      'exercise',
+      'training',
+      'vet_visit',
+      'vaccination',
+      'medication',
+      'weight_check',
+      'dental',
+      'behavior',
+      'socialization',
+      'general',
+      'other'
+    ]
+  },
+  title: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  description: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  date: {
+    type: Date,
+    required: true
+  },
+  // Detailed information based on type
+  details: {
+    // Medical details
+    veterinarian: {
+      name: String,
+      clinic: String,
+      phone: String,
+      email: String
+    },
+    diagnosis: String,
+    treatment: String,
+    medications: [{
+      name: String,
+      dosage: String,
+      frequency: String,
+      startDate: Date,
+      endDate: Date,
+      instructions: String
+    }],
+    vaccinations: [{
+      type: String,
+      manufacturer: String,
+      batchNumber: String,
+      expiryDate: Date,
+      nextDue: Date
+    }],
+    // Physical measurements
+    weight: {
+      value: Number,
+      unit: { type: String, default: 'lbs' }
+    },
+    temperature: {
+      value: Number,
+      unit: { type: String, default: 'F' }
+    },
+    heartRate: Number,
+    // Feeding details
+    foodType: String,
+    amount: String,
+    mealTime: String,
+    appetite: {
+      type: String,
+      enum: ['poor', 'normal', 'good', 'excellent']
+    },
+    // Exercise details
+    activity: String,
+    duration: Number, // minutes
+    intensity: {
+      type: String,
+      enum: ['low', 'medium', 'high']
+    },
+    distance: Number, // miles or km
+    location: String,
+    // Grooming details
+    services: [String], // ['bath', 'nail_trim', 'brush', 'teeth_clean']
+    groomer: String,
+    products: [String],
+    condition: String,
+    // Training details
+    skills: [String],
+    commands: [String],
+    behavior: String,
+    progress: {
+      type: String,
+      enum: ['poor', 'fair', 'good', 'excellent']
+    },
+    trainer: String
+  },
+  // Attachments and media
+  attachments: [{
+    type: {
+      type: String,
+      enum: ['image', 'document', 'video', 'audio']
+    },
+    url: String,
+    filename: String,
+    size: Number,
+    description: String
+  }],
+  images: [String],
+  // Cost and financial tracking
+  cost: {
+    amount: Number,
+    currency: { type: String, default: 'USD' },
+    category: String,
+    receiptUrl: String,
+    insurance: {
+      covered: { type: Boolean, default: false },
+      claimNumber: String,
+      reimbursement: Number
     }
   },
-  
-  // Content
-  title: { type: String, required: true, trim: true, maxlength: 200 },
-  description: { type: String, required: true, maxlength: 2000 },
-  
-  // Scheduling and timing
-  date: { type: Date, required: true, index: true },
-  duration: { type: Number }, // in minutes
-  nextDue: { type: Date }, // For recurring care items
-  isRecurring: { type: Boolean, default: false },
-  
-  // Medical specific fields
-  medications: [medicationSchema],
-  temperature: { type: Number }, // in Fahrenheit
-  weight: { type: Number }, // in pounds
-  symptoms: [{ type: String }],
-  diagnosis: { type: String },
-  treatment: { type: String },
-  veterinarian: {
-    name: { type: String },
-    clinic: { type: String },
-    phone: { type: String }
+  // Scheduling and reminders
+  isScheduled: {
+    type: Boolean,
+    default: false
   },
-  
-  // Financial information
-  cost: { type: Number, min: 0, default: 0 },
-  paidBy: {
+  scheduledFor: Date,
+  reminderSet: {
+    type: Boolean,
+    default: false
+  },
+  reminderDate: Date,
+  isRecurring: {
+    type: Boolean,
+    default: false
+  },
+  recurrence: {
+    frequency: {
+      type: String,
+      enum: ['daily', 'weekly', 'monthly', 'yearly']
+    },
+    interval: Number,
+    endDate: Date
+  },
+  // Follow-up and next steps
+  followUp: {
+    required: { type: Boolean, default: false },
+    date: Date,
+    description: String,
+    completed: { type: Boolean, default: false },
+    completedDate: Date
+  },
+  nextAppointment: {
+    date: Date,
     type: String,
-    enum: ['shelter', 'adopter', 'insurance', 'sponsor', 'other']
+    veterinarian: String,
+    clinic: String,
+    notes: String
   },
-  
-  // Quality and outcome tracking
-  outcome: {
+  // Mood and behavior tracking
+  mood: {
     type: String,
-    enum: ['successful', 'partial', 'unsuccessful', 'ongoing', 'cancelled']
+    enum: ['very_poor', 'poor', 'neutral', 'good', 'excellent']
   },
-  followUpRequired: { type: Boolean, default: false },
-  followUpDate: { type: Date },
-  followUpNotes: { type: String },
-  
-  // Documentation
-  attachments: [attachmentSchema],
-  notes: { type: String, maxlength: 1000 },
-  
+  energyLevel: {
+    type: String,
+    enum: ['very_low', 'low', 'normal', 'high', 'very_high']
+  },
+  behaviorNotes: String,
+  symptoms: [String],
+  // Quality and ratings
+  rating: {
+    type: Number,
+    min: 1,
+    max: 5
+  },
+  satisfaction: {
+    type: String,
+    enum: ['very_poor', 'poor', 'neutral', 'good', 'excellent']
+  },
   // Administrative
-  createdBy: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: 'User' 
-  },
-  createdByName: { type: String },
-  createdByRole: {
-    type: String,
-    enum: ['adopter', 'shelter_staff', 'veterinarian', 'volunteer', 'admin']
-  },
-  
-  // Categorization and tagging
-  tags: [{ type: String }],
   priority: {
     type: String,
-    enum: ['low', 'normal', 'high', 'urgent'],
-    default: 'normal'
-  }
-}, { 
-  timestamps: true,
-  toJSON: { virtuals: true },
-  toObject: { virtuals: true }
+    enum: ['low', 'medium', 'high', 'urgent'],
+    default: 'medium'
+  },
+  status: {
+    type: String,
+    enum: ['pending', 'in_progress', 'completed', 'cancelled'],
+    default: 'completed'
+  },
+  tags: [String],
+  category: String,
+  isPrivate: {
+    type: Boolean,
+    default: false
+  },
+  // Sharing and permissions
+  sharedWith: [{
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    role: {
+      type: String,
+      enum: ['viewer', 'editor']
+    },
+    sharedAt: { type: Date, default: Date.now }
+  }],
+  // Location information
+  location: {
+    name: String,
+    address: String,
+    coordinates: {
+      latitude: Number,
+      longitude: Number
+    }
+  },
+  // Integration with other systems
+  externalId: String,
+  source: {
+    type: String,
+    enum: ['manual', 'vet_system', 'device', 'import'],
+    default: 'manual'
+  },
+  syncStatus: {
+    type: String,
+    enum: ['pending', 'synced', 'failed'],
+    default: 'synced'
+  },
+  // Metadata
+  metadata: mongoose.Schema.Types.Mixed,
+  notes: String
+}, {
+  timestamps: true
 });
 
-// Virtual for entry age
-careEntrySchema.virtual('daysSinceEntry').get(function() {
-  const now = new Date();
-  const diffTime = Math.abs(now - this.date);
-  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-});
-
-// Indexes for better query performance
 careEntrySchema.index({ petId: 1, date: -1 });
-careEntrySchema.index({ type: 1, date: -1 });
-careEntrySchema.index({ createdBy: 1, date: -1 });
-careEntrySchema.index({ nextDue: 1 });
+careEntrySchema.index({ ownerId: 1 });
+careEntrySchema.index({ type: 1 });
+careEntrySchema.index({ date: -1 });
+careEntrySchema.index({ status: 1 });
+careEntrySchema.index({ priority: 1 });
+careEntrySchema.index({ tags: 1 });
 
-// Compound indexes
-careEntrySchema.index({ petId: 1, type: 1, date: -1 });
-
-// Static methods
-careEntrySchema.statics.getCarePlan = function(petId, startDate, endDate) {
-  return this.find({
-    petId: petId,
-    date: { $gte: startDate, $lte: endDate }
-  }).sort({ date: 1 });
-};
-
-careEntrySchema.statics.getUpcomingCare = function(petId, days = 30) {
-  const now = new Date();
-  const futureDate = new Date(now.getTime() + (days * 24 * 60 * 60 * 1000));
-  
-  return this.find({
-    petId: petId,
-    nextDue: { $gte: now, $lte: futureDate }
-  }).sort({ nextDue: 1 });
-};
-
-const CareEntry = mongoose.model('CareEntry', careEntrySchema);
-
-module.exports = CareEntry;
+module.exports = mongoose.models.CareEntry || mongoose.model('CareEntry', careEntrySchema);
