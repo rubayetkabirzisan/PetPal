@@ -6,24 +6,23 @@ module.exports = function (api) {
       "nativewind/babel",
     ],
     plugins: [
-      ["module-resolver", {
-        root: ["./"],
-        alias: {
-          "@": ".",
-          "@components": "./components",
-          "@hooks": "./hooks",
-          "@screens": "./screens",
-          "@assets": "./assets",
-          "@lib": "./lib",
-          "@src": "./src"
+      [
+        "module-resolver",
+        {
+          root: ["./"],
+          alias: {
+            "@": ".",
+            "@components": "./components",
+            "@hooks": "./hooks",
+            "@screens": "./screens",
+            "@assets": "./assets",
+            "@lib": "./lib",
+            "@src": "./src",
+          },
+          extensions: [".js", ".jsx", ".ts", ".tsx"],
         },
-        extensions: [
-          ".js",
-          ".jsx",
-          ".ts",
-          ".tsx",
-        ]
-      }]
-    ]
+      ],
+      "react-native-reanimated/plugin", // MUST be last
+    ],
   };
 };
