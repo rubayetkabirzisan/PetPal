@@ -12,8 +12,9 @@ import {
     View
 } from 'react-native';
 import NavigationHeader from '../../components/NavigationHeader';
-// import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import axios from 'axios';
+import { API } from '../config/api';
 import { colors } from '../theme/theme';
 //haven't made any changes yet
 type RootStackParamList = {
@@ -46,10 +47,8 @@ const AdopterProfileScreen: React.FC = () => {
     bio: "",
   });
 
-  // const { user, logout } = useAuth();
-
-  // Load profile data on component mount
- const userId = "user_1756224008759"; // <-- put the UID from your database here
+  const { user } = useAuth();
+  const userId = user?.id ?? "";
 
   // Load profile data on component mount
   useEffect(() => {
@@ -59,7 +58,7 @@ const AdopterProfileScreen: React.FC = () => {
   const loadProfile = async (): Promise<void> => {
     try {
       setLoading(true);
-      const response = await axios.get(`http://10.103.132.206:5000/api/profile/view/${userId}`);
+      const response = await axios.get(API.profile.view(userId));
       const userProfile = response.data;
 
       setProfile({
@@ -91,7 +90,7 @@ const AdopterProfileScreen: React.FC = () => {
 
     try {
       setSaving(true);
-      await axios.put(`http://10.103.132.206:5000/api/profile/update/${userId}`, profile);
+      await axios.put(API.profile.update(userId), profile);
       setIsEditing(false);
       Alert.alert("Success", "Profile updated successfully!");
     } catch (error) {

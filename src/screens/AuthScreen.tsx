@@ -13,7 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native"
-// import { useAuth } from "../contexts/AuthContext"
+import { API } from "../config/api"
 import { colors, spacing } from "../theme/theme"
 
 interface AuthScreenProps {
@@ -22,7 +22,7 @@ interface AuthScreenProps {
 }
 
 
-const API_BASE = "http://10.103.132.206:5000/api/users";
+const API_BASE = API.signup.replace("/signup", "");
 export default function AuthScreen({ navigation, route }: AuthScreenProps) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")

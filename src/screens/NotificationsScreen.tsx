@@ -1,11 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import axios from 'axios'; // Add Axios for API calls
+import axios from 'axios';
 import React, { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import NavigationHeader from "../../components/NavigationHeader";
+import { API } from "../config/api";
 import { colors, spacing } from "../theme/theme";
-//havent updated yet
 interface Notification {
   id: string;
   title: string;
@@ -21,7 +21,7 @@ export default function NotificationsScreen() {
 
   useEffect(() => {
     // Fetch notifications from backend when component mounts
-    axios.get('http://10.103.132.206:5000/api/notifications/viewAll')
+    axios.get(API.notifications.all)
       .then((response) => {
         setNotifications(response.data);  // Update state with fetched notifications
       })
@@ -60,9 +60,8 @@ export default function NotificationsScreen() {
     }
   };
 
-  const markAsRead = () => {
-  const notificationId = '68ab442b74bbc731f0b09f6e';  // Hardcoded notification ID
-  axios.patch(`http://10.103.132.206:5000/api/notifications/markRead/${notificationId}`)
+  const markAsRead = (notificationId: string) => {
+    axios.patch(API.notifications.markRead(notificationId))
     .then((response) => {
       // Update the notification state locally
       setNotifications((prevNotifications) =>

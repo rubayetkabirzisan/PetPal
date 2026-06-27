@@ -6,6 +6,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Alert, Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { BarChart } from "react-native-chart-kit";
 import NavigationHeader from "../../components/NavigationHeader";
+import { API } from "../config/api";
 import { colors, spacing } from "../theme/theme";
 
 interface AnalyticsScreenProps {
@@ -34,7 +35,7 @@ export default function AnalyticsScreen({ navigation }: AnalyticsScreenProps) {
     const fetchAnalyticsData = async () => {
       try {
         const response = await axios.get(
-          "http://10.103.132.206:5000/api/analytics/view"
+          API.analytics
         );
 
         if (response.data && response.data.length > 0) {
