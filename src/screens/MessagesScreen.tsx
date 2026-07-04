@@ -3,7 +3,7 @@
 import { Feather } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import NavigationHeader from '../../components/NavigationHeader';
+import NavigationHeader from '../components/NavigationHeader';
 
 interface SimpleHeaderProps {
   title: string;
@@ -84,66 +84,60 @@ const headerStyles = StyleSheet.create({
   },
 });
 
-interface Message {
-  id: string;
-  shelterName: string;
+import { useAuth } from '../contexts/AuthContext';
+import { API } from '../config/api';
+import axios from 'axios';
+import { useFocusEffect } from '@react-navigation/native';
+
+interface Conversation {
+  id: string; // The OTHER user's ID
+  name: string;
+  userType: string;
   lastMessage: string;
   timestamp: string;
   unread: boolean;
-  shelterImage: string;
+  unreadCount: number;
+  petName?: string;
 }
-
-const mockMessages: Message[] = [
-  {
-    id: "1",
-    shelterName: "Happy Paws Shelter",
-    lastMessage: "Thank you for your interest in our available pets! We'd love to schedule a meet and greet.",
-    timestamp: "2 hours ago",
-    unread: true,
-    shelterImage: "https://images.unsplash.com/photo-1518176258769-f227c798150e?w=100&h=100&fit=crop",
-  },
-  {
-    id: "2",
-    shelterName: "Feline Friends Rescue",
-    lastMessage: "Your application has been approved! When would you like to visit our shelter?",
-    timestamp: "1 day ago",
-    unread: true,
-    shelterImage: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=100&h=100&fit=crop",
-  },
-  {
-    id: "3",
-    shelterName: "Austin Animal Center",
-    lastMessage: "We received your application and will review it within 2-3 business days.",
-    timestamp: "3 days ago",
-    unread: false,
-    shelterImage: "https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=100&h=100&fit=crop",
-  },
-];
 
 interface MessagesScreenProps {
   navigation: any;
 }
 
 export default function MessagesScreen({ navigation }: MessagesScreenProps) {
-  const [messages, setMessages] = useState<Message[]>(mockMessages);
+  const { user } = useAuth();
+  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredMessages = messages.filter(
-    (message) =>
-      message.shelterName.toLowerCase().includes(searchQuery.toLowerCase())
+  const fetchConversations = async () => {
+    if (!user?.id) return;
+    try {
+      const res = await axios.get(API.messages.conversations(user.id));
+      setConversations(res.data);
+    } catch (err) {
+      console.error("Error fetching conversations", err);
+    }
+  };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchConversations();
+      const interval = setInterval(fetchConversations, 5000); // Poll every 5s
+      return () => clearInterval(interval);
+    }, [user?.id])
   );
 
-  const unreadCount = messages.filter((m) => m.unread).length;
+  const filteredConversations = conversations.filter(
+    (conv) => (conv.name?.toLowerCase() || "").includes(searchQuery.toLowerCase())
+  );
 
-  const handleMessagePress = (messageId: string) => {
-    const selectedMessage = messages.find(message => message.id === messageId);
-    if (selectedMessage) {
-      navigation.navigate("Chat", { 
-        messageId,
-        shelterName: selectedMessage.shelterName,
-        shelterImage: selectedMessage.shelterImage
-      });
-    }
+  const handleMessagePress = (otherUserId: string, name: string, petId?: string, petName?: string) => {
+    navigation.navigate("Chat", { 
+      otherUserId,
+      shelterName: name,
+      petId,
+      petName
+    });
   };
 
   return (
@@ -172,35 +166,40 @@ export default function MessagesScreen({ navigation }: MessagesScreenProps) {
           contentContainerStyle={styles.messagesList}
           showsVerticalScrollIndicator={false}
         >
-          {filteredMessages.map((message) => (
+          {filteredConversations.map((message) => (
             <TouchableOpacity
-              key={message.id}
+              key={`${message.id}_${message.petId || 'general'}`}
               style={styles.messageCard}
-              onPress={() => handleMessagePress(message.id)}
+              onPress={() => handleMessagePress(message.id, message.name, message.petId, message.petName)}
               activeOpacity={0.8}
             >
               <View style={styles.messageContent}>
                 <View style={styles.avatarContainer}>
                   <Image
-                    source={{ uri: message.shelterImage }}
+                    source={{ uri: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=100&h=100&fit=crop" }}
                     style={styles.avatar}
-                    defaultSource={{ uri: '../../assets/images/favicon.png' }}
+                    defaultSource={require('../../assets/images/favicon.png')}
                   />
                 </View>
                 <View style={styles.messageDetails}>
                   <View style={styles.messageHeader}>
                     <Text style={styles.shelterNameTitle} numberOfLines={1}>
-                      {message.shelterName}
+                      {message.name}
                     </Text>
                     <View style={styles.timestampContainer}>
                       {message.unread && (
                         <View style={styles.newBadge}>
-                          <Text style={styles.newBadgeText}>New</Text>
+                          <Text style={styles.newBadgeText}>{message.unreadCount} New</Text>
                         </View>
                       )}
-                      <Text style={styles.timestamp}>{message.timestamp}</Text>
+                      <Text style={styles.timestamp}>{new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
                     </View>
                   </View>
+                  {message.petName && (
+                    <Text style={{fontSize: 12, color: '#FF7A47', marginBottom: 2, fontWeight: '500'}}>
+                      Inquiring about: {message.petName}
+                    </Text>
+                  )}
                   <Text style={styles.lastMessage} numberOfLines={2}>
                     {message.lastMessage}
                   </Text>
@@ -209,7 +208,7 @@ export default function MessagesScreen({ navigation }: MessagesScreenProps) {
             </TouchableOpacity>
           ))}
 
-          {filteredMessages.length === 0 && (
+          {filteredConversations.length === 0 && (
             <View style={styles.emptyContainer}>
               <Feather name="message-circle" size={64} color="#E8E8E8" />
               <Text style={styles.emptyTitle}>No messages found</Text>

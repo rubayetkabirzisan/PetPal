@@ -11,7 +11,7 @@ import {
     TouchableOpacity,
     View
 } from "react-native"
-import NavigationHeader from "../../components/NavigationHeader"
+import NavigationHeader from "../components/NavigationHeader"
 import { colors, spacing } from "../theme/theme"
 
 const { width } = Dimensions.get('window')

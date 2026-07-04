@@ -2,12 +2,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import axios from 'axios';
 import React, { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import NavigationHeader from "../../components/NavigationHeader";
+import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import NavigationHeader from "../components/NavigationHeader";
 import { API } from "../config/api";
 import { colors, spacing } from "../theme/theme";
 interface Notification {
-  id: string;
+  id?: string;
+  _id?: string;
   title: string;
   message: string;
   time: string;
@@ -66,14 +67,19 @@ export default function NotificationsScreen() {
       // Update the notification state locally
       setNotifications((prevNotifications) =>
         prevNotifications.map((notif) =>
-          notif.id === notificationId ? { ...notif, read: true } : notif
+          (notif._id || notif.id) === notificationId ? { ...notif, read: true } : notif
         )
       );
     })
     .catch((error) => {
       console.error('Error marking notification as read:', error);
     });
-};
+  };
+
+  const handleNotificationPress = (notification: Notification) => {
+    markAsRead((notification._id || notification.id) as string);
+    Alert.alert(notification.title, notification.message);
+  };
 
   return (
     <View style={styles.container}>
@@ -81,14 +87,14 @@ export default function NotificationsScreen() {
       <NavigationHeader title="Notifications" showBackButton={true} />
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {notifications.map((notification) => (
+        {notifications.map((notification, index) => (
           <TouchableOpacity
-            key={notification.id}
+            key={notification._id || notification.id || `notif-${index}`}
             style={[
               styles.notificationItem,
               !notification.read && styles.unreadNotification
             ]}
-            onPress={() => markAsRead(notification.id)}  // Mark as read on press
+            onPress={() => handleNotificationPress(notification)}
           >
             <View style={styles.notificationLeft}>
               <View style={[

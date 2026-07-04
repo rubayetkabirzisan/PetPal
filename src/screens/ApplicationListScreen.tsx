@@ -2,8 +2,8 @@
 
 import { Header } from '@components/header';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '@hooks/useAuth';
-import { ApplicationTimelineEvent, Pet } from '@lib/data';
+import { useAuth } from "../contexts/AuthContext";
+import { ApplicationTimelineEvent, Pet } from '../data/mockData';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@src/contexts/ThemeContext';
 import React, { useEffect, useState } from 'react';

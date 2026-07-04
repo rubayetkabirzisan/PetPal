@@ -4,7 +4,7 @@ import { Ionicons } from "@expo/vector-icons"
 import { StackNavigationProp } from "@react-navigation/stack"
 import { useState } from "react"
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
-import NavigationHeader from "../../components/NavigationHeader"
+import NavigationHeader from "../components/NavigationHeader"
 import { colors } from "../theme/theme"
 import EmergencyActions from "./EmergencyActions"
 

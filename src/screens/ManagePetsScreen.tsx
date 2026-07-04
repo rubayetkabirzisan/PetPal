@@ -3,8 +3,8 @@
 import { Ionicons } from "@expo/vector-icons"
 import { useState } from "react"
 import { Alert, Image, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
-import NavigationHeader from "../../components/NavigationHeader"
-import { getPets, type Pet } from "../lib/data"
+import NavigationHeader from "../components/NavigationHeader"
+import { getPets, type Pet } from "../data/mockData"
 import { colors } from "../theme/theme"
 
 interface ManagePetsScreenProps {
@@ -72,7 +72,7 @@ export default function ManagePetsScreen({ navigation }: ManagePetsScreenProps) 
   const renderPetCard = (pet: Pet) => (
     <View key={pet.id} style={styles.petCard}>
       <Image 
-        source={{ uri: pet.images[0] || "https://via.placeholder.com/80x80" }} 
+        source={{ uri: (pet.images || [])[0] || "https://via.placeholder.com/80x80" }} 
         style={styles.petImage} 
       />
       

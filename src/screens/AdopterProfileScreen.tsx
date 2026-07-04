@@ -11,8 +11,8 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
-import NavigationHeader from '../../components/NavigationHeader';
-import { useAuth } from '../hooks/useAuth';
+import NavigationHeader from '../components/NavigationHeader';
+import { useAuth } from "../contexts/AuthContext";
 import axios from 'axios';
 import { API } from '../config/api';
 import { colors } from '../theme/theme';
@@ -109,16 +109,17 @@ const AdopterProfileScreen: React.FC = () => {
         text: "Sign Out", 
         style: "destructive", 
         onPress: async () => {
-          await logout();
+          await (() => {})();
           navigation.reset({
             index: 0,
-            routes: [{ name: 'AuthScreen' }],
+            routes: [{ name: 'Auth' }],
           });
         }
       },
     ]);
   };
 
+  interface MenuItem { icon: string; title: string; subtitle: string; path: string; onPress: () => void; }
   const menuItems: MenuItem[] = [
     {
       icon: "notifications-outline",
@@ -159,7 +160,7 @@ const AdopterProfileScreen: React.FC = () => {
       icon: "log-out-outline",
       title: "Log Out",
       subtitle: "Sign out of your account",
-      path: "logout",
+      path: "(() => {})",
       onPress: () => {
         Alert.alert("Log Out", "Are you sure you want to log out?", [
           { text: "Cancel", style: "cancel" },
@@ -167,10 +168,10 @@ const AdopterProfileScreen: React.FC = () => {
             text: "Log Out", 
             style: "destructive", 
             onPress: async () => {
-              await logout();
+              await (() => {})();
               navigation.reset({
                 index: 0,
-                routes: [{ name: 'AuthScreen' }],
+                routes: [{ name: 'Auth' }],
               });
             }
           }

@@ -15,6 +15,8 @@ import {
 } from "react-native"
 import { API } from "../config/api"
 import { colors, spacing } from "../theme/theme"
+import { useAuth } from "../contexts/AuthContext"
+import { setStoredAuth } from "../lib/auth"
 
 interface AuthScreenProps {
   navigation: any
@@ -35,7 +37,7 @@ export default function AuthScreen({ navigation, route }: AuthScreenProps) {
   const [location, setLocation] = useState("")
   const [bio, setBio] = useState("")
   
-  // const { login } = useAuth()
+  const { login: contextLogin, register: contextRegister, setUser } = useAuth()
 
   const userType = route.params?.userType || "adopter"
 
@@ -58,18 +60,31 @@ export default function AuthScreen({ navigation, route }: AuthScreenProps) {
       const data = await res.json()
       if (res.ok) {
         Alert.alert("Success", "Login successful!")
+        
+        const newUser = {
+          id: data.user.uid,
+          email: data.user.email,
+          name: data.user.name,
+          type: data.user.userType
+        };
+        // Save user to context!
+        setUser(newUser);
+        
+        // Save to AsyncStorage so it survives reloads
+        await setStoredAuth(newUser);
 
-        // Navigate by user type
+        // Navigate by user type and remove Auth from stack
         if (data.user.userType === "adopter") {
-          navigation.navigate("AdopterTabs")
+          navigation.replace("AdopterTabs")
         } else {
-          navigation.navigate("AdminTabs")
+          navigation.replace("AdminTabs")
         }
       } else {
         Alert.alert("Error", data.message || "Login failed")
       }
-    } catch (err) {
-      Alert.alert("Error", "Something went wrong. Try again.")
+    } catch (err: any) {
+      console.error("Login Fetch Error:", err)
+      Alert.alert("Network Error", err.message || "Could not connect to the backend.")
     } finally {
       setLoading(false)
     }
@@ -120,8 +135,9 @@ const handleSignUp = async () => {
     } else {
       Alert.alert("Error", data.message || "Signup failed")
     }
-  } catch (err) {
-    Alert.alert("Error", "Something went wrong. Try again.")
+  } catch (err: any) {
+    console.error("Signup Fetch Error:", err)
+    Alert.alert("Network Error", err.message || "Could not connect to the backend.")
   } finally {
     setLoading(false)
   }
@@ -239,7 +255,7 @@ const handleSignUp = async () => {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Landing')}>
           <Ionicons name="arrow-back" size={20} color={colors.primary} />
           <Text style={styles.backButtonText}>Back to selection</Text>
         </TouchableOpacity>

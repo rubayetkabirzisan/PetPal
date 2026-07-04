@@ -2,11 +2,11 @@ import { Feather } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-import NavigationHeader from "../../components/NavigationHeader";
-import { useAuth } from "../../hooks/useAuth";
+import NavigationHeader from "../components/NavigationHeader";
+import { useAuth } from "../contexts/AuthContext";
 
 // Use the type directly from the imported module
-import { type AdoptionHistoryEntry } from "../../lib/adoption-history";
+import { type AdoptionHistoryEntry } from "../lib/adoption-history";
 
 interface AdoptionHistoryScreenProps {
   navigation: any;

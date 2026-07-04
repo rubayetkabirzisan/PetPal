@@ -2,10 +2,13 @@
 
 import { Ionicons } from "@expo/vector-icons"
 import { useEffect, useState } from "react"
-import { Dimensions, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
-import NavigationHeader from "../../components/NavigationHeader"
-import { getPets, type Pet } from "../lib/data"
+import { Dimensions, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, BackHandler, Alert } from "react-native"
+import NavigationHeader from "../components/NavigationHeader"
+
+import { useAuth } from "../contexts/AuthContext"
 import { colors, spacing } from "../theme/theme"
+import { useFocusEffect } from "@react-navigation/native"
+import React from "react"
 
 const { width } = Dimensions.get("window")
 
@@ -16,25 +19,122 @@ interface AdopterDashboardScreenProps {
 export default function AdopterDashboardScreen({ navigation }: AdopterDashboardScreenProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedFilter, setSelectedFilter] = useState("all")
-  const [pets, setPets] = useState<Pet[]>([])
+  const [pets, setPets] = useState<any[]>([])
   const [favorites, setFavorites] = useState<string[]>([])
+  const [messageCount, setMessageCount] = useState(0)
+  const [recentEntries, setRecentEntries] = useState<any[]>([])
+  const [reminderCount, setReminderCount] = useState(0)
+  const { user, logout } = useAuth()
+
+  // Handle hardware back press on Android
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        Alert.alert(
+          "Log Out",
+          "Are you sure you want to log out?",
+          [
+            { text: "Cancel", style: "cancel" },
+            { 
+              text: "Log Out", 
+              style: "destructive",
+              onPress: () => {
+                if (logout) logout();
+                // Reset navigation to Landing
+                navigation.reset({
+                  index: 0,
+                  routes: [{ name: 'Landing' }],
+                });
+              }
+            }
+          ]
+        );
+        return true; // Prevents default back behavior
+      };
+
+      const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+      return () => subscription.remove();
+    }, [navigation, logout])
+  );
 
   useEffect(() => {
-    const allPets = getPets()
-    setPets(allPets.filter((pet) => pet.status === "Available"))
+    import('axios').then(axios => {
+      import('../config/api').then(({ API }) => {
+        axios.default.get(API.pets.all)
+          .then(res => {
+            const mappedPets = res.data.map((p: any) => ({ ...p, id: p._id || p.id }));
+            
+            // Filter out duplicate names
+            const uniquePets: any[] = [];
+            const seenNames = new Set<string>();
+            const availablePets = mappedPets.filter((pet: any) => pet.status === "Available" || pet.status === "available");
+            
+            for (const pet of availablePets) {
+              const nameLower = pet.name?.toLowerCase() || "";
+              if (!seenNames.has(nameLower)) {
+                seenNames.add(nameLower);
+                uniquePets.push(pet);
+              }
+            }
+            
+            setPets(uniquePets);
+          })
+          .catch(err => console.error("Error fetching dashboard pets:", err));
+      });
+    });
   }, [])
 
+  useEffect(() => {
+    if (user?.id) {
+      import('axios').then(axios => {
+        import('../config/api').then(({ API }) => {
+          axios.default.get(API.messages.conversations(user.id))
+            .then(res => {
+              // Count unread conversations, or total conversations if none unread
+              const unread = res.data.filter((c: any) => c.unread).length;
+              setMessageCount(unread > 0 ? unread : res.data.length);
+            })
+            .catch(err => console.error("Error fetching dashboard message count:", err));
+            
+            axios.default.get(API.careEntries.all)
+            .then(res => {
+              // Map _id to id and take top 2
+              const entries = res.data
+                .map((e: any) => ({ ...e, id: e._id || e.id }))
+                .slice(0, 2);
+              setRecentEntries(entries);
+            })
+            .catch(err => console.error("Error fetching dashboard care entries:", err));
+            
+          axios.default.get(API.reminders.byUser(user.id))
+            .then(res => {
+              setReminderCount(res.data.length);
+            })
+            .catch(err => console.error("Error fetching dashboard reminders count:", err));
+        });
+      });
+    }
+  }, [user?.id])
+
   const filteredPets = pets.filter((pet) => {
+    const searchLower = searchQuery.toLowerCase();
+    const nameStr = typeof pet.name === 'string' ? pet.name.toLowerCase() : '';
+    const breedStr = typeof pet.breed === 'string' ? pet.breed.toLowerCase() : '';
+    
+    // location might be an object in MongoDB, safely handle it
+    const locationStr = typeof pet.location === 'string' 
+      ? pet.location.toLowerCase() 
+      : (pet.location?.city ? pet.location.city.toLowerCase() : '');
+
     const matchesSearch =
-      pet.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      pet.breed.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      pet.location.toLowerCase().includes(searchQuery.toLowerCase())
+      nameStr.includes(searchLower) ||
+      breedStr.includes(searchLower) ||
+      locationStr.includes(searchLower);
 
     let matchesFilter = true
-    if (selectedFilter === "dog") matchesFilter = pet.type.toLowerCase() === "dog"
-    else if (selectedFilter === "cat") matchesFilter = pet.type.toLowerCase() === "cat"
-    else if (selectedFilter === "small") matchesFilter = pet.size === "Small"
-    else if (selectedFilter === "young") matchesFilter = pet.age.includes("1") || pet.age.includes("2")
+    const typeStr = typeof pet.type === 'string' ? pet.type.toLowerCase() : '';
+    if (selectedFilter === "dog") matchesFilter = typeStr === "dog"
+    else if (selectedFilter === "cat") matchesFilter = typeStr === "cat"
 
     return matchesSearch && matchesFilter
   })
@@ -63,7 +163,7 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
           onPress={() => navigation.getParent()?.navigate("Messages")}
         >
           <Ionicons name="chatbubble-outline" size={24} color={colors.primary} />
-          <Text style={styles.quickActionNumber}>5</Text>
+          <Text style={styles.quickActionNumber}>{messageCount}</Text>
           <Text style={styles.quickActionLabel}>Messages</Text>
         </TouchableOpacity>
       </View>
@@ -85,7 +185,7 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
           onPress={() => navigation.navigate("Reminders")}
         >
           <Ionicons name="book-outline" size={24} color={colors.primary} />
-          <Text style={styles.quickActionNumber}>4</Text>
+          <Text style={styles.quickActionNumber}>{reminderCount}</Text>
           <Text style={styles.quickActionLabel}>Reminders</Text>
         </TouchableOpacity>
       </View>
@@ -93,25 +193,6 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
   )
   
   const renderCareJournalSection = () => {
-    const recentEntries = [
-      {
-        id: "ce-001",
-        petName: "Buddy",
-        type: "medical",
-        title: "Vaccination",
-        description: "Rabies and distemper boosters",
-        date: "2025-06-05",
-      },
-      {
-        id: "ce-002",
-        petName: "Max",
-        type: "grooming",
-        title: "Nail Trimming",
-        description: "Regular nail maintenance",
-        date: "2025-06-20",
-      }
-    ];
-    
     const getTypeIcon = (type: string) => {
       switch (type) {
         case "medical": return "medkit";
@@ -274,7 +355,7 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
       </View>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtersContainer}>
-        {["all", "dog", "cat", "small", "young"].map((filter) => (
+        {["all", "dog", "cat"].map((filter) => (
           <TouchableOpacity
             key={filter}
             style={[styles.filterButton, selectedFilter === filter && styles.filterButtonActive]}
@@ -295,7 +376,7 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
       style={styles.petCard}
       onPress={() => navigation.getParent()?.navigate("PetProfile", { petId: pet.id })}
     >
-      <Image source={{ uri: pet.images[0] || "https://via.placeholder.com/120x120" }} style={styles.petImage} />
+      <Image source={{ uri: (pet.images || [])[0] || "https://via.placeholder.com/120x120" }} style={styles.petImage} />
       <View style={styles.petInfo}>
         <View style={styles.petHeader}>
           <View style={styles.petNameContainer}>

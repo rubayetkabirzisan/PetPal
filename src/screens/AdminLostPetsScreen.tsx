@@ -2,7 +2,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useMemo, useState } from "react";
 import { Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import NavigationHeader from "../../components/NavigationHeader";
+import NavigationHeader from "../components/NavigationHeader";
 import { API } from "../config/api";
 import { colors } from "../theme/theme";
 
@@ -82,7 +82,7 @@ export default function AdminLostPetsScreen({ navigation }: AdminLostPetsScreenP
         },
         body: JSON.stringify({ status: newStatus }),
       });
-      const updatedPet = await response.json();
+      const updatedPet: any = await response.json();
       setLostPets((prevPets) =>
         prevPets.map((pet) => (pet.id === petId ? updatedPet : pet))
       );
@@ -101,7 +101,7 @@ export default function AdminLostPetsScreen({ navigation }: AdminLostPetsScreenP
       const response = await fetch(API.lostPets.delete(petId), {
         method: "DELETE",
       });
-      const deletedPet = await response.json();
+      const deletedPet: any = await response.json();
       setLostPets((prevPets) => prevPets.filter((pet) => pet.id !== petId));
       Alert.alert("Success", `${deletedPet.name} has been deleted.`);
     } catch (error) {

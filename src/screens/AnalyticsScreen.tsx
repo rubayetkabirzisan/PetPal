@@ -5,7 +5,7 @@ import * as Sharing from "expo-sharing";
 import React, { useEffect, useMemo, useState } from "react";
 import { Alert, Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { BarChart } from "react-native-chart-kit";
-import NavigationHeader from "../../components/NavigationHeader";
+import NavigationHeader from "../components/NavigationHeader";
 import { API } from "../config/api";
 import { colors, spacing } from "../theme/theme";
 
@@ -74,9 +74,9 @@ export default function AnalyticsScreen({ navigation }: AnalyticsScreenProps) {
   const handleDownload = async () => {
     try {
       const csv = generateCSV();
-      const fileUri = FileSystem.documentDirectory + "petpal-analytics-report.csv";
+      const fileUri = (FileSystem as any).documentDirectory + "petpal-analytics-report.csv";
       await FileSystem.writeAsStringAsync(fileUri, csv, {
-        encoding: FileSystem.EncodingType.UTF8,
+        encoding: (FileSystem as any).EncodingType.UTF8,
       });
       Alert.alert("Download Complete", "Monthly report saved to your device.\n\nLocation: " + fileUri);
     } catch (e) {
@@ -88,9 +88,9 @@ export default function AnalyticsScreen({ navigation }: AnalyticsScreenProps) {
   const handleShare = async () => {
     try {
       const csv = generateCSV();
-      const fileUri = FileSystem.cacheDirectory + "petpal-analytics-report.csv";
+      const fileUri = (FileSystem as any).cacheDirectory + "petpal-analytics-report.csv";
       await FileSystem.writeAsStringAsync(fileUri, csv, {
-        encoding: FileSystem.EncodingType.UTF8,
+        encoding: (FileSystem as any).EncodingType.UTF8,
       });
       if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(fileUri, {
@@ -165,7 +165,7 @@ export default function AnalyticsScreen({ navigation }: AnalyticsScreenProps) {
             {/* Bar Chart */}
             <BarChart
               data={{
-                labels: chartData.map(item => item.label), // Dynamic X-axis labels (e.g., months)
+                labels: chartData.map(item => item.label), // Dynamic X-axis labels (e.g..map(String), months)
                 datasets: [
                   {
                     data: chartData.map(item => item.value), // Dynamic Y-axis values (e.g., adoption counts)

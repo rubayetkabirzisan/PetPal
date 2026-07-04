@@ -3,10 +3,11 @@
 import { Ionicons } from "@expo/vector-icons"
 import { useEffect, useState } from "react"
 import { Alert, Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
-import NavigationHeader from "../../components/NavigationHeader"
+import NavigationHeader from "../components/NavigationHeader"
 import { useAuth } from "../contexts/AuthContext"
-import { getPetById, type Pet } from "../lib/data"
 import { colors } from "../theme/theme"
+import axios from "axios"
+import { API } from "../config/api"
 
 const { width } = Dimensions.get("window")
 
@@ -18,7 +19,7 @@ interface PetProfileScreenProps {
 export default function PetProfileScreen({ navigation, route }: PetProfileScreenProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [isFavorited, setIsFavorited] = useState(false)
-  const [pet, setPet] = useState<Pet | null>(null)
+  const [pet, setPet] = useState<any>(null)
 
   const { user } = useAuth()
   const petId = route.params?.petId
@@ -28,10 +29,15 @@ export default function PetProfileScreen({ navigation, route }: PetProfileScreen
 
   useEffect(() => {
     if (petId) {
-      const petData = getPetById(petId)
-      if (petData) {
-        setPet(petData)
-      }
+      axios.get(API.pets.byId(petId))
+        .then(res => {
+          const p = res.data;
+          setPet({ ...p, id: p._id || p.id });
+        })
+        .catch(err => {
+          console.error("Error fetching pet details:", err);
+          Alert.alert("Error", "Could not load pet details.");
+        });
     }
   }, [petId])
 
@@ -49,7 +55,7 @@ export default function PetProfileScreen({ navigation, route }: PetProfileScreen
 
   const handleContactShelter = () => {
     if (pet?.shelter?.contact) {
-      Alert.alert("Contact Shelter", `Call ${pet.shelter.name}?`, [
+      Alert.alert("Contact Shelter", `Call ${(pet.shelter || { name: "", address: "", phone: "", email: "", website: "", logo: "" }).name}?`, [
         { text: "Cancel", style: "cancel" },
         { text: "Call", onPress: () => console.log("Call shelter") },
       ])
@@ -60,7 +66,9 @@ export default function PetProfileScreen({ navigation, route }: PetProfileScreen
     if (!pet) return
     
     navigation.navigate("Chat", { 
-      messageId: pet.id,
+      otherUserId: pet.addedByUserId || pet.shelter?.id || "admin-demo-123",
+      shelterName: pet.shelter?.name || pet.shelterName || "Shelter",
+      shelterImage: pet.images?.[0],
       petId: pet.id,
       petName: pet.name
     })
@@ -195,7 +203,7 @@ export default function PetProfileScreen({ navigation, route }: PetProfileScreen
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Personality</Text>
           <View style={styles.personalityContainer}>
-            {pet.personality.map((trait, index) => (
+            {(pet.personality || []).map((trait, index) => (
               <View key={index} style={styles.personalityTag}>
                 <Ionicons name="star-outline" size={12} color={colors.primary} />
                 <Text style={styles.personalityText}>{trait}</Text>
@@ -229,10 +237,10 @@ export default function PetProfileScreen({ navigation, route }: PetProfileScreen
           </View>
 
           {/* Health Records */}
-          {pet.healthRecords.length > 0 && (
+          {(pet.healthRecords || []).length > 0 && (
             <View style={styles.healthRecords}>
               <Text style={styles.healthRecordsTitle}>Recent Health Records</Text>
-              {pet.healthRecords.map((record, index) => (
+              {(pet.healthRecords || []).map((record, index) => (
                 <View key={index} style={styles.healthRecord}>
                   <Ionicons name="calendar-outline" size={16} color={colors.primary} />
                   <View style={styles.healthRecordInfo}>
@@ -251,18 +259,18 @@ export default function PetProfileScreen({ navigation, route }: PetProfileScreen
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Shelter Information</Text>
             <View style={styles.shelterCard}>
-              <Text style={styles.shelterName}>{pet.shelter.name}</Text>
+              <Text style={styles.shelterName}>{(pet.shelter || { name: "", address: "", phone: "", email: "", website: "", logo: "" }).name}</Text>
               <View style={styles.contactItem}>
                 <Ionicons name="call-outline" size={16} color={colors.primary} />
-                <Text style={styles.contactText}>{pet.shelter.contact}</Text>
+                <Text style={styles.contactText}>{(pet.shelter || { name: "", address: "", phone: "", email: "", website: "", logo: "" }).contact}</Text>
               </View>
               <View style={styles.contactItem}>
                 <Ionicons name="mail-outline" size={16} color={colors.primary} />
-                <Text style={styles.contactText}>{pet.shelter.email}</Text>
+                <Text style={styles.contactText}>{(pet.shelter || { name: "", address: "", phone: "", email: "", website: "", logo: "" }).email}</Text>
               </View>
               <View style={styles.contactItem}>
                 <Ionicons name="location-outline" size={16} color={colors.primary} />
-                <Text style={styles.contactText}>{pet.shelter.address}</Text>
+                <Text style={styles.contactText}>{(pet.shelter || { name: "", address: "", phone: "", email: "", website: "", logo: "" }).address}</Text>
               </View>
               
               {/* Contact Button */}

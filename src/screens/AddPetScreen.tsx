@@ -14,8 +14,8 @@ import {
     TouchableOpacity,
     View
 } from "react-native"
-import NavigationHeader from "../../components/NavigationHeader"
-import { addPet } from "../../lib/data"
+import NavigationHeader from "../components/NavigationHeader"
+import { addPet } from "../data/mockData"
 import { useAuth } from "../contexts/AuthContext"
 import { colors, spacing } from "../theme/theme"
 

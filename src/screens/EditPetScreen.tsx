@@ -19,8 +19,8 @@ import {
     View,
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
-import NavigationHeader from "../../components/NavigationHeader";
-import { catBreeds, dogBreeds, getPetById, petTypes, type Pet } from "../lib/data";
+import NavigationHeader from "../components/NavigationHeader";
+import { catBreeds, dogBreeds, getPetById, petTypes, type Pet } from "../data/mockData";
 import { borderRadius, colors, spacing } from "../theme/theme";
 
 // Types
@@ -48,7 +48,7 @@ const useFormValidation = () => {
     if (!form.name?.trim()) errors.name = "Name is required";
     if (!form.type) errors.type = "Type is required";
     if (!form.breed?.trim()) errors.breed = "Breed is required";
-    if (!form.age?.trim()) errors.age = "Age is required";
+    if (!String(form.age)?.trim()) errors.age = "Age is required";
     if (!form.gender) errors.gender = "Gender is required";
     if (!form.size) errors.size = "Size is required";
     if (!form.status) errors.status = "Status is required";
@@ -242,7 +242,7 @@ const MapPicker: React.FC<{
         <View style={styles.mapModalContent}>
           <Text style={styles.mapModalTitle}>Pick Location on Map</Text>
           <MapView
-            style={styles.map}
+            style={styles.map as any}
             initialRegion={mapRegion}
             onPress={handleMapPress}
           >

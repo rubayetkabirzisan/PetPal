@@ -12,15 +12,18 @@
  * Production:
  *   Replace with your deployed backend URL.
  */
-export const API_BASE_URL = "http://192.168.0.101:5000";
-// Convenience endpoint builders — avoids string concatenation in screens
+import { Platform } from 'react-native';
+export const API_BASE_URL = 'http://192.168.0.101:5000';
 export const API = {
   // Auth
   signup:  `${API_BASE_URL}/api/users/signup`,
   login:   `${API_BASE_URL}/api/users/login`,
 
   // Pets
-  pets:    `${API_BASE_URL}/api/pets`,
+  pets: {
+    all:    `${API_BASE_URL}/api/pets/view`,
+    byId:   (id: string) => `${API_BASE_URL}/api/pets/${id}`,
+  },
 
   // Reminders
   reminders: {
@@ -43,6 +46,13 @@ export const API = {
   notifications: {
     all:      `${API_BASE_URL}/api/notifications/viewAll`,
     markRead: (id: string) => `${API_BASE_URL}/api/notifications/markRead/${id}`,
+  },
+
+  // Messages
+  messages: {
+    conversations: (userId: string) => `${API_BASE_URL}/api/messages/conversations/${userId}`,
+    history:       (userId: string, otherUserId: string, petId: string) => `${API_BASE_URL}/api/messages/history/${userId}/${otherUserId}/${petId}`,
+    send:          `${API_BASE_URL}/api/messages/send`,
   },
 
   // Lost pets

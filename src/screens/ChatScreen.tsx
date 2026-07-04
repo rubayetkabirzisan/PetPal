@@ -12,7 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native"
-import NavigationHeader from "../../components/NavigationHeader"
+import NavigationHeader from "../components/NavigationHeader"
 import { colors } from "../theme/theme"
 
 interface Message {
@@ -29,83 +29,80 @@ interface ChatScreenProps {
   isAdminView?: boolean
 }
 
+import axios from "axios";
+import { API } from "../config/api";
+import { useAuth } from "../contexts/AuthContext";
+import { useFocusEffect } from "@react-navigation/native";
+import React from "react";
+
 export default function ChatScreen({ navigation, route }: ChatScreenProps) {
+  const { user } = useAuth();
+  
   // Get the params from route if available
-  const messageId = route?.params?.messageId;
-  const shelterName = route?.params?.shelterName || "Shelter Chat";
+  const otherUserId = route?.params?.otherUserId || route?.params?.shelterId;
+  const shelterName = route?.params?.shelterName || route?.params?.otherUserName || "Shelter Chat";
   const shelterImage = route?.params?.shelterImage;
+  const petId = route?.params?.petId;
+  const petName = route?.params?.petName;
   
   // Reference to the ScrollView for auto-scrolling
   const scrollViewRef = useRef<ScrollView>(null);
-  
-  // You can use messageId to fetch specific chat messages
-  // For now, we'll use the mock data
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      text: "Hi! I'm interested in learning about pets available for adoption at your shelter. Do you have any medium-sized dogs that are good with children?",
-      sender: "user",
-      timestamp: "10:30 AM",
-    },
-    {
-      id: "2",
-      text: "Hello! Thank you for your interest in our shelter. We currently have several medium-sized dogs that are great with children. We have a 3-year-old Lab mix and a 2-year-old Beagle who are both very friendly and well-socialized.",
-      sender: "shelter",
-      timestamp: "10:35 AM",
-      senderName: `Sarah - ${shelterName}`,
-    },
-    {
-      id: "3",
-      text: "That sounds perfect! I have a 5-year-old daughter and we're looking for an active companion. What's the next step to visit the shelter?",
-      sender: "user",
-      timestamp: "10:37 AM",
-    },
-    {
-      id: "4",
-      text: "Wonderful! You can schedule a visit to our shelter through our online calendar. We're open daily from 10AM to 5PM. Would you like me to send you the link to schedule a visit?",
-      sender: "shelter",
-      timestamp: "10:40 AM",
-      senderName: "Sarah - Happy Paws Shelter",
-    },
-  ])
-
+  const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("")
+
+  const fetchHistory = async () => {
+    if (!user?.id || !otherUserId) return;
+    try {
+      const res = await axios.get(API.messages.history(user.id, otherUserId, petId || 'general'));
+      
+      const formatted = res.data.map((m: any) => ({
+        id: m._id,
+        text: m.text,
+        sender: m.senderId === user.id ? "user" : "shelter",
+        timestamp: new Date(m.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        senderName: m.senderName
+      }));
+      
+      setMessages(formatted);
+    } catch (err) {
+      console.error("Fetch history error:", err);
+    }
+  };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchHistory();
+      const interval = setInterval(fetchHistory, 3000); // short-poll every 3s
+      return () => clearInterval(interval);
+    }, [user?.id, otherUserId])
+  );
   
   // Scroll to bottom when messages change
   useEffect(() => {
     setTimeout(() => {
       scrollViewRef.current?.scrollToEnd({ animated: true });
     }, 100); // Small delay to ensure rendering is complete
-  }, [messages]);
+  }, [messages.length]);
 
-  const sendMessage = () => {
-    if (newMessage.trim()) {
-      const message: Message = {
-        id: Date.now().toString(),
-        text: newMessage.trim(),
-        sender: "user",
-        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+  const sendMessage = async () => {
+    if (newMessage.trim() && user?.id && otherUserId) {
+      const text = newMessage.trim();
+      setNewMessage("");
+
+      try {
+        await axios.post(API.messages.send, {
+          senderId: user.id,
+          receiverId: otherUserId,
+          text: text,
+          senderName: user.name,
+          petId: petId,
+          petName: petName
+        });
+        
+        fetchHistory(); // instantly fetch to show the message
+      } catch (err) {
+        console.error("Send message error:", err);
       }
-
-      setMessages((prev) => [...prev, message])
-      setNewMessage("")
-      
-      // Scroll to the bottom after sending
-      scrollViewRef.current?.scrollToEnd({ animated: true })
-
-      // Simulate shelter response
-      setTimeout(() => {
-        const response: Message = {
-          id: (Date.now() + 1).toString(),
-          text: "Thank you for your message! I'll get back to you shortly.",
-          sender: "shelter",
-          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-          senderName: "Sarah - Happy Paws Shelter",
-        }
-        setMessages((prev) => [...prev, response])
-        // Scroll to the bottom after receiving shelter response
-        scrollViewRef.current?.scrollToEnd({ animated: true })
-      }, 1000)
     }
   }
 
@@ -238,6 +235,13 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
         showBackButton={true}
         backButtonAction={() => navigation?.goBack()}
       />
+      
+      {petName && (
+        <View style={styles.contextBanner}>
+          <Ionicons name="paw" size={16} color={colors.primary} />
+          <Text style={styles.contextBannerText}>Inquiring about: <Text style={{fontWeight: 'bold'}}>{petName}</Text></Text>
+        </View>
+      )}
       
       <KeyboardAvoidingView style={styles.keyboardContainer} behavior={Platform.OS === "ios" ? "padding" : "height"}>
         {/* Quick Status Bar */}
@@ -427,13 +431,27 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   inputContainer: {
-    backgroundColor: "white",
+    backgroundColor: "#F9F9F9",
     flexDirection: "row",
     alignItems: "flex-end",
     padding: 16,
     borderTopWidth: 1,
     borderTopColor: colors.border,
     gap: 12,
+  },
+  contextBanner: {
+    backgroundColor: "#E8F4FD",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#B9DCF4",
+  },
+  contextBannerText: {
+    marginLeft: 6,
+    color: colors.primary,
+    fontSize: 14,
   },
   inputWrapper: {
     flex: 1,

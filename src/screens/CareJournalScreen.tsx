@@ -11,11 +11,13 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
-    View
+    View,
+    Platform
 } from 'react-native';
-import NavigationHeader from '../../components/NavigationHeader';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import NavigationHeader from '../components/NavigationHeader';
 import { API } from '../config/api';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from "../contexts/AuthContext";
 
 // --- Types ---
 interface CareEntry {
@@ -50,6 +52,7 @@ export default function CareJournalScreen({ route, navigation }: CareJournalScre
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [showTypeModal, setShowTypeModal] = useState(false);
   const [showPetModal, setShowPetModal] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [formData, setFormData] = useState({
     petId: "",
     petName: "",
@@ -89,12 +92,17 @@ export default function CareJournalScreen({ route, navigation }: CareJournalScre
       // Get care entries for this user
       const careEntriesResponse = await fetch(API.careEntries.all);
       const careEntries = await careEntriesResponse.json();
-      setEntries(careEntries);
+      
+      // Map MongoDB _id to id to fix the unique key warning
+      const mappedEntries = careEntries.map((e: any) => ({ ...e, id: e._id || e.id }));
+      setEntries(mappedEntries);
 
       // Get adopted pets for this user
-      const petsResponse = await fetch(`${API.pets}/view`);
+      const petsResponse = await fetch(API.pets.all);
       const pets = await petsResponse.json();
-      setAdoptedPets(pets);
+      
+      const mappedPets = pets.map((p: any) => ({ ...p, id: p._id || p.id }));
+      setAdoptedPets(mappedPets);
     } catch (error) {
       console.error('Failed to load data:', error);
       Alert.alert('Error', 'Failed to load care journal data.');
@@ -150,13 +158,24 @@ export default function CareJournalScreen({ route, navigation }: CareJournalScre
     try {
       const response = await fetch(API.careEntries.byId(entryId));
       const entry = await response.json();
+      
+      // Handle the ISO date string coming from DB
+      let safeDate = new Date().toISOString().split("T")[0];
+      if (entry.date) {
+         try {
+           safeDate = new Date(entry.date).toISOString().split("T")[0];
+         } catch(e) {
+           safeDate = String(entry.date).split("T")[0];
+         }
+      }
+      
       setFormData({
         petId: entry.petId,
         petName: entry.petName,
         type: entry.type,
         title: entry.title,
         description: entry.description,
-        date: entry.date,
+        date: safeDate,
       });
       setEditingEntry(entryId);
       setShowAddForm(true);
@@ -344,14 +363,26 @@ export default function CareJournalScreen({ route, navigation }: CareJournalScre
                   <Text style={styles.formLabel}>Date</Text>
                   <TouchableOpacity
                     style={styles.formSelect}
-                    onPress={() => {
-                      // Implement date picker here if needed
-                    }}
+                    onPress={() => setShowDatePicker(true)}
                     accessibilityLabel="Select Date"
                   >
                     <Text style={styles.formSelectText}>{formData.date}</Text>
                     <Ionicons name="calendar" size={16} color="#8B4513" />
                   </TouchableOpacity>
+                  
+                  {showDatePicker && (
+                    <DateTimePicker
+                      value={new Date(formData.date)}
+                      mode="date"
+                      display="default"
+                      onChange={(event, selectedDate) => {
+                        setShowDatePicker(Platform.OS === 'ios');
+                        if (selectedDate) {
+                          setFormData({ ...formData, date: selectedDate.toISOString().split("T")[0] });
+                        }
+                      }}
+                    />
+                  )}
                 </View>
 
                 {/* Form Buttons */}
@@ -489,7 +520,7 @@ export default function CareJournalScreen({ route, navigation }: CareJournalScre
               </TouchableOpacity>
             </View>
           ) : (
-            entries.map((entry) => (
+            entries.map((entry: any) => (
               <View key={entry.id} style={styles.entryCard}>
                 <View style={styles.entryCardHeader}>
                   <View style={styles.entryTypeContainer}>

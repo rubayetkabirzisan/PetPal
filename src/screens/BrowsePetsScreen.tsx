@@ -2,10 +2,12 @@
 
 import { Ionicons } from "@expo/vector-icons"
 import React, { useEffect, useState } from "react"
-import { FlatList, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
-import NavigationHeader from "../../components/NavigationHeader"
-import { getPets, type Pet } from "../lib/data"
+import { FlatList, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, ActivityIndicator } from "react-native"
+import NavigationHeader from "../components/NavigationHeader"
 import { colors, spacing } from "../theme/theme"
+import axios from "axios"
+import { API } from "../config/api"
+import { useFocusEffect } from "@react-navigation/native"
 
 interface BrowsePetsScreenProps {
   navigation: any
@@ -14,37 +16,55 @@ interface BrowsePetsScreenProps {
 export default function BrowsePetsScreen({ navigation }: BrowsePetsScreenProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedFilter, setSelectedFilter] = useState("all")
-  const [pets, setPets] = useState<Pet[]>([])
+  const [pets, setPets] = useState<any[]>([])
   const [favorites, setFavorites] = useState<string[]>([])
+  const [loading, setLoading] = useState(true)
   
-  // Debug logging
-  useEffect(() => {
-    console.log("BrowsePetsScreen initialized");
-    
-    // Verify navigation prop
-    if (navigation) {
-      console.log("Navigation prop is available");
-    } else {
-      console.log("WARNING: Navigation prop is not available");
+  const fetchPets = async () => {
+    try {
+      const res = await axios.get(API.pets.all)
+      // Map MongoDB _id to id if necessary, and ensure status is filtered
+      const mappedPets = res.data.map((p: any) => ({ ...p, id: p._id || p.id }))
+      const availablePets = mappedPets.filter((pet: any) => pet.status === "Available" || pet.status === "available")
+      
+      // Filter out duplicate names
+      const uniquePets: any[] = [];
+      const seenNames = new Set<string>();
+      for (const pet of availablePets) {
+        const nameLower = pet.name?.toLowerCase() || "";
+        if (!seenNames.has(nameLower)) {
+          seenNames.add(nameLower);
+          uniquePets.push(pet);
+        }
+      }
+      
+      setPets(uniquePets);
+    } catch (err) {
+      console.error("Error fetching pets", err)
+    } finally {
+      setLoading(false)
     }
-  }, [])
+  }
 
-  useEffect(() => {
-    const allPets = getPets()
-    setPets(allPets.filter((pet) => pet.status === "Available"))
-  }, [])
+  useFocusEffect(
+    React.useCallback(() => {
+      setLoading(true)
+      fetchPets()
+    }, [])
+  )
 
   const filteredPets = pets.filter((pet) => {
+    const locationStr = typeof pet.location === 'string' ? pet.location : (pet.location?.city || pet.location?.state || "");
     const matchesSearch =
-      pet.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      pet.breed.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      pet.location.toLowerCase().includes(searchQuery.toLowerCase())
+      (pet.name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+      (pet.breed?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+      (locationStr.toLowerCase()).includes(searchQuery.toLowerCase())
 
     let matchesFilter = true
-    if (selectedFilter === "dog") matchesFilter = pet.type.toLowerCase() === "dog"
-    else if (selectedFilter === "cat") matchesFilter = pet.type.toLowerCase() === "cat"
-    else if (selectedFilter === "small") matchesFilter = pet.size === "Small"
-    else if (selectedFilter === "young") matchesFilter = pet.age.includes("1") || pet.age.includes("2")
+    if (selectedFilter === "dog") matchesFilter = (pet.type || pet.species || "").toLowerCase() === "dog"
+    else if (selectedFilter === "cat") matchesFilter = (pet.type || pet.species || "").toLowerCase() === "cat"
+    else if (selectedFilter === "small") matchesFilter = (pet.size || "").toLowerCase() === "small"
+    else if (selectedFilter === "young") matchesFilter = String(pet.age || "").includes("1") || String(pet.age || "").includes("2")
 
     return matchesSearch && matchesFilter
   })
@@ -66,7 +86,7 @@ export default function BrowsePetsScreen({ navigation }: BrowsePetsScreenProps) 
     }
   };
 
-  const renderPetCard = ({ item: pet, index }: { item: Pet; index: number }) => {
+  const renderPetCard = ({ item: pet, index }: { item: any; index: number }) => {
     return (
       <TouchableOpacity
         key={`${pet.id}-${index}`}
@@ -84,7 +104,7 @@ export default function BrowsePetsScreen({ navigation }: BrowsePetsScreenProps) 
         }}
       >
         <Image 
-          source={{ uri: pet.images[0] || "https://via.placeholder.com/200x150" }} 
+          source={{ uri: (pet.images || [])[0] || "https://via.placeholder.com/200x150" }} 
           style={styles.petImage}
         />
         <View style={styles.petInfo}>
@@ -110,7 +130,9 @@ export default function BrowsePetsScreen({ navigation }: BrowsePetsScreenProps) 
 
           <View style={styles.petLocation}>
             <Ionicons name="location-outline" size={14} color={colors.text} />
-            <Text style={styles.petLocationText}>{pet.distance}</Text>
+            <Text style={styles.petLocationText}>
+              {pet.distance || pet.location?.city || (typeof pet.location === 'string' ? pet.location : "Unknown location")}
+            </Text>
           </View>
 
           <View style={styles.petBadges}>
@@ -148,7 +170,7 @@ export default function BrowsePetsScreen({ navigation }: BrowsePetsScreenProps) 
         </View>
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtersContainer}>
-          {["all", "dog", "cat", "small", "young"].map((filter) => (
+          {["all", "dog", "cat"].map((filter) => (
             <TouchableOpacity
               key={filter}
               style={[styles.filterButton, selectedFilter === filter && styles.filterButtonActive]}
@@ -162,21 +184,28 @@ export default function BrowsePetsScreen({ navigation }: BrowsePetsScreenProps) 
         </ScrollView>
       </View>
 
-      <FlatList
-        data={filteredPets}
-        renderItem={renderPetCard}
-        keyExtractor={(item, index) => `${item.id}-${index}`}
-        numColumns={2}
-        contentContainerStyle={styles.petsContainer}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <View style={styles.emptyState}>
-            <Ionicons name="heart-outline" size={64} color={colors.border} />
-            <Text style={styles.emptyStateTitle}>No pets found</Text>
-            <Text style={styles.emptyStateText}>Try adjusting your search or filters</Text>
-          </View>
-        }
-      />
+      {loading ? (
+        <View style={styles.emptyState}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={styles.emptyStateText}>Loading pets...</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={filteredPets}
+          renderItem={renderPetCard}
+          keyExtractor={(item, index) => `${item.id}-${index}`}
+          numColumns={2}
+          contentContainerStyle={styles.petsContainer}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            <View style={styles.emptyState}>
+              <Ionicons name="heart-outline" size={64} color={colors.border} />
+              <Text style={styles.emptyStateTitle}>No pets found</Text>
+              <Text style={styles.emptyStateText}>Try adjusting your search or filters</Text>
+            </View>
+          }
+        />
+      )}
     </View>
   )
 

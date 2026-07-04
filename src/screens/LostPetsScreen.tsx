@@ -22,17 +22,19 @@ import {
     View
 } from "react-native"
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps'
-import NavigationHeader from "../../components/NavigationHeader"
-import { useDateTimePicker } from "../../hooks/useDateTimePicker"
-import { getLostPets, initializeLostPetsData, reportSighting, type LostPet } from "../../lib/lost-pets"
-import { validateSightingForm } from "../../utils/formValidation"
+import NavigationHeader from "../components/NavigationHeader"
+import LostPetCard from "../components/LostPetCard"
+import SightingReportModal from "../components/SightingReportModal"
+import { useDateTimePicker } from "../hooks/useDateTimePicker"
+import { getLostPets, initializeLostPetsData, reportSighting, type LostPet } from "../lib/lost-pets"
+import { validateSightingForm } from "../utils/formValidation"
 import {
     ImageInfo,
     enforceMaxPhotos,
     getImageCountString,
     prepareImagesForSubmission,
     processImagePickerResult
-} from "../../utils/imageUtils"
+} from "../utils/imageUtils"
 import { colors, spacing } from "../theme/theme"
 
 interface LostPetsScreenProps {
@@ -610,436 +612,8 @@ export default function LostPetsScreen({ navigation }: LostPetsScreenProps) {
     }
   };
 
-  const renderLostPetCard = (pet: LostPet) => {
-    const imageUri = pet.photos && pet.photos.length > 0 
-      ? pet.photos[0] 
-      : "https://via.placeholder.com/120x120";
-    
-    return (
-      <View key={pet.id} style={styles.petCard}>
-        <Image 
-          source={{ uri: imageUri }} 
-          style={styles.petImage} 
-          onError={(e) => console.log('Image error:', e.nativeEvent.error)}
-        />
-        <View style={styles.petInfo}>
-          <View style={styles.petHeader}>
-            <Text style={styles.petName}>{pet.name}</Text>
-            <View style={[
-              styles.statusBadge, 
-              pet.status === "lost" ? styles.statusLost : 
-              pet.status === "found" ? styles.statusFound : 
-              pet.status === "sighted" ? styles.statusFound :
-              styles.statusLost
-            ]}>
-              <Text style={styles.statusText}>{pet.status.charAt(0).toUpperCase() + pet.status.slice(1)}</Text>
-            </View>
-          </View>
-
-          <Text style={styles.petBreed}>
-            {pet.breed} • {pet.species}
-          </Text>
-
-          <View style={styles.petLocation}>
-            <Ionicons name="location-outline" size={14} color={colors.text} />
-            <Text style={styles.petLocationText}>Last seen: {pet.lastSeenLocation}</Text>
-          </View>
-
-          <Text style={styles.lastSeenDate}>Date: {new Date(pet.lastSeenDate).toLocaleDateString()}</Text>
-
-          <Text style={styles.description} numberOfLines={2}>
-            {pet.description}
-          </Text>
-
-          {pet.reward && (
-            <View style={styles.rewardContainer}>
-              <Ionicons name="gift-outline" size={16} color={colors.warning} />
-              <Text style={styles.rewardText}>${pet.reward} reward</Text>
-            </View>
-          )}
-
-          <View style={styles.petActions}>
-            <TouchableOpacity 
-              style={styles.contactButton}
-              onPress={() => handleContactOwner(pet)}
-            >
-              <Ionicons name="call-outline" size={16} color="white" />
-              <Text style={styles.contactButtonText}>Contact</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={styles.sightingButton} 
-              onPress={() => handleReportSighting(pet.id)}
-              accessibilityLabel={`Report sighting of ${pet.name}`}
-              disabled={pet.status === "reunited"}
-            >
-              <Ionicons name="eye-outline" size={16} color={colors.primary} />
-              <Text style={styles.sightingButtonText}>Report Sighting</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-    );
-  }
-
-  // Render the sighting report modal
-  const renderSightingModal = () => (
-    <Modal
-      animationType="slide"
-      transparent={true}
-      visible={isSightingModalVisible}
-      onRequestClose={() => {
-        if (!isSubmitting) setSightingModalVisible(false);
-      }}
-    >
-      <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-        <View style={styles.modalContainer}>
-          <View style={styles.sightingModalContent}>
-            <ScrollView showsVerticalScrollIndicator={false}>
-              <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>Report Sighting</Text>
-                <TouchableOpacity 
-                  onPress={() => setSightingModalVisible(false)}
-                  disabled={isSubmitting}
-                >
-                  <Ionicons name="close" size={24} color={colors.text} />
-                </TouchableOpacity>
-              </View>
-              
-              {selectedPet && (
-                <View style={styles.petSummary}>
-                  <Text style={styles.formSubTitle}>
-                    Help reunite {selectedPet.name} with their family
-                  </Text>
-                  
-                  <View style={styles.formGroup}>
-                    <Text style={styles.formLabel}>Location Seen *</Text>
-                    <View style={styles.locationInputContainer}>
-                      <TextInput
-                        style={[
-                          styles.formInput,
-                          styles.formLocationInput,
-                          formErrors.location ? styles.inputError : null
-                        ]}
-                        placeholder="Address or area"
-                        placeholderTextColor={colors.textSecondary}
-                        value={sightingForm.location}
-                        onChangeText={(text) => handleFormChange('location', text)}
-                      />
-                      <TouchableOpacity 
-                        style={styles.mapButton}
-                        onPress={toggleMapView}
-                      >
-                        <MaterialIcons 
-                          name="map" 
-                          size={24} 
-                          color={colors.primary} 
-                        />
-                      </TouchableOpacity>
-                    </View>
-                    {formErrors.location && (
-                      <Text style={styles.errorMessage}>{formErrors.location}</Text>
-                    )}
-                    
-                    {/* Map for selecting location */}
-                    {showMap && (
-                      <View style={styles.mapContainer}>
-                        <MapView
-                          ref={mapRef}
-                          style={styles.map}
-                          provider={PROVIDER_GOOGLE}
-                          initialRegion={{
-                            ...mapRegion,
-                            latitudeDelta: 0.01,  // Slightly wider initial view
-                            longitudeDelta: 0.01
-                          }}
-                          onRegionChangeComplete={(region: any) => setMapRegion(region)}
-                          onPress={handleMapPress}
-                          showsUserLocation={true}
-                          followsUserLocation={true}
-                          zoomEnabled={true}
-                          zoomControlEnabled={true}
-                          scrollEnabled={true}
-                          rotateEnabled={true}
-                          pitchEnabled={true}
-                          moveOnMarkerPress={true}
-                          loadingEnabled={true}
-                          loadingIndicatorColor={colors.primary}
-                          loadingBackgroundColor="rgba(255, 255, 255, 0.7)"
-                          mapType="standard"
-                        >
-                          {sightingForm.coordinates && (
-                            <Marker
-                              coordinate={{
-                                latitude: sightingForm.coordinates.latitude,
-                                longitude: sightingForm.coordinates.longitude
-                              }}
-                              title="Pet sighting location"
-                              description="Exact location where pet was seen"
-                              pinColor={colors.primary}
-                              tracksViewChanges={false}
-                            >
-                              <View>
-                                <View style={styles.markerContainer}>
-                                  <Ionicons name="location" size={36} color={colors.primary} />
-                                  <View style={styles.markerDot} />
-                                </View>
-                              </View>
-                            </Marker>
-                          )}
-                        </MapView>
-                        {isLoadingLocation && (
-                          <View style={styles.mapLoadingOverlay}>
-                            <ActivityIndicator size="large" color={colors.primary} />
-                            <Text style={styles.mapLoadingText}>Getting your location...</Text>
-                            <Text style={styles.mapLoadingSubText}>Please wait while map content loads</Text>
-                            <Text style={styles.mapLoadingSubText}>Make sure location services are enabled</Text>
-                          </View>
-                        )}
-                        <View style={styles.mapOverlay}>
-                          <Text style={styles.mapInstructions}>
-                            Tap on the map to mark the exact location where you saw the pet
-                          </Text>
-                          <View style={styles.mapButtonRow}>
-                            <TouchableOpacity 
-                              style={styles.locationButton}
-                              onPress={getCurrentLocation}
-                              disabled={isLoadingLocation}
-                            >
-                              <Ionicons name="locate" size={18} color={colors.primary} />
-                              <Text style={styles.locationButtonText}>Use My Location</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity 
-                              style={styles.confirmLocationButton}
-                              onPress={toggleMapView}
-                            >
-                              <Text style={styles.confirmLocationText}>
-                                {sightingForm.coordinates ? "Confirm Location" : "Cancel"}
-                              </Text>
-                            </TouchableOpacity>
-                          </View>
-                        </View>
-                      </View>
-                    )}
-                  </View>
-                  
-                  <View style={styles.formRow}>
-                    <View style={[styles.formGroup, { flex: 1, marginRight: spacing.sm }]}>
-                      <Text style={styles.formLabel}>Date *</Text>
-                      <TouchableOpacity
-                        style={[
-                          styles.dateInput, 
-                          formErrors.date ? styles.inputError : null
-                        ]}
-                        onPress={dateTimePicker.toggleDatePicker}
-                      >
-                        <Text style={styles.dateInputText}>
-                          {dateTimePicker.getFormattedDate()}
-                        </Text>
-                        <Ionicons name="calendar-outline" size={18} color={colors.text} />
-                      </TouchableOpacity>
-                      {formErrors.date && (
-                        <Text style={styles.errorMessage}>{formErrors.date}</Text>
-                      )}
-                      {dateTimePicker.showDatePicker && (
-                        <DateTimePicker
-                          value={dateTimePicker.date}
-                          mode="date"
-                          display="default"
-                          onChange={dateTimePicker.onChangeDatePicker}
-                          maximumDate={new Date()}
-                        />
-                      )}
-                    </View>
-                    
-                    <View style={[styles.formGroup, { flex: 1 }]}>
-                      <Text style={styles.formLabel}>Time</Text>
-                      <TouchableOpacity
-                        style={styles.dateInput}
-                        onPress={dateTimePicker.toggleTimePicker}
-                      >
-                        <Text style={styles.dateInputText}>
-                          {dateTimePicker.getFormattedTime()}
-                        </Text>
-                        <Ionicons name="time-outline" size={18} color={colors.text} />
-                      </TouchableOpacity>
-                      {dateTimePicker.showTimePicker && (
-                        <DateTimePicker
-                          value={dateTimePicker.date}
-                          mode="time"
-                          display="default"
-                          onChange={dateTimePicker.onChangeTimePicker}
-                        />
-                      )}
-                    </View>
-                  </View>
-                  
-                  <View style={styles.formGroup}>
-                    <Text style={styles.formLabel}>Description</Text>
-                    <TextInput
-                      style={[styles.formInput, styles.textArea]}
-                      placeholder="What did you see? Pet's condition, behavior, etc."
-                      placeholderTextColor={colors.textSecondary}
-                      multiline
-                      numberOfLines={4}
-                      value={sightingForm.description}
-                      onChangeText={(text) => handleFormChange('description', text)}
-                    />
-                  </View>
-                  
-                  <Text style={styles.formSectionTitle}>Your Contact Information</Text>
-                  
-                  <View style={styles.formGroup}>
-                    <Text style={styles.formLabel}>Your Name *</Text>
-                    <TextInput
-                      style={[
-                        styles.formInput,
-                        formErrors.reporterName ? styles.inputError : null
-                      ]}
-                      placeholder="Demo User"
-                      placeholderTextColor={colors.textSecondary}
-                      value={sightingForm.reporterName}
-                      onChangeText={(text) => handleFormChange('reporterName', text)}
-                    />
-                    {formErrors.reporterName && (
-                      <Text style={styles.errorMessage}>{formErrors.reporterName}</Text>
-                    )}
-                  </View>
-                  
-                  <View style={styles.formGroup}>
-                    <Text style={styles.formLabel}>Phone</Text>
-                    <TextInput
-                      style={[
-                        styles.formInput,
-                        formErrors.reporterPhone ? styles.inputError : null
-                      ]}
-                      placeholder="Phone number"
-                      placeholderTextColor={colors.textSecondary}
-                      keyboardType="phone-pad"
-                      value={sightingForm.reporterPhone}
-                      onChangeText={(text) => handleFormChange('reporterPhone', text)}
-                    />
-                    {formErrors.reporterPhone && (
-                      <Text style={styles.errorMessage}>{formErrors.reporterPhone}</Text>
-                    )}
-                  </View>
-                  
-                  <View style={styles.formGroup}>
-                    <Text style={styles.formLabel}>Email</Text>
-                    <TextInput
-                      style={[
-                        styles.formInput,
-                        formErrors.reporterEmail ? styles.inputError : null
-                      ]}
-                      placeholder="demo@petpal.com"
-                      placeholderTextColor={colors.textSecondary}
-                      keyboardType="email-address"
-                      autoCapitalize="none"
-                      value={sightingForm.reporterEmail}
-                      onChangeText={(text) => handleFormChange('reporterEmail', text)}
-                    />
-                    {formErrors.reporterEmail && (
-                      <Text style={styles.errorMessage}>{formErrors.reporterEmail}</Text>
-                    )}
-                  </View>
-                  
-                  <View style={styles.formGroup}>
-                    <View style={styles.formSectionHeader}>
-                      <Text style={styles.formLabel}>Photos (if available)</Text>
-                      <Text style={styles.photoCounter}>
-                        {getImageCountString(sightingForm.photos.length, MAX_PHOTOS)}
-                      </Text>
-                    </View>
-                    <Text style={styles.formHelperText}>Add photos if you have them</Text>
-                    
-                    <View style={styles.photoPreviewContainer}>
-                      {sightingForm.photos.length > 0 ? (
-                        <FlatList
-                          horizontal
-                          data={sightingForm.photos}
-                          keyExtractor={(item, index) => index.toString()}
-                          renderItem={({ item, index }) => (
-                            <View style={styles.photoPreviewItem}>
-                              <Image
-                                source={{ uri: item.uri }}
-                                style={styles.photoThumbnail}
-                                resizeMode="cover"
-                              />
-                              <TouchableOpacity
-                                style={styles.removePhotoButton}
-                                onPress={() => handleRemoveImage(index)}
-                                disabled={isSubmitting}
-                              >
-                                <Ionicons name="close-circle" size={24} color={colors.error} />
-                              </TouchableOpacity>
-                            </View>
-                          )}
-                          style={styles.photoList}
-                          showsHorizontalScrollIndicator={false}
-                          contentContainerStyle={{ gap: spacing.sm }}
-                        />
-                      ) : (
-                        <View style={styles.noPhotosPlaceholder}>
-                          <Text style={styles.placeholderText}>
-                            No photos selected
-                          </Text>
-                        </View>
-                      )}
-                    </View>
-                    
-                    <TouchableOpacity
-                      style={styles.addPhotoButton}
-                      onPress={handlePickImages}
-                      disabled={isSubmitting || isImagePickerLoading || sightingForm.photos.length >= MAX_PHOTOS}
-                    >
-                      <Ionicons 
-                        name={isImagePickerLoading ? "hourglass-outline" : "camera-outline"} 
-                        size={20} 
-                        color={colors.primary} 
-                      />
-                      <Text style={styles.addPhotoText}>
-                        {isImagePickerLoading ? "Loading..." : "Add Photos"}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                  
-                  <View style={styles.formButtonContainer}>
-                    <TouchableOpacity 
-                      style={styles.cancelButton} 
-                      onPress={() => setSightingModalVisible(false)}
-                      disabled={isSubmitting}
-                    >
-                      <Text style={styles.cancelButtonText}>Cancel</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity 
-                      style={[
-                        styles.submitButton, 
-                        !isFormValid && styles.disabledButton
-                      ]} 
-                      onPress={handleSubmitSighting}
-                      disabled={!isFormValid || isSubmitting}
-                    >
-                      <Ionicons name="checkmark" size={18} color="white" />
-                      <Text style={styles.submitButtonText}>
-                        {isSubmitting ? "Submitting..." : "Report Sighting"}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-
-                  {isSubmitting && (
-                    <View style={styles.loadingOverlay}>
-                      <ActivityIndicator size="large" color={colors.primary} />
-                    </View>
-                  )}
-                </View>
-              )}
-            </ScrollView>
-          </View>
-        </View>
-      </TouchableWithoutFeedback>
-    </Modal>
-  );
-
+    // Render the sighting report modal
+      
   const renderFilterModal = () => (
     <Modal
       animationType="slide"
@@ -1313,7 +887,13 @@ export default function LostPetsScreen({ navigation }: LostPetsScreenProps) {
         {renderResourcesSection()}
         
         <View style={styles.petsContainer}>
-          {filteredPets.map(renderLostPetCard)}
+          {filteredPets.map(pet => (
+            <LostPetCard
+              key={pet.id}
+              pet={pet}
+              onReportSighting={handleReportSighting}
+            />
+          ))}
         </View>
 
         {filteredPets.length === 0 && (
@@ -1332,7 +912,11 @@ export default function LostPetsScreen({ navigation }: LostPetsScreenProps) {
       </ScrollView>
       
       {renderFilterModal()}
-      {renderSightingModal()}
+      <SightingReportModal
+        visible={isSightingModalVisible}
+        pet={selectedPet}
+        onClose={() => setSightingModalVisible(false)}
+      />
     </View>
   )
 }

@@ -1,9 +1,10 @@
 import { Feather } from "@expo/vector-icons";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Platform, ActivityIndicator, Alert, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { API } from "../config/api";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../contexts/AuthContext";
 import { borderRadius, colors, spacing } from "../theme/theme";
 
 // Types
@@ -35,11 +36,11 @@ interface RemindersScreenProps {
 
 export default function RemindersScreen({ navigation }: RemindersScreenProps) {
   const [reminders, setReminders] = useState<Reminder[]>([]);
-  const [filteredReminders, setFilteredReminders] = useState<Reminder[]>([]);
   const [filter, setFilter] = useState<'all' | 'upcoming' | 'overdue' | 'completed'>('all');
   const [isLoading, setIsLoading] = useState(true);
   const [adoptedPets, setAdoptedPets] = useState<Pet[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [newReminder, setNewReminder] = useState<{
     petId: string;
     type: "vaccine" | "grooming" | "checkup" | "medication";
@@ -69,10 +70,24 @@ export default function RemindersScreen({ navigation }: RemindersScreenProps) {
     setIsLoading(true);
     try {
       const response = await axios.get(API.reminders.byUser(userId));
-      setReminders(response.data);
-      setFilteredReminders(response.data);
-      const petsResponse = await axios.get(`${API.pets}/view`);
-      setAdoptedPets(petsResponse.data);
+      const mappedReminders = response.data.map((r: any) => ({ ...r, id: r._id || r.id }));
+      setReminders(mappedReminders);
+      
+      const petsResponse = await axios.get(API.pets.all);
+      const mappedPets = petsResponse.data.map((p: any) => ({ ...p, id: p._id || p.id }));
+      
+      const uniquePets: any[] = [];
+      const seenNames = new Set<string>();
+      
+      for (const pet of mappedPets) {
+        const nameLower = pet.name?.toLowerCase() || "";
+        if (!seenNames.has(nameLower)) {
+          seenNames.add(nameLower);
+          uniquePets.push(pet);
+        }
+      }
+      
+      setAdoptedPets(uniquePets);
     } catch (error) {
       console.error("Failed to load reminders:", error);
       Alert.alert("Error", "Failed to load reminders. Please try again later.");
@@ -164,7 +179,21 @@ export default function RemindersScreen({ navigation }: RemindersScreenProps) {
     );
   }
 
-
+  const displayedReminders = reminders.filter(r => {
+    if (filter === 'all') return true;
+    if (filter === 'completed') return r.completed;
+    
+    // Create dates and strip time for accurate comparison
+    const due = new Date(r.dueDate);
+    due.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const isOverdue = due < today;
+    if (filter === 'overdue') return !r.completed && isOverdue;
+    if (filter === 'upcoming') return !r.completed && !isOverdue;
+    return true;
+  });
 
   return (
     <View style={styles.outerContainer}>
@@ -257,7 +286,7 @@ export default function RemindersScreen({ navigation }: RemindersScreenProps) {
 
       {/* Main Content */}
       <ScrollView style={styles.container}>
-        {filteredReminders.length === 0 ? (
+        {displayedReminders.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Feather name="calendar" size={64} color={colors.border} />
             <Text style={styles.emptyText}>No reminders</Text>
@@ -265,16 +294,25 @@ export default function RemindersScreen({ navigation }: RemindersScreenProps) {
               Add reminders to keep track of important events for your pets
             </Text>
             <TouchableOpacity 
-              style={styles.addButton} 
+              style={styles.emptyStateAddButton} 
               onPress={openAddReminderModal}
             >
               <Feather name="plus" size={20} color="white" />
-              <Text style={styles.addButtonText}>Add Reminder</Text>
+              <Text style={styles.emptyStateAddButtonText}>Add Reminder</Text>
             </TouchableOpacity>
           </View>
         ) : (
           <View style={styles.remindersList}>
-            {filteredReminders.map(reminder => (
+            {displayedReminders.map(reminder => {
+              const petName = adoptedPets.find(p => p.id === reminder.petId)?.name || "Unknown Pet";
+              
+              const due = new Date(reminder.dueDate);
+              due.setHours(0, 0, 0, 0);
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+              const isOverdue = !reminder.completed && due < today;
+              
+              return (
               <View key={reminder.id} style={styles.reminderCard}>
                 <View style={styles.reminderHeader}>
                   <View style={styles.reminderType}>
@@ -295,15 +333,15 @@ export default function RemindersScreen({ navigation }: RemindersScreenProps) {
                   <View style={[
                     styles.statusBadge, 
                     { 
-                      backgroundColor: reminder.completed ? '#e6f7ee' : isOverdue(reminder.dueDate) ? '#ffebe6' : '#f0f8ff',
-                      borderColor: reminder.completed ? colors.success : isOverdue(reminder.dueDate) ? colors.error : colors.primary 
+                      backgroundColor: reminder.completed ? '#e6f7ee' : isOverdue ? '#ffebe6' : '#f0f8ff',
+                      borderColor: reminder.completed ? colors.success : isOverdue ? colors.error : colors.primary 
                     }
                   ]}>
                     <Text style={[
                       styles.statusText, 
-                      { color: reminder.completed ? colors.success : isOverdue(reminder.dueDate) ? colors.error : colors.primary }
+                      { color: reminder.completed ? colors.success : isOverdue ? colors.error : colors.primary }
                     ]}>
-                      {reminder.completed ? 'Completed' : isOverdue(reminder.dueDate) ? 'Overdue' : 'Upcoming'}
+                      {reminder.completed ? 'Completed' : isOverdue ? 'Overdue' : 'Upcoming'}
                     </Text>
                   </View>
                 </View>
@@ -311,7 +349,7 @@ export default function RemindersScreen({ navigation }: RemindersScreenProps) {
                 <View style={styles.reminderContent}>
                   {reminder.petId && (
                     <Text style={styles.petName}>
-                      {getPetName(reminder.petId)}
+                      {petName}
                     </Text>
                   )}
                   
@@ -324,7 +362,7 @@ export default function RemindersScreen({ navigation }: RemindersScreenProps) {
                   </Text>
                   
                   <Text style={styles.reminderDate}>
-                    {formatDate(reminder.dueDate)}
+                    {reminder.dueDate}
                   </Text>
                   {reminder.recurring && (
                     <View style={styles.recurringContainer}>
@@ -347,16 +385,14 @@ export default function RemindersScreen({ navigation }: RemindersScreenProps) {
                     </Text>
                   </TouchableOpacity>
                   
-                  <TouchableOpacity 
-                    style={styles.actionButton}
-                    onPress={() => handleDeleteReminder(reminder.id)}
-                  >
-                    <Feather name="trash-2" size={16} color="#ff3b30" />
-                    <Text style={[styles.actionText, { color: "#ff3b30" }]}>Delete</Text>
+
+                  <TouchableOpacity style={[styles.actionButton, styles.deleteButton]} onPress={() => handleDeleteReminder(reminder.id)}>
+                    <Feather name="trash-2" size={16} color={colors.error} />
+                    <Text style={[styles.actionText, { color: colors.error }]}>Delete</Text>
                   </TouchableOpacity>
                 </View>
               </View>
-            ))}
+            )})}
           </View>
         )}
       </ScrollView>
@@ -488,12 +524,28 @@ export default function RemindersScreen({ navigation }: RemindersScreenProps) {
             
             <View style={styles.formGroup}>
               <Text style={styles.label}>Date</Text>
-              <TextInput 
-                style={styles.input}
-                placeholder="YYYY-MM-DD"
-                value={newReminder.dueDate}
-                onChangeText={text => setNewReminder(prev => ({ ...prev, dueDate: text }))}
-              />
+              <TouchableOpacity 
+                style={[styles.input, { justifyContent: 'center' }]} 
+                onPress={() => setShowDatePicker(true)}
+              >
+                <Text style={{ color: newReminder.dueDate ? colors.text : colors.textSecondary }}>
+                  {newReminder.dueDate || "Select Date"}
+                </Text>
+              </TouchableOpacity>
+              
+              {showDatePicker && (
+                <DateTimePicker
+                  value={newReminder.dueDate ? new Date(newReminder.dueDate) : new Date()}
+                  mode="date"
+                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  onChange={(event: any, selectedDate?: Date) => {
+                    setShowDatePicker(Platform.OS === 'ios');
+                    if (selectedDate) {
+                      setNewReminder(prev => ({ ...prev, dueDate: selectedDate.toISOString().split('T')[0] }));
+                    }
+                  }}
+                />
+              )}
             </View>
             
             <View style={styles.formGroup}>
@@ -730,6 +782,26 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'center',
     marginTop: spacing.sm,
+    marginBottom: spacing.lg,
+  },
+  emptyStateAddButton: {
+    backgroundColor: colors.primary,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xl,
+    borderRadius: borderRadius.round,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  emptyStateAddButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginLeft: spacing.sm,
   },
   remindersList: {
     padding: spacing.md,

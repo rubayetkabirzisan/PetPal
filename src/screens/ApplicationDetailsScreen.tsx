@@ -3,8 +3,8 @@
 import { useTypedParams } from '@/src/utils/navigation-utils';
 import { Header } from '@components/header';
 import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '@hooks/useAuth';
-import { AdoptionApplication, ApplicationTimelineEvent, getApplicationById, getPetById, Pet } from '@lib/data';
+import { useAuth } from "../contexts/AuthContext";
+import { AdoptionApplication, ApplicationTimelineEvent, getApplicationById, getPetById, Pet } from '../data/mockData';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@src/contexts/ThemeContext';
 import { useRouter } from 'expo-router';

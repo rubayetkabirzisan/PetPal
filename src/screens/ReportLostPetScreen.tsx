@@ -16,8 +16,8 @@ import {
   TouchableOpacity,
   View
 } from "react-native"
-import NavigationHeader from "../../components/NavigationHeader"
-import { reportLostPet } from "../../lib/lost-pets"
+import NavigationHeader from "../components/NavigationHeader"
+import { reportLostPet } from "../lib/lost-pets"
 import { colors, spacing } from "../theme/theme"
 
 interface ReportLostPetScreenProps {

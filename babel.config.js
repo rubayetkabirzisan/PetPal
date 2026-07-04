@@ -11,12 +11,11 @@ module.exports = function (api) {
         {
           root: ["./"],
           alias: {
-            "@": ".",
-            "@components": "./components",
-            "@hooks": "./hooks",
-            "@screens": "./screens",
+            "@components": "./src/components",
+            "@hooks": "./src/hooks",
+            "@screens": "./src/screens",
             "@assets": "./assets",
-            "@lib": "./lib",
+            "@lib": "./src/lib",
             "@src": "./src",
           },
           extensions: [".js", ".jsx", ".ts", ".tsx"],

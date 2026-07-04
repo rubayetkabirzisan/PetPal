@@ -7,19 +7,29 @@
       "@/*": [
         "./*"
       ],
-      "@components/*": ["./components/*"],
-      "@hooks/*": ["./hooks/*"],
-      "@screens/*": ["./screens/*"],
-      "@assets/*": ["./assets/*"],
-      "@lib/*": ["./lib/*"],
-      "@src/*": ["./src/*"]
+      "@components/*": [
+        "./src/components/*"
+      ],
+      "@hooks/*": [
+        "./src/hooks/*"
+      ],
+      "@screens/*": [
+        "./src/screens/*"
+      ],
+      "@assets/*": [
+        "./assets/*"
+      ],
+      "@lib/*": [
+        "./src/lib/*"
+      ],
+      "@src/*": [
+        "./src/*"
+      ]
     }
   },
   "include": [
     "**/*.ts",
     "**/*.tsx",
-    ".expo/types/**/*.ts",
-    "expo-env.d.ts",
     "nativewind-env.d.ts",
     "types/**/*.d.ts"
   ]

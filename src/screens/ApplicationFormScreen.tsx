@@ -3,7 +3,7 @@
 import { Ionicons, MaterialIcons } from "@expo/vector-icons"
 import { useState } from "react"
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from "react-native"
-import data from "../lib/data"
+import * as data from "../data/mockData"
 import { colors } from "../theme/theme"
 
 interface ApplicationFormScreenProps {
@@ -70,7 +70,7 @@ export default function ApplicationFormScreen({ navigation, route }: Application
   })
 
   const petId = route.params?.petId
-  const petInfo = petId ? data.mockPets.find((pet: any) => pet.id === petId) : null
+  const petInfo = petId ? data.getPets().find((pet: any) => pet.id === petId) : null
 
   const steps = ["Personal Info", "Address", "Pet Experience", "Lifestyle", "References", "Additional", "Review"]
 

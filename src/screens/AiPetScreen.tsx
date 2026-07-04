@@ -16,8 +16,8 @@ import {
     TouchableOpacity,
     View
 } from "react-native"
-import NavigationHeader from "../../components/NavigationHeader"
-import { getPets, type Pet } from "../lib/data"
+import NavigationHeader from "../components/NavigationHeader"
+import { getPets, type Pet } from "../data/mockData"
 import { colors, spacing } from "../theme/theme"
 
 const { width } = Dimensions.get("window")
@@ -126,9 +126,9 @@ export default function AiPetScreen({ navigation }: AiPetScreenProps) {
     const maxScore = 100
 
     // Pet type matching (20 points)
-    if (preferences.petType && pet.species.toLowerCase() === preferences.petType.toLowerCase()) {
+    if (preferences.petType && (pet.species || "").toLowerCase() === preferences.petType.toLowerCase()) {
       score += 20
-      reasons.push(`Perfect ${pet.species} match for your preference`)
+      reasons.push(`Perfect ${(pet.species || "")} match for your preference`)
     }
 
     // Size matching (15 points)
@@ -138,7 +138,7 @@ export default function AiPetScreen({ navigation }: AiPetScreenProps) {
     }
 
     // Age matching (15 points)
-    const petAge = calculatePetAgeCategory(pet.age)
+    const petAge = calculatePetAgeCategory(String(pet.age))
     if (preferences.age && petAge === preferences.age) {
       score += 15
       reasons.push(`${petAge} age is perfect for your experience level`)

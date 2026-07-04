@@ -3,7 +3,7 @@
 import { Ionicons } from "@expo/vector-icons"
 import { useEffect, useState } from "react"
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
-import { getApplicationById, getPetById, type AdoptionApplication } from "../lib/data"
+import { getApplicationById, getPetById, type AdoptionApplication } from "../data/mockData"
 import { colors } from "../theme/theme"
 
 interface ApplicationTrackerScreenProps {
@@ -112,7 +112,7 @@ export default function ApplicationTrackerScreen({ navigation, route }: Applicat
     return (
       <View style={styles.timelineContainer}>
         <Text style={styles.sectionTitle}>Application Timeline</Text>
-        {application.timeline.map((item, index) => (
+        {(application.timeline || []).map((item, index) => (
           <View key={item.id} style={styles.timelineItem}>
             <View style={styles.timelineLeft}>
               <View
@@ -127,7 +127,7 @@ export default function ApplicationTrackerScreen({ navigation, route }: Applicat
                   <View style={styles.timelineCircleInner} />
                 )}
               </View>
-              {index < application.timeline.length - 1 && (
+              {index < (application.timeline || []).length - 1 && (
                 <View
                   style={[
                     styles.timelineLine,

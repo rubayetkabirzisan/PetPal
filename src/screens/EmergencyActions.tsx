@@ -12,7 +12,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-import NavigationHeader from '../../components/NavigationHeader';
+import NavigationHeader from '../components/NavigationHeader';
 
 // Mock colors object - replace with your actual theme
 const colors = {

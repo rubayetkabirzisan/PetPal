@@ -1,13 +1,48 @@
 import { Ionicons } from "@expo/vector-icons"
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
-import NavigationHeader from "../../components/NavigationHeader"
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, BackHandler, Alert } from "react-native"
+import NavigationHeader from "../components/NavigationHeader"
 import { colors } from "../theme/theme"
+import { useAuth } from "../contexts/AuthContext"
+import { useFocusEffect } from "@react-navigation/native"
+import React from "react"
 
 interface AdminDashboardScreenProps {
   navigation: any
 }
 
 export default function AdminDashboardScreen({ navigation }: AdminDashboardScreenProps) {
+  const { logout } = useAuth()
+
+  // Handle hardware back press on Android
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        Alert.alert(
+          "Log Out",
+          "Are you sure you want to log out?",
+          [
+            { text: "Cancel", style: "cancel" },
+            { 
+              text: "Log Out", 
+              style: "destructive",
+              onPress: () => {
+                if (logout) logout();
+                // Reset navigation to Landing
+                navigation.reset({
+                  index: 0,
+                  routes: [{ name: 'Landing' }],
+                });
+              }
+            }
+          ]
+        );
+        return true; // Prevents default back behavior
+      };
+
+      const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+      return () => subscription.remove();
+    }, [navigation, logout])
+  );
   const stats = [
     { 
       label: "Available Pets", 

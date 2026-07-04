@@ -13,6 +13,17 @@ router.get("/view", async (req, res) => {
   }
 });
 
+// Get a single pet
+router.get("/:id", async (req, res) => {
+  try {
+    const pet = await Pet.findById(req.params.id);
+    if (!pet) return res.status(404).json({ error: "Pet not found" });
+    res.json(pet);
+  } catch (err) {
+    res.status(500).json({ error: "Error fetching pet" });
+  }
+});
+
 // Add a new pet
 router.post("/addpet", async (req, res) => {
   try {
