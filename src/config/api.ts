@@ -62,6 +62,16 @@ export const API = {
     delete: (id: string) => `${API_BASE_URL}/api/lostpets/delete/${id}`,
   },
 
+  // Applications
+  applications: {
+    byUser: (userId: string) => `${API_BASE_URL}/api/applications/viewById/${userId}`,
+  },
+
+  // Adoption History
+  adoptionHistory: {
+    byUser: (userId: string) => `${API_BASE_URL}/api/adoption-history/viewById/${userId}`,
+  },
+
   // Profile
   profile: {
     view:   (userId: string) => `${API_BASE_URL}/api/profile/view/${userId}`,

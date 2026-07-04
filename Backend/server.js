@@ -21,9 +21,9 @@ app.use("/api/profile",               require("./routes/profileRoutes"));
 app.use("/api/messages",              require("./routes/messageRoutes"));
 app.use("/api/pets",                  require("./routes/petRoutes"));
 app.use("/api/verification_requests", require("./routes/verificationRoutes"));
-// app.use("/api/applications",          require("./routes/applicationRoutes")); // Removed stub
+app.use("/api/applications",          require("./routes/applicationRoutes"));
 // app.use("/api/profile",               require("./routes/profileRoutes")); // Removed stub
-// app.use("/api/adoption-history",      require("./routes/adoptionHistory")); // Removed stub
+app.use("/api/adoption-history",      require("./routes/adoptionHistory"));
 app.use("/api/analytics",             require("./routes/analytics"));
 app.use("/api/careEntries",           require("./routes/careEntryRoutes"));
 // app.use("/api/messages",              require("./routes/messageRoutes")); // Removed stub

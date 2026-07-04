@@ -24,6 +24,8 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
   const [messageCount, setMessageCount] = useState(0)
   const [recentEntries, setRecentEntries] = useState<any[]>([])
   const [reminderCount, setReminderCount] = useState(0)
+  const [applicationCount, setApplicationCount] = useState(0)
+  const [adoptedPetsCount, setAdoptedPetsCount] = useState(0)
   const { user, logout } = useAuth()
 
   // Handle hardware back press on Android
@@ -106,11 +108,23 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
             })
             .catch(err => console.error("Error fetching dashboard care entries:", err));
             
-          axios.default.get(API.reminders.byUser(user.id))
+            axios.default.get(API.reminders.byUser(user.id))
             .then(res => {
               setReminderCount(res.data.length);
             })
             .catch(err => console.error("Error fetching dashboard reminders count:", err));
+            
+          axios.default.get(API.applications.byUser(user.id))
+            .then(res => {
+              setApplicationCount(res.data.length);
+            })
+            .catch(err => console.error("Error fetching dashboard applications count:", err));
+            
+          axios.default.get(API.adoptionHistory.byUser(user.id))
+            .then(res => {
+              setAdoptedPetsCount(res.data.length);
+            })
+            .catch(err => console.error("Error fetching dashboard adopted pets count:", err));
         });
       });
     }
@@ -153,7 +167,7 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
           onPress={() => navigation.navigate("ModernApplicationList")}
         >
           <Ionicons name="calendar-outline" size={24} color={colors.primary} />
-          <Text style={styles.quickActionNumber}>3</Text>
+          <Text style={styles.quickActionNumber}>{applicationCount}</Text>
           <Text style={styles.quickActionLabel}>Applications</Text>
         </TouchableOpacity>
 
@@ -175,7 +189,7 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
           onPress={() => navigation.navigate("AdoptionHistory")}
         >
           <Ionicons name="heart-outline" size={24} color={colors.primary} />
-          <Text style={styles.quickActionNumber}>2</Text>
+          <Text style={styles.quickActionNumber}>{adoptedPetsCount}</Text>
           <Text style={styles.quickActionLabel}>Adopted Pets</Text>
         </TouchableOpacity>
 

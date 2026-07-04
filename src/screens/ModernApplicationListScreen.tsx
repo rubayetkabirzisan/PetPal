@@ -7,6 +7,8 @@ import { useAuth } from "../contexts/AuthContext";
 import { ApplicationTimelineEvent, Pet } from '../data/mockData';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@src/contexts/ThemeContext';
+import axios from 'axios';
+import { API } from '../config/api';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -92,201 +94,34 @@ export default function ModernApplicationListScreen({ route }: { route?: any }) 
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
 
-  // Dummy applications data with timeline information
-  const dummyApplications: ApplicationWithPet[] = [
-    {
-      id: 'app-1',
-      petId: 'pet-1',
-      status: 'Under Review',
-      submittedDate: '2025-07-10',
-      petName: 'Max',
-      petBreed: 'Golden Retriever',
-      petImage: 'https://images.unsplash.com/photo-1552053831-71594a27632d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8Z29sZGVuJTIwcmV0cmlldmVyfGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60',
-      shelterName: 'Happy Paws Shelter',
-      completionPercentage: 40,
-      currentStep: 'Background Check',
-      timeline: [
-        { 
-          id: 'step-1', 
-          status: 'Application Submitted', 
-          description: 'Your application has been submitted successfully', 
-          completed: true, 
-          date: '2025-07-10' 
-        },
-        { 
-          id: 'step-2', 
-          status: 'Initial Review', 
-          description: 'Shelter staff is reviewing your application', 
-          completed: true, 
-          date: '2025-07-12' 
-        },
-        { 
-          id: 'step-3', 
-          status: 'Background Check', 
-          description: 'Verifying provided information and references', 
-          completed: false, 
-          date: '2025-07-15' 
-        },
-        { 
-          id: 'step-4', 
-          status: 'Home Visit', 
-          description: 'A shelter representative will visit your home', 
-          completed: false, 
-          date: null 
-        },
-        { 
-          id: 'step-5', 
-          status: 'Final Decision', 
-          description: 'Shelter makes the final adoption decision', 
-          completed: false, 
-          date: null 
-        }
-      ]
-    },
-    {
-      id: 'app-2',
-      petId: 'pet-2',
-      status: 'Approved',
-      submittedDate: '2025-06-25',
-      petName: 'Bella',
-      petBreed: 'Siamese Cat',
-      petImage: 'https://images.unsplash.com/photo-1592194996308-7b43878e84a6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8c2lhbWVzZSUyMGNhdHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60',
-      shelterName: 'Feline Friends Rescue',
-      completionPercentage: 100,
-      currentStep: 'Final Decision',
-      timeline: [
-        { 
-          id: 'step-1', 
-          status: 'Application Submitted', 
-          description: 'Your application has been submitted successfully', 
-          completed: true, 
-          date: '2025-06-25' 
-        },
-        { 
-          id: 'step-2', 
-          status: 'Initial Review', 
-          description: 'Shelter staff is reviewing your application', 
-          completed: true, 
-          date: '2025-06-26' 
-        },
-        { 
-          id: 'step-3', 
-          status: 'Background Check', 
-          description: 'Verifying provided information and references', 
-          completed: true, 
-          date: '2025-06-28' 
-        },
-        { 
-          id: 'step-4', 
-          status: 'Home Visit', 
-          description: 'A shelter representative will visit your home', 
-          completed: true, 
-          date: '2025-07-05' 
-        },
-        { 
-          id: 'step-5', 
-          status: 'Final Decision', 
-          description: 'Shelter makes the final adoption decision', 
-          completed: true, 
-          date: '2025-07-10' 
-        }
-      ],
-      notes: "Congratulations! Your application for Bella has been approved. Please contact the shelter to arrange pick-up details and finalize the adoption process."
-    },
-    {
-      id: 'app-3',
-      petId: 'pet-3',
-      status: 'Pending',
-      submittedDate: '2025-07-15',
-      petName: 'Charlie',
-      petBreed: 'Beagle',
-      petImage: 'https://images.unsplash.com/photo-1505628346881-b72b27e84530?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YmVhZ2xlfGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60',
-      shelterName: 'Pawsome Adoptions',
-      completionPercentage: 20,
-      currentStep: 'Initial Review',
-      timeline: [
-        { 
-          id: 'step-1', 
-          status: 'Application Submitted', 
-          description: 'Your application has been submitted successfully', 
-          completed: true, 
-          date: '2025-07-15' 
-        },
-        { 
-          id: 'step-2', 
-          status: 'Initial Review', 
-          description: 'Shelter staff is reviewing your application', 
-          completed: false, 
-          date: null 
-        },
-        { 
-          id: 'step-3', 
-          status: 'Background Check', 
-          description: 'Verifying provided information and references', 
-          completed: false, 
-          date: null 
-        },
-        { 
-          id: 'step-4', 
-          status: 'Home Visit', 
-          description: 'A shelter representative will visit your home', 
-          completed: false, 
-          date: null 
-        },
-        { 
-          id: 'step-5', 
-          status: 'Final Decision', 
-          description: 'Shelter makes the final adoption decision', 
-          completed: false, 
-          date: null 
-        }
-      ]
-    },
-    {
-      id: 'app-4',
-      petId: 'pet-4',
-      status: 'Rejected',
-      submittedDate: '2025-06-15',
-      petName: 'Luna',
-      petBreed: 'Persian Cat',
-      petImage: 'https://images.unsplash.com/photo-1592194996308-7b43878e84a6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8c2lhbWVzZSUyMGNhdHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60',
-      shelterName: 'Cat Haven',
-      completionPercentage: 100,
-      currentStep: 'Application Denied',
-      timeline: [
-        { 
-          id: 'step-1', 
-          status: 'Application Submitted', 
-          description: 'Your application has been submitted successfully', 
-          completed: true, 
-          date: '2025-06-15' 
-        },
-        { 
-          id: 'step-2', 
-          status: 'Initial Review', 
-          description: 'Shelter staff is reviewing your application', 
-          completed: true, 
-          date: '2025-06-17' 
-        },
-        { 
-          id: 'step-3', 
-          status: 'Application Denied', 
-          description: 'Your application has been denied', 
-          completed: true, 
-          date: '2025-06-20' 
-        }
-      ],
-      notes: "We're sorry, but your application for Luna has been rejected. The shelter has determined that their current needs don't align with your living situation. Please contact us for more information."
+  const [applications, setApplications] = useState<ApplicationWithPet[]>([]);
+
+  useEffect(() => {
+    if (user?.id) {
+      setLoading(true);
+      axios.get(API.applications.byUser(user.id))
+        .then(res => {
+          const apps = res.data.map((app: any) => ({
+            ...app,
+            id: app._id || app.id
+          }));
+          setApplications(apps);
+        })
+        .catch(err => {
+          console.error("Error fetching applications:", err);
+          Alert.alert("Error", "Could not load applications.");
+        })
+        .finally(() => setLoading(false));
     }
-  ];
+  }, [user?.id]);
 
   // Load application details
   useEffect(() => {
     if (selectedAppId) {
       setLoading(true);
       
-      // Find the selected application from our dummy data
-      const selectedApp = dummyApplications.find(app => app.id === selectedAppId);
+      // Find the selected application from our live data
+      const selectedApp = applications.find(app => app.id === selectedAppId);
       
       if (selectedApp) {
         setApplication(selectedApp);
@@ -320,7 +155,7 @@ export default function ModernApplicationListScreen({ route }: { route?: any }) 
       
       setLoading(false);
     }
-  }, [selectedAppId]);
+  }, [selectedAppId, applications]);
   
   const generateStepsFromTimeline = (timeline: ExtendedTimelineEvent[]): ApplicationStep[] => {
     return timeline.map((event, index) => ({
@@ -395,12 +230,12 @@ export default function ModernApplicationListScreen({ route }: { route?: any }) 
     }
   };
 
-  const filteredApplications = dummyApplications.filter(app => {
+  const filteredApplications = applications.filter(app => {
     const matchesSearch = 
       searchTerm === '' || 
-      app.petName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      app.petBreed.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      app.shelterName.toLowerCase().includes(searchTerm.toLowerCase());
+      (app.petName || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (app.petBreed || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (app.shelterName || "").toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = 
       statusFilter === null || 
