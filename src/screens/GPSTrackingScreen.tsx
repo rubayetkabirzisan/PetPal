@@ -2,9 +2,12 @@
 
 import { Ionicons } from "@expo/vector-icons"
 import { useEffect, useState } from "react"
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from "react-native"
 import NavigationHeader from "../components/NavigationHeader"
 import { colors, spacing } from "../theme/theme"
+import { useAuth } from "../contexts/AuthContext"
+import axios from "axios"
+import { API } from "../config/api"
 
 interface TrackedPet {
   id: string
@@ -25,30 +28,26 @@ interface GPSTrackingScreenProps {
 export default function GPSTrackingScreen({ navigation }: GPSTrackingScreenProps) {
   const [trackedPets, setTrackedPets] = useState<TrackedPet[]>([])
 
+  const { user } = useAuth()
+  const [isLoading, setIsLoading] = useState(true)
+
   useEffect(() => {
-    // Mock data for tracked pets
-    const mockTrackedPets: TrackedPet[] = [
-      {
-        id: "1",
-        name: "Buddy",
-        type: "Dog",
-        lastLocation: "Home - 123 Main St",
-        lastUpdate: "2 minutes ago",
-        batteryLevel: 85,
-        status: "Safe",
-      },
-      {
-        id: "2",
-        name: "Luna",
-        type: "Cat",
-        lastLocation: "Backyard - 123 Main St",
-        lastUpdate: "5 minutes ago",
-        batteryLevel: 25,
-        status: "Low Battery",
-      },
-    ]
-    setTrackedPets(mockTrackedPets)
-  }, [])
+    const fetchTrackedPets = async () => {
+      if (!user?.id) return;
+      try {
+        setIsLoading(true);
+        const response = await axios.get(API.gps.byUser(user.id));
+        setTrackedPets(response.data);
+      } catch (error) {
+        console.error("Error fetching GPS data:", error);
+        Alert.alert("Error", "Failed to load tracking information");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTrackedPets();
+  }, [user?.id]);
 
   // Handle navigation to the PetMapScreen with pet information
   const handleViewMap = (petId: string) => {
@@ -67,9 +66,9 @@ export default function GPSTrackingScreen({ navigation }: GPSTrackingScreenProps
       petType: selectedPet.type,
       lastLocation: selectedPet.lastLocation,
       coordinates: {
-        // Mock coordinates - in a real app these would come from the pet's tracking data
-        latitude: 37.7749 + (Math.random() - 0.5) * 0.01,  // Random variation around San Francisco
-        longitude: -122.4194 + (Math.random() - 0.5) * 0.01
+        // Dhaka coordinates with slight random variation for each pet
+        latitude: 23.8103 + (Math.random() - 0.5) * 0.01,
+        longitude: 90.4125 + (Math.random() - 0.5) * 0.01
       }
     })
   }
@@ -91,9 +90,9 @@ export default function GPSTrackingScreen({ navigation }: GPSTrackingScreenProps
       petType: selectedPet.type,
       lastLocation: selectedPet.lastLocation,
       coordinates: {
-        // Mock coordinates - in a real app these would come from the pet's tracking data
-        latitude: 37.7749 + (Math.random() - 0.5) * 0.01,  // Random variation around San Francisco
-        longitude: -122.4194 + (Math.random() - 0.5) * 0.01
+        // Dhaka coordinates with slight random variation for each pet
+        latitude: 23.8103 + (Math.random() - 0.5) * 0.01,
+        longitude: 90.4125 + (Math.random() - 0.5) * 0.01
       }
     })
   }
@@ -177,9 +176,13 @@ export default function GPSTrackingScreen({ navigation }: GPSTrackingScreenProps
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.petsContainer}>{trackedPets.map(renderTrackedPetCard)}</View>
+        {isLoading ? (
+          <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: spacing.xxl }} />
+        ) : (
+          <View style={styles.petsContainer}>{trackedPets.map(renderTrackedPetCard)}</View>
+        )}
 
-        {trackedPets.length === 0 && (
+        {!isLoading && trackedPets.length === 0 && (
           <View style={styles.emptyState}>
             <Ionicons name="location-outline" size={64} color={colors.border} />
             <Text style={styles.emptyStateTitle}>No tracked pets</Text>

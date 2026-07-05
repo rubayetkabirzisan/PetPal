@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons"
-import { useNavigation } from "@react-navigation/native"
+import { useNavigation, useFocusEffect } from "@react-navigation/native"
 import { useRouter } from "expo-router"
-import React, { useEffect, useState } from "react"
+import React, { useState, useCallback } from "react"
 import {
   Platform,
   StyleSheet,
@@ -16,27 +16,41 @@ import { colors } from "../theme/theme"
 interface NavigationHeaderProps {
   title: string
   showBackButton?: boolean
+  showNotificationIcon?: boolean
   backButtonAction?: () => void
 }
 
 const NavigationHeader: React.FC<NavigationHeaderProps> = ({
   title,
   showBackButton = false,
+  showNotificationIcon = false,
   backButtonAction,
 }) => {
   const navigation = useNavigation<any>() // Use any type for now to allow nested navigation
   const router = useRouter()
   const { user } = useAuth()
   const { theme } = useTheme()
-  const [notificationCount, setNotificationCount] = useState(3) // Default to 3 notifications for demo
+  const [notificationCount, setNotificationCount] = useState(0) 
   
   // Determine if user is admin
   const isAdmin = user?.type === "admin"
 
-  useEffect(() => {
-    // You could fetch actual notification count from your backend here
-    // For now, just demonstrating with a static count
-  }, [])
+  useFocusEffect(
+    useCallback(() => {
+      if (!showNotificationIcon) return;
+      
+      // Fetch actual notification count from backend
+      fetch('http://192.168.0.101:5000/api/notifications/viewAll')
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) {
+            const unreadCount = data.filter(n => !n.read).length;
+            setNotificationCount(unreadCount);
+          }
+        })
+        .catch(err => console.error('Error fetching notification count:', err));
+    }, [showNotificationIcon])
+  );
 
   const handleBackPress = () => {
     if (backButtonAction) {
@@ -73,19 +87,21 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
         </Text>
 
         <View style={styles.iconContainer}>
-          <TouchableOpacity 
-            style={styles.iconButton} 
-            onPress={handleNotificationsPress}
-          >
-            <Ionicons name="notifications-outline" size={24} color="white" />
-            {notificationCount > 0 && (
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>
-                  {notificationCount > 99 ? "99+" : notificationCount}
-                </Text>
-              </View>
-            )}
-          </TouchableOpacity>
+          {showNotificationIcon && (
+            <TouchableOpacity 
+              style={styles.iconButton} 
+              onPress={handleNotificationsPress}
+            >
+              <Ionicons name="notifications-outline" size={24} color="white" />
+              {notificationCount > 0 && (
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>
+                    {notificationCount > 99 ? "99+" : notificationCount}
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          )}
           
           <TouchableOpacity 
             style={styles.iconButton}

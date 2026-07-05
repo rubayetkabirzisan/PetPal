@@ -1,11 +1,15 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import axios from 'axios';
-import React, { useEffect, useState } from "react";
+import React, { useState, useCallback } from "react";
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import NavigationHeader from "../components/NavigationHeader";
 import { API } from "../config/api";
-import { colors, spacing } from "../theme/theme";
+import { spacing } from "../theme/theme";
+import { useTheme } from "../contexts/ThemeContext";
+import { useAuth } from "../contexts/AuthContext";
+import { getUserPreferences, getDefaultPreferences } from "../lib/preferences";
+
 interface Notification {
   id?: string;
   _id?: string;
@@ -18,18 +22,45 @@ interface Notification {
 
 export default function NotificationsScreen() {
   const navigation = useNavigation();
+  const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const { theme } = useTheme();
+  const colors = (theme as any).colors;
+  const styles = getStyles(colors);
 
-  useEffect(() => {
-    // Fetch notifications from backend when component mounts
-    axios.get(API.notifications.all)
-      .then((response) => {
-        setNotifications(response.data);  // Update state with fetched notifications
-      })
-      .catch((error) => {
-        console.error('Error fetching notifications:', error);
-      });
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      if (!user?.id) return;
+      
+      const fetchAndFilterNotifications = async () => {
+        try {
+          const [notifsResponse, userPrefs] = await Promise.all([
+            axios.get(API.notifications.all),
+            getUserPreferences(user.id)
+          ]);
+          
+          const prefs = userPrefs || getDefaultPreferences(user.id);
+          const notificationsPrefs = prefs.notifications || {
+            newPets: true, applicationUpdates: true, messages: true
+          };
+
+          // Filter based on preferences
+          const filtered = notifsResponse.data.filter((n: Notification) => {
+            if (n.type === 'application' && !notificationsPrefs.applicationUpdates) return false;
+            if (n.type === 'message' && !notificationsPrefs.messages) return false;
+            if (n.type === 'update' && !notificationsPrefs.newPets) return false;
+            return true;
+          });
+
+          setNotifications(filtered.reverse());
+        } catch (error) {
+          console.error('Error fetching/filtering notifications:', error);
+        }
+      };
+      
+      fetchAndFilterNotifications();
+    }, [user])
+  );
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
@@ -61,6 +92,18 @@ export default function NotificationsScreen() {
     }
   };
 
+  const markAllAsRead = () => {
+    axios.patch(API.notifications.markAllRead)
+      .then(() => {
+        setNotifications((prevNotifications) =>
+          prevNotifications.map((notif) => ({ ...notif, read: true }))
+        );
+      })
+      .catch((error) => {
+        console.error('Error marking all notifications as read:', error);
+      });
+  };
+
   const markAsRead = (notificationId: string) => {
     axios.patch(API.notifications.markRead(notificationId))
     .then((response) => {
@@ -85,6 +128,13 @@ export default function NotificationsScreen() {
     <View style={styles.container}>
       {/* Header */}
       <NavigationHeader title="Notifications" showBackButton={true} />
+      
+      <View style={styles.actionHeader}>
+        <TouchableOpacity style={styles.markAllButton} onPress={markAllAsRead}>
+          <Ionicons name="checkmark-done-circle-outline" size={20} color={colors.primary} />
+          <Text style={[styles.markAllText, { color: colors.primary }]}>Mark all as read</Text>
+        </TouchableOpacity>
+      </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {notifications.map((notification, index) => (
@@ -147,19 +197,10 @@ export default function NotificationsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: spacing.md,
-    backgroundColor: colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
   },
   backButton: {
     padding: spacing.xs,
@@ -171,7 +212,16 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: 'center',
   },
+  actionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.xs,
+  },
   markAllButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
     padding: spacing.xs,
   },
   markAllText: {

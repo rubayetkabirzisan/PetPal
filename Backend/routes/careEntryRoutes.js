@@ -13,6 +13,16 @@ router.get('/viewAll', async (req, res) => {
   }
 });
 
+// Get all care entries by User ID
+router.get('/viewByUser/:userId', async (req, res) => {
+  try {
+    const careEntries = await CareEntry.find({ userId: req.params.userId }).sort({ date: -1 });
+    res.json(careEntries);
+  } catch (err) {
+    res.status(500).send('Server Error');
+  }
+});
+
 // Get a single care entry by ID
 router.get('/viewById/:id', async (req, res) => {
   try {

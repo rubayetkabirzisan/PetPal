@@ -17,7 +17,8 @@ import {
   View
 } from "react-native"
 import NavigationHeader from "../components/NavigationHeader"
-import { reportLostPet } from "../lib/lost-pets"
+import axios from "axios"
+import { API } from "../config/api"
 import { colors, spacing } from "../theme/theme"
 
 interface ReportLostPetScreenProps {
@@ -85,10 +86,35 @@ export default function ReportLostPetScreen({ navigation }: ReportLostPetScreenP
     setIsLoading(true)
 
     try {
-      await reportLostPet({
-        ...formData,
-        photos: images
-      })
+      const payload = {
+        name: formData.name,
+        species: formData.species,
+        breed: formData.breed,
+        age: formData.age,
+        color: formData.color,
+        size: formData.size,
+        description: formData.description,
+        lastSeen: formData.lastSeenDate,
+        location: formData.lastSeenLocation,
+        reportedDate: new Date().toISOString(),
+        status: "lost",
+        ownerName: formData.contactName,
+        ownerPhone: formData.contactPhone,
+        contactEmail: formData.contactEmail,
+        reward: formData.reward,
+        image: images.length > 0 ? images[0] : "", // Store primary image
+        images: images,
+        microchipped: formData.microchipped,
+        priority: "medium", // Default priority for new reports
+        actionLog: [{
+          timestamp: new Date().toISOString(),
+          action: "Case Created",
+          adminName: "System",
+          notes: "Lost pet report submitted by owner"
+        }]
+      }
+
+      await axios.post(API.lostPets.add, payload)
       
       setIsLoading(false)
       Alert.alert(

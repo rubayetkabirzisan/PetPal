@@ -92,6 +92,29 @@ const PetSchema = new mongoose.Schema({
   reportedDate: { type: String },
   ownerName:    { type: String },
   ownerPhone:   { type: String },
+  
+  // ── Advanced Lost Pet Fields ──────────────────────────────────
+  contactEmail: { type: String },
+  reward:       { type: String },
+  priority:     { type: String, enum: ["low", "medium", "high", "critical"], default: "medium" },
+  sightings: [{
+    id: String,
+    location: String,
+    date: String,
+    time: String,
+    description: String,
+    reporterName: String,
+    reporterPhone: String,
+    reporterEmail: String,
+    photos: [String],
+    timestamp: String
+  }],
+  actionLog: [{
+    timestamp: String,
+    action: String,
+    adminName: String,
+    notes: String
+  }]
 });
 
 const Pet = mongoose.model("Pet", PetSchema);

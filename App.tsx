@@ -34,7 +34,9 @@ import RemindersScreen from "./src/screens/RemindersScreen"
 import ReportLostPetScreen from "./src/screens/ReportLostPetScreen"
 import SafeZoneScreen from "./src/screens/SafeZoneScreen"
 import SettingsScreen from "./src/screens/SettingsScreen"
-import { theme } from "./src/theme/theme"
+import ChangePasswordScreen from "./src/screens/ChangePasswordScreen"
+import DocumentScreen from "./src/screens/DocumentScreen"
+import { theme, colors } from "./src/theme/theme"
 
 const Stack = createStackNavigator()
 
@@ -122,6 +124,16 @@ export default function App() {
             <Stack.Screen 
               name="Settings" 
               component={SettingsScreen} 
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen 
+              name="ChangePassword" 
+              component={ChangePasswordScreen} 
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen 
+              name="Document" 
+              component={DocumentScreen} 
               options={{ headerShown: false }}
             />
             <Stack.Screen 

@@ -137,6 +137,19 @@ router.post('/send', async (req, res) => {
     });
 
     await newMessage.save();
+
+    // Create a real event-driven notification for the receiver
+    const Notification = require('../models/Notification');
+    const newNotif = new Notification({
+      userId: receiverId,
+      title: "New Message",
+      message: `${senderName || 'Someone'} sent you a new message.`,
+      time: new Date().toISOString(),
+      type: "message",
+      read: false
+    });
+    await newNotif.save();
+
     res.status(201).json(newMessage);
   } catch (err) {
     console.error("Send Error:", err);

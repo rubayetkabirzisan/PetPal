@@ -1,10 +1,10 @@
 import { Ionicons } from "@expo/vector-icons"
 import { useNavigation } from "@react-navigation/native"
 import React, { useEffect, useState } from "react"
-import { Alert, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from "react-native"
+import { Alert, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View, Share, Linking, Modal } from "react-native"
 import NavigationHeader from "../components/NavigationHeader"
 import { clearUserNotifications } from "../lib/notifications"
-import { clearUserPreferences, getUserPreferences, saveUserPreferences, UserPreferences } from "../lib/preferences"
+import { clearUserPreferences, getUserPreferences, saveUserPreferences, UserPreferences, getDefaultPreferences } from "../lib/preferences"
 import { useAuth } from "../contexts/AuthContext"
 import { useTheme } from "../contexts/ThemeContext"
 import { colors, spacing } from "../theme/theme"
@@ -28,9 +28,13 @@ interface SettingsItem {
 export default function SettingsScreen() {
   const navigation = useNavigation()
   const { user, logout } = useAuth()
-  const { isDarkMode, toggleTheme } = useTheme()
+  const { isDarkMode, toggleTheme, theme } = useTheme()
+  const colors = (theme as any).colors
+  const styles = getStyles(colors)
   const [preferences, setPreferences] = useState<UserPreferences | null>(null)
   const [loading, setLoading] = useState(true)
+  const [showLanguageModal, setShowLanguageModal] = useState(false)
+  const [showTextSizeModal, setShowTextSizeModal] = useState(false)
 
   useEffect(() => {
     loadUserPreferences()
@@ -39,7 +43,7 @@ export default function SettingsScreen() {
   const loadUserPreferences = async () => {
     if (user?.id) {
       try {
-        const userPrefs = await getUserPreferences(user.id)
+        const userPrefs = await getUserPreferences(user.id) || getDefaultPreferences(user.id)
         setPreferences(userPrefs)
       } catch (error) {
         console.error("Error loading preferences:", error)
@@ -75,30 +79,41 @@ export default function SettingsScreen() {
     }
   }
 
-  const handleDataExport = () => {
-    Alert.alert(
-      "Export Data", 
-      "Your data export will be sent to your email address within 24 hours.",
-      [
-        { text: "Cancel", style: "cancel" },
-        { text: "Request Export", onPress: () => {
-          Alert.alert("Success", "Data export request submitted. You'll receive an email soon.")
-        }}
-      ]
-    )
+  const handleDataExport = async () => {
+    try {
+      const exportData = {
+        userProfile: user,
+        preferences: preferences,
+        timestamp: new Date().toISOString()
+      };
+      await Share.share({
+        message: `My PetPal Data Export:\n\n${JSON.stringify(exportData, null, 2)}`,
+        title: 'PetPal Data Export'
+      });
+    } catch (error) {
+      Alert.alert("Error", "Failed to export data.");
+    }
   }
 
   const handleDeleteAccount = () => {
     Alert.alert(
       "Delete Account",
-      "This action cannot be undone. All your data will be permanently deleted.",
+      "This action cannot be undone. All your local data will be permanently deleted.",
       [
         { text: "Cancel", style: "cancel" },
         { 
           text: "Delete", 
           style: "destructive", 
-          onPress: () => {
-            Alert.alert("Account Deletion", "Please contact support to complete account deletion.")
+          onPress: async () => {
+            if (user?.id) {
+              await clearUserPreferences(user.id);
+              await clearUserNotifications(user.id);
+            }
+            if (logout) await logout();
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'Landing' as never }],
+            });
           }
         }
       ]
@@ -175,16 +190,16 @@ export default function SettingsScreen() {
         {
           icon: "language",
           title: "Language",
-          subtitle: "English (US)",
+          subtitle: preferences?.language || "English (US)",
           type: "navigation",
-          onPress: () => Alert.alert("Coming Soon", "Multiple language support will be available soon.")
+          onPress: () => setShowLanguageModal(true)
         },
         {
           icon: "text",
           title: "Text Size",
-          subtitle: "Adjust font size for better readability",
+          subtitle: preferences?.textSize || "Medium",
           type: "navigation",
-          onPress: () => Alert.alert("Coming Soon", "Text size options will be available soon.")
+          onPress: () => setShowTextSizeModal(true)
         }
       ]
     },
@@ -196,21 +211,21 @@ export default function SettingsScreen() {
           title: "Location Services",
           subtitle: "Required for pet matching and GPS tracking",
           type: "navigation",
-          onPress: () => Alert.alert("Location Settings", "Please adjust location permissions in your device settings.")
+          onPress: () => Linking.openSettings()
         },
         {
           icon: "shield-checkmark",
           title: "Data Sharing",
           subtitle: "Control how your data is used",
           type: "navigation",
-          onPress: () => Alert.alert("Privacy Settings", "Manage your data sharing preferences.")
+          onPress: () => (navigation as any).navigate("Document", { title: "Data Sharing", type: "data" })
         },
         {
           icon: "lock-closed",
           title: "Privacy Policy",
           subtitle: "Read our privacy policy",
           type: "navigation",
-          onPress: () => Alert.alert("Privacy Policy", "Our privacy policy protects your personal information.")
+          onPress: () => (navigation as any).navigate("Document", { title: "Privacy Policy", type: "privacy" })
         }
       ]
     },
@@ -218,18 +233,11 @@ export default function SettingsScreen() {
       title: "Account & Security",
       items: [
         {
-          icon: "person-circle",
-          title: "Edit Profile",
-          subtitle: "Update your personal information",
-          type: "navigation",
-          onPress: () => navigation.goBack() // Go back to profile screen
-        },
-        {
           icon: "key",
           title: "Change Password",
           subtitle: "Update your account password",
           type: "navigation",
-          onPress: () => Alert.alert("Change Password", "Password change functionality will be available soon.")
+          onPress: () => (navigation as any).navigate("ChangePassword")
         },
         {
           icon: "download",
@@ -269,7 +277,7 @@ export default function SettingsScreen() {
           title: "Terms of Service",
           subtitle: "Read our terms and conditions",
           type: "navigation",
-          onPress: () => Alert.alert("Terms of Service", "Please read our terms of service carefully.")
+          onPress: () => (navigation as any).navigate("Document", { title: "Terms of Service", type: "terms" })
         },
         {
           icon: "information-circle",
@@ -397,11 +405,55 @@ export default function SettingsScreen() {
           </Text>
         </View>
       </ScrollView>
+
+      {/* Language Modal */}
+      <Modal visible={showLanguageModal} transparent animationType="fade">
+        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setShowLanguageModal(false)}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Select Language</Text>
+            {['English (US)', 'Spanish (ES)', 'French (FR)'].map((lang) => (
+              <TouchableOpacity
+                key={lang}
+                style={styles.modalOption}
+                onPress={() => {
+                  updatePreferences({ language: lang });
+                  setShowLanguageModal(false);
+                }}
+              >
+                <Text style={styles.modalOptionText}>{lang}</Text>
+                {preferences?.language === lang && <Ionicons name="checkmark" size={20} color={colors.primary} />}
+              </TouchableOpacity>
+            ))}
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* Text Size Modal */}
+      <Modal visible={showTextSizeModal} transparent animationType="fade">
+        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setShowTextSizeModal(false)}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Select Text Size</Text>
+            {['Small', 'Medium', 'Large'].map((size) => (
+              <TouchableOpacity
+                key={size}
+                style={styles.modalOption}
+                onPress={() => {
+                  updatePreferences({ textSize: size });
+                  setShowTextSizeModal(false);
+                }}
+              >
+                <Text style={styles.modalOptionText}>{size}</Text>
+                {preferences?.textSize === size && <Ionicons name="checkmark" size={20} color={colors.primary} />}
+              </TouchableOpacity>
+            ))}
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   )
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -528,5 +580,34 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.text + '60',
     textAlign: 'center',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: '80%',
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    padding: spacing.lg,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.text,
+    marginBottom: spacing.md,
+  },
+  modalOption: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  modalOptionText: {
+    fontSize: 16,
+    color: colors.text,
   },
 })

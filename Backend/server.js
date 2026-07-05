@@ -31,6 +31,7 @@ app.use("/api/careEntries",           require("./routes/careEntryRoutes"));
 app.use("/api/notifications",         require("./routes/notificationRoutes"));
 app.use("/api/reminders",             require("./routes/reminders"));
 app.use("/api/lostpets",              require("./routes/LostpetRoutes"));
+app.use("/api/gps",                   require("./routes/gpsRoutes"));
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

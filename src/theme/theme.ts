@@ -71,6 +71,14 @@ export const theme = {
     onSurface: "#8B4513",
     onBackground: "#8B4513",
     outline: "#E8E8E8",
+    // Custom colors mapped for light theme
+    text: "#8B4513",
+    textSecondary: "#8B4513",
+    border: "#E8E8E8",
+    success: "#22C55E",
+    warning: "#F59E0B",
+    error: "#EF4444",
+    info: "#3B82F6",
   },
 }
 
@@ -89,6 +97,14 @@ export const darkTheme = {
     onSurface: "#F5F7FA",
     onBackground: "#F5F7FA",
     outline: "#374151",
+    // Custom colors mapped for dark theme
+    text: "#F5F7FA",
+    textSecondary: "#A3A3A3",
+    border: "#374151",
+    success: "#22C55E",
+    warning: "#F59E0B",
+    error: "#EF4444",
+    info: "#3B82F6",
   }
 }
 

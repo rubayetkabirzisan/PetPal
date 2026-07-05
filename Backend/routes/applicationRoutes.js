@@ -24,4 +24,36 @@ router.post('/create', async (req, res) => {
   }
 });
 
+// Update application status (Admin)
+router.patch('/updateStatus/:id', async (req, res) => {
+  try {
+    const { status } = req.body;
+    const application = await Application.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true }
+    );
+    
+    if (!application) {
+      return res.status(404).json({ error: "Application not found" });
+    }
+
+    // Create a real event-driven notification for the adopter
+    const Notification = require('../models/Notification');
+    const newNotif = new Notification({
+      userId: application.userId, // Assuming Application model has userId
+      title: `Application ${status}`,
+      message: `Your adoption application for ${application.petName} was marked as ${status}.`,
+      time: new Date().toISOString(),
+      type: "application",
+      read: false
+    });
+    await newNotif.save();
+
+    res.json(application);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

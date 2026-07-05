@@ -24,7 +24,7 @@ interface AuthScreenProps {
 }
 
 
-const API_BASE = API.signup.replace("/signup", "");
+const API_BASE = API.users.signup.replace("/signup", "");
 export default function AuthScreen({ navigation, route }: AuthScreenProps) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")

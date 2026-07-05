@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const careEntrySchema = new mongoose.Schema({
+  userId: { type: String, required: true },
   petName: { type: String, required: true },
   type: { 
     type: String, 

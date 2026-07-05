@@ -88,9 +88,10 @@ export default function CareJournalScreen({ route, navigation }: CareJournalScre
 
   // --- Load Data ---
   const loadData = async () => {
+    if (!user?.id) return;
     try {
       // Get care entries for this user
-      const careEntriesResponse = await fetch(API.careEntries.all);
+      const careEntriesResponse = await fetch(API.careEntries.byUser(user.id));
       const careEntries = await careEntriesResponse.json();
       
       // Map MongoDB _id to id to fix the unique key warning
@@ -114,7 +115,7 @@ export default function CareJournalScreen({ route, navigation }: CareJournalScre
 
   // --- Submit (Add/Edit) ---
   const handleSubmit = async () => {
-    if (!formData.petId || !formData.title.trim() || !formData.description.trim()) {
+    if (!formData.petName || !formData.title.trim() || !formData.description.trim()) {
       Alert.alert('Missing Information', 'Please fill in all required fields.');
       return;
     }

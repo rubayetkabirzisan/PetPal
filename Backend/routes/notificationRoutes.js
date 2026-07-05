@@ -45,5 +45,15 @@ router.patch('/markRead/:id', async (req, res) => {
   }
 });
 
+// Mark all notifications as read
+router.patch('/markAllRead', async (req, res) => {
+  try {
+    await Notification.updateMany({ read: false }, { $set: { read: true } });
+    res.json({ message: 'All notifications marked as read' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 module.exports = router;
 //notofication

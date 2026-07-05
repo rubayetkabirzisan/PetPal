@@ -15,7 +15,7 @@ import NavigationHeader from '../components/NavigationHeader';
 import { useAuth } from "../contexts/AuthContext";
 import axios from 'axios';
 import { API } from '../config/api';
-import { colors } from '../theme/theme';
+import { useTheme } from '../contexts/ThemeContext';
 //haven't made any changes yet
 type RootStackParamList = {
   AuthScreen: undefined;
@@ -39,6 +39,9 @@ const AdopterProfileScreen: React.FC = () => {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [saving, setSaving] = useState<boolean>(false);
+  const { theme } = useTheme();
+  const colors = (theme as any).colors;
+  const styles = getStyles(colors);
   const [profile, setProfile] = useState<ProfileData>({
     name: "",
     email: "",
@@ -356,7 +359,7 @@ const AdopterProfileScreen: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   containerWrapper: {
     flex: 1,
     backgroundColor: colors.background,

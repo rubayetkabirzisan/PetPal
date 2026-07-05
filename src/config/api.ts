@@ -15,9 +15,12 @@
 import { Platform } from 'react-native';
 export const API_BASE_URL = 'http://192.168.0.101:5000';
 export const API = {
-  // Auth
-  signup:  `${API_BASE_URL}/api/users/signup`,
-  login:   `${API_BASE_URL}/api/users/login`,
+  // Users
+  users: {
+    login: `${API_BASE_URL}/api/users/login`,
+    signup: `${API_BASE_URL}/api/users/signup`,
+    changePassword: `${API_BASE_URL}/api/users/change-password`,
+  },
 
   // Pets
   pets: {
@@ -36,6 +39,7 @@ export const API = {
   // Care journal
   careEntries: {
     all:    `${API_BASE_URL}/api/careEntries/viewAll`,
+    byUser: (userId: string) => `${API_BASE_URL}/api/careEntries/viewByUser/${userId}`,
     byId:   (id: string) => `${API_BASE_URL}/api/careEntries/viewById/${id}`,
     create: `${API_BASE_URL}/api/careEntries/create`,
     update: (id: string) => `${API_BASE_URL}/api/careEntries/update/${id}`,
@@ -46,6 +50,8 @@ export const API = {
   notifications: {
     all:      `${API_BASE_URL}/api/notifications/viewAll`,
     markRead: (id: string) => `${API_BASE_URL}/api/notifications/markRead/${id}`,
+    markAllRead: `${API_BASE_URL}/api/notifications/markAllRead`,
+    create:   `${API_BASE_URL}/api/notifications/AddNew`,
   },
 
   // Messages
@@ -58,8 +64,15 @@ export const API = {
   // Lost pets
   lostPets: {
     all:    `${API_BASE_URL}/api/lostpets/viewAll`,
+    add:    `${API_BASE_URL}/api/lostpets/addpet`,
     update: (id: string) => `${API_BASE_URL}/api/lostpets/update/${id}`,
+    sighting: (id: string) => `${API_BASE_URL}/api/lostpets/sighting/${id}`,
     delete: (id: string) => `${API_BASE_URL}/api/lostpets/delete/${id}`,
+  },
+  
+  // Simulated GPS
+  gps: {
+    byUser: (userId: string) => `${API_BASE_URL}/api/gps/track/${userId}`,
   },
 
   // Applications

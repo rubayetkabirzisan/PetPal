@@ -5,6 +5,9 @@ import DateTimePicker from '@react-native-community/datetimepicker'
 import * as ImagePicker from "expo-image-picker"
 import * as Location from 'expo-location'
 import React, { useEffect, useRef, useState } from "react"
+import axios from "axios"
+import { API } from "../config/api"
+import { useFocusEffect } from "@react-navigation/native"
 import {
     ActivityIndicator,
     Alert,
@@ -102,21 +105,25 @@ export default function LostPetsScreen({ navigation }: LostPetsScreenProps) {
   const mapRef = useRef<any>(null)
   const MAX_PHOTOS = 4
 
-  useEffect(() => {
-    async function loadData() {
-      try {
-        // Initialize the data first to ensure we have the latest mock data
-        await initializeLostPetsData()
-        // Then fetch the pets
-        const pets = await getLostPets()
-        console.log('Fetched pets:', pets.length, 'lost:', pets.filter(p => p.status === "lost").length, 'found:', pets.filter(p => p.status === "found").length)
-        setLostPets(pets)
-      } catch (error) {
-        console.error('Error fetching pets:', error)
+  useFocusEffect(
+    React.useCallback(() => {
+      async function loadData() {
+        try {
+          const res = await axios.get(API.lostPets.all)
+          // Map _id to id
+          const pets = res.data.map((p: any) => ({ ...p, id: p._id || p.id }))
+          // Ensure we only show pets meant for the lost pets feature
+          const validPets = pets.filter((p: any) => 
+            p.status === "lost" || p.status === "found" || p.status === "sighted" || p.status === "reunited"
+          )
+          setLostPets(validPets)
+        } catch (error) {
+          console.error('Error fetching lost pets:', error)
+        }
       }
-    }
-    loadData()
-  }, [])
+      loadData()
+    }, [])
+  )
   
   // Handle map initialization when the map is shown
   useEffect(() => {
@@ -529,18 +536,42 @@ export default function LostPetsScreen({ navigation }: LostPetsScreenProps) {
         ? `${sightingForm.location} (${sightingForm.coordinates.latitude.toFixed(6)}, ${sightingForm.coordinates.longitude.toFixed(6)})`
         : sightingForm.location;
         
-      // Submit the report
-      await reportSighting({
+      // Prepare payload mapping frontend structure to backend schema
+      const sightingPayload = {
         petId: currentPet.id,
         location: locationText,
-        date: dateTimePicker.getDateTimeString(),
+        date: dateTimePicker.getDateTimeString().split(" ")[0], // Just date
         time: dateTimePicker.getFormattedTime(),
         description: sightingForm.description,
         reporterName: sightingForm.reporterName,
         reporterPhone: sightingForm.reporterPhone,
         reporterEmail: sightingForm.reporterEmail,
         photos: photoUris
-      });
+      };
+      
+      // Submit the report
+      await axios.post(API.lostPets.sighting(currentPet.id), sightingPayload);
+      
+      // Update local state temporarily for immediate feedback
+      setLostPets(prevPets => 
+        prevPets.map(pet => {
+          if (pet.id === currentPet.id) {
+            return {
+              ...pet,
+              status: pet.status === 'lost' ? 'sighted' : pet.status,
+              sightings: [
+                ...(pet.sightings || []),
+                {
+                  id: `sight-${Date.now()}`,
+                  ...sightingPayload,
+                  timestamp: new Date().toISOString()
+                }
+              ]
+            }
+          }
+          return pet
+        })
+      );
       // Show success message
       Alert.alert(
         "Sighting Reported",

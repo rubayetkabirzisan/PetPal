@@ -16,6 +16,8 @@ export interface UserPreferences {
     applicationUpdates: boolean
     messages: boolean
   }
+  language?: string
+  textSize?: string
 }
 
 const PREFERENCES_STORAGE_KEY = "petpal_preferences"
@@ -66,6 +68,8 @@ export function getDefaultPreferences(userId: string): UserPreferences {
       applicationUpdates: true,
       messages: true,
     },
+    language: "English (US)",
+    textSize: "Medium",
   }
 }
 

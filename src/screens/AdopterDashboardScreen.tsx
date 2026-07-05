@@ -6,7 +6,8 @@ import { Dimensions, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOp
 import NavigationHeader from "../components/NavigationHeader"
 
 import { useAuth } from "../contexts/AuthContext"
-import { colors, spacing } from "../theme/theme"
+import { useTheme } from "../contexts/ThemeContext"
+import { spacing } from "../theme/theme"
 import { useFocusEffect } from "@react-navigation/native"
 import React from "react"
 
@@ -26,7 +27,11 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
   const [reminderCount, setReminderCount] = useState(0)
   const [applicationCount, setApplicationCount] = useState(0)
   const [adoptedPetsCount, setAdoptedPetsCount] = useState(0)
+  const [gpsAlertCount, setGpsAlertCount] = useState(0)
   const { user, logout } = useAuth()
+  const { theme } = useTheme()
+  const colors = (theme as any).colors
+  const styles = getStyles(colors)
 
   // Handle hardware back press on Android
   useFocusEffect(
@@ -98,7 +103,7 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
             })
             .catch(err => console.error("Error fetching dashboard message count:", err));
             
-            axios.default.get(API.careEntries.all)
+            axios.default.get(API.careEntries.byUser(user.id))
             .then(res => {
               // Map _id to id and take top 2
               const entries = res.data
@@ -120,11 +125,22 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
             })
             .catch(err => console.error("Error fetching dashboard applications count:", err));
             
-          axios.default.get(API.adoptionHistory.byUser(user.id))
-            .then(res => {
-              setAdoptedPetsCount(res.data.length);
+          fetch(API.adoptionHistory.byUser(user.id))
+            .then((res) => res.json())
+            .then((data) => {
+              if (Array.isArray(data)) setAdoptedPetsCount(data.length)
             })
-            .catch(err => console.error("Error fetching dashboard adopted pets count:", err));
+            .catch((err) => console.error("Error fetching adoption history:", err))
+
+          fetch(API.gps.byUser(user.id))
+            .then((res) => res.json())
+            .then((data) => {
+              if (Array.isArray(data)) {
+                const alerts = data.filter((pet: any) => pet.status === "Alert" || pet.status === "Low Battery").length;
+                setGpsAlertCount(alerts);
+              }
+            })
+            .catch((err) => console.error("Error fetching GPS alerts:", err))
         });
       });
     }
@@ -324,9 +340,6 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
   )
 
   const renderGPSAlertsCard = () => {
-    // Mock number of GPS alerts
-    const alertCount: number = 3;
-    
     return (
       <TouchableOpacity 
         style={styles.gpsAlertsCard}
@@ -335,15 +348,17 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
         <View style={styles.gpsAlertsContent}>
           <View style={styles.gpsAlertsIconContainer}>
             <Ionicons name="location" size={28} color="white" />
-            <View style={styles.gpsAlertsBadge}>
-              <Text style={styles.gpsAlertsBadgeText}>{alertCount}</Text>
-            </View>
+            {gpsAlertCount > 0 && (
+              <View style={styles.gpsAlertsBadge}>
+                <Text style={styles.gpsAlertsBadgeText}>{gpsAlertCount}</Text>
+              </View>
+            )}
           </View>
           <View style={styles.gpsAlertsInfo}>
             <Text style={styles.gpsAlertsTitle}>GPS Alerts</Text>
             <Text style={styles.gpsAlertsSubtitle}>
-              {alertCount > 0
-                ? `${alertCount} ${alertCount === 1 ? 'alert' : 'alerts'} to review`
+              {gpsAlertCount > 0
+                ? `${gpsAlertCount} ${gpsAlertCount === 1 ? 'alert' : 'alerts'} to review`
                 : "All pets are within safe zones"}
             </Text>
           </View>
@@ -442,7 +457,7 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
 
   return (
     <View style={styles.container}>
-      <NavigationHeader title="Home" />
+      <NavigationHeader title="Discover Pets" showNotificationIcon={true} />
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {renderQuickActions()}
         {renderCareJournalSection()}
@@ -466,7 +481,7 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
   )
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,

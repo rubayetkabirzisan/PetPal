@@ -15,11 +15,15 @@ router.get("/viewAll", async (req, res) => {
 
 // Add a new lost pet
 router.post("/addpet", async (req, res) => {
-  const { name, type, breed, color, lastSeen, location, reportedDate, status, ownerName, ownerPhone, description, image } = req.body;
+  const { 
+    name, type, species, breed, color, lastSeen, location, reportedDate, status, 
+    ownerName, ownerPhone, description, image, contactEmail, reward, priority, actionLog 
+  } = req.body;
 
   const newPet = new Pet({
     name,
     type,
+    species: species || type || "Unknown",
     breed,
     color,
     lastSeen,
@@ -30,6 +34,11 @@ router.post("/addpet", async (req, res) => {
     ownerPhone,
     description,
     image,
+    contactEmail,
+    reward,
+    priority,
+    actionLog,
+    sightings: []
   });
 
   try {
@@ -42,16 +51,57 @@ router.post("/addpet", async (req, res) => {
 
 // Update pet status
 router.patch("/update/:id", async (req, res) => {
-  const { status } = req.body;
+  const { status, priority, actionLog } = req.body;
+  
+  const updateData = {};
+  if (status) updateData.status = status;
+  if (priority) updateData.priority = priority;
+  
   try {
+    let updateQuery = { $set: updateData };
+    
+    // If actionLog is provided, push it to the array
+    if (actionLog) {
+      updateQuery.$push = { actionLog: actionLog };
+    }
+    
     const updatedPet = await Pet.findByIdAndUpdate(
       req.params.id,
-      { status },
+      updateQuery,
       { new: true }
     );
     res.json(updatedPet);
   } catch (err) {
     res.status(500).json({ message: "Error updating pet status" });
+  }
+});
+
+// Add a sighting
+router.post("/sighting/:id", async (req, res) => {
+  try {
+    const sighting = req.body;
+    
+    const actionLogEntry = {
+      timestamp: new Date().toISOString(),
+      action: "Sighting Reported",
+      adminName: "System",
+      notes: `Sighting reported by ${sighting.reporterName} at ${sighting.location}`
+    };
+
+    const updatedPet = await Pet.findByIdAndUpdate(
+      req.params.id,
+      { 
+        $push: { 
+          sightings: sighting,
+          actionLog: actionLogEntry
+        }
+      },
+      { new: true }
+    );
+    
+    res.json(updatedPet);
+  } catch (err) {
+    res.status(500).json({ message: "Error adding sighting" });
   }
 });
 
