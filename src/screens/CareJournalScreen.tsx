@@ -130,25 +130,27 @@ export default function CareJournalScreen({ route, navigation }: CareJournalScre
 
       if (editingEntry) {
         // Edit existing entry
-        await fetch(API.careEntries.update(editingEntry), {
+        const res = await fetch(API.careEntries.update(editingEntry), {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         });
+        if (!res.ok) throw new Error(await res.text());
       } else {
         // Create new entry
-        await fetch(API.careEntries.create, {
+        const res = await fetch(API.careEntries.create, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         });
+        if (!res.ok) throw new Error(await res.text());
       }
 
       loadData();
       resetForm();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving entry:', error);
-      Alert.alert('Error', 'Failed to save the care entry.');
+      Alert.alert('Save Failed', error.message || 'Unknown error occurred');
     } finally {
       setIsLoading(false);
     }

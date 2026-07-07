@@ -16,8 +16,10 @@ import {
     TouchableOpacity,
     View
 } from "react-native"
+import axios from "axios"
 import NavigationHeader from "../components/NavigationHeader"
-import { getPets, type Pet } from "../data/mockData"
+import { API } from "../config/api"
+import { type Pet } from "../data/mockData"
 import { colors, spacing } from "../theme/theme"
 
 const { width } = Dimensions.get("window")
@@ -113,10 +115,11 @@ export default function AiPetScreen({ navigation }: AiPetScreenProps) {
 
   const loadPets = async () => {
     try {
-      const allPets = await getPets()
-      setPets(allPets.filter(pet => pet.status === "available"))
+      const res = await axios.get(API.pets.all)
+      const allPets = res.data
+      setPets(allPets.filter((pet: any) => pet.status === "available" || !pet.status))
     } catch (error) {
-      console.error("Error loading pets:", error)
+      console.error("Error loading pets from backend:", error)
     }
   }
 
@@ -126,9 +129,10 @@ export default function AiPetScreen({ navigation }: AiPetScreenProps) {
     const maxScore = 100
 
     // Pet type matching (20 points)
-    if (preferences.petType && (pet.species || "").toLowerCase() === preferences.petType.toLowerCase()) {
+    const petType = pet.species || pet.type || "";
+    if (preferences.petType && petType.toLowerCase() === preferences.petType.toLowerCase()) {
       score += 20
-      reasons.push(`Perfect ${(pet.species || "")} match for your preference`)
+      reasons.push(`Perfect ${petType} match for your preference`)
     }
 
     // Size matching (15 points)
@@ -145,9 +149,10 @@ export default function AiPetScreen({ navigation }: AiPetScreenProps) {
     }
 
     // Activity level matching (15 points)
-    if (preferences.activityLevel && pet.activityLevel?.toLowerCase() === preferences.activityLevel.toLowerCase()) {
+    const activityLvl = pet.activityLevel || pet.energyLevel || "";
+    if (preferences.activityLevel && activityLvl.toLowerCase() === preferences.activityLevel.toLowerCase()) {
       score += 15
-      reasons.push(`${pet.activityLevel} activity level matches your lifestyle`)
+      reasons.push(`${activityLvl} activity level matches your lifestyle`)
     }
 
     // Living space compatibility (10 points)
@@ -165,12 +170,14 @@ export default function AiPetScreen({ navigation }: AiPetScreenProps) {
     }
 
     // Special considerations (25 points total)
-    if (preferences.children && pet.goodWithKids) {
+    const goodWithKids = pet.goodWithKids || (pet.goodWith && pet.goodWith.includes("Children"));
+    if (preferences.children && goodWithKids) {
       score += 10
       reasons.push("Excellent with children")
     }
 
-    if (preferences.otherPets && pet.goodWithPets) {
+    const goodWithPets = pet.goodWithPets || (pet.goodWith && pet.goodWith.includes("Other Pets"));
+    if (preferences.otherPets && goodWithPets) {
       score += 10
       reasons.push("Gets along well with other pets")
     }
@@ -186,8 +193,16 @@ export default function AiPetScreen({ navigation }: AiPetScreenProps) {
     return { pet, score, reasons }
   }
 
-  const calculatePetAgeCategory = (age: string): "young" | "adult" | "senior" => {
-    const ageNum = parseInt(age)
+  const calculatePetAgeCategory = (ageStr: string): "young" | "adult" | "senior" => {
+    if (!ageStr) return "young"
+    const lower = ageStr.toLowerCase()
+    
+    // If it contains "month" or "week", it's definitely young
+    if (lower.includes("month") || lower.includes("week")) {
+      return "young"
+    }
+
+    const ageNum = parseInt(lower) || 0
     if (ageNum <= 2) return "young"
     if (ageNum <= 7) return "adult"
     return "senior"
@@ -584,9 +599,9 @@ export default function AiPetScreen({ navigation }: AiPetScreenProps) {
   )
 
   const renderMatchCard = (match: MatchScore) => (
-    <View key={match.pet.id} style={styles.matchCard}>
+    <View key={match.pet.id || (match.pet as any)._id} style={styles.matchCard}>
       <View style={styles.matchHeader}>
-        <Image source={{ uri: match.pet.imageUrl }} style={styles.matchImage} />
+        <Image source={{ uri: (match.pet as any).image || match.pet.imageUrl }} style={styles.matchImage} />
         <View style={styles.matchInfo}>
           <Text style={styles.matchName}>{match.pet.name}</Text>
           <Text style={styles.matchBreed}>{match.pet.breed}</Text>
@@ -610,7 +625,7 @@ export default function AiPetScreen({ navigation }: AiPetScreenProps) {
       
       <TouchableOpacity 
         style={styles.viewPetButton}
-        onPress={() => navigation.navigate("PetProfile", { petId: match.pet.id })}
+        onPress={() => navigation.navigate("PetProfile", { petId: match.pet.id || (match.pet as any)._id })}
       >
         <Text style={styles.viewPetButtonText}>View Profile</Text>
         <Ionicons name="arrow-forward" size={16} color={colors.primary} />

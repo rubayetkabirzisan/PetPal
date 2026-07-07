@@ -209,6 +209,28 @@ export default function ApplicationTrackerScreen({ navigation, route }: Applicat
             <Text style={styles.detailText}>Application ID: {application.id}</Text>
           </View>
         </View>
+
+        {application.answers && Object.keys(application.answers).length > 0 && (
+          <View style={{ marginTop: spacing.md, paddingTop: spacing.md, borderTopWidth: 1, borderTopColor: colors.border }}>
+            <Text style={{ fontWeight: "bold", fontSize: 16, color: colors.text, marginBottom: spacing.sm }}>Your Application Answers</Text>
+            {Object.entries(application.answers).map(([key, value]) => {
+              if (value === "" || value === false || value === undefined) return null;
+              
+              const formatKey = (k: string) => {
+                // convert camelCase to Title Case
+                const result = k.replace(/([A-Z])/g, " $1");
+                return result.charAt(0).toUpperCase() + result.slice(1);
+              };
+
+              return (
+                <View key={key} style={{ marginBottom: spacing.xs }}>
+                  <Text style={{ color: colors.textSecondary, fontSize: 12 }}>{formatKey(key)}</Text>
+                  <Text style={{ color: colors.text, fontSize: 14 }}>{String(value)}</Text>
+                </View>
+              );
+            })}
+          </View>
+        )}
       </View>
 
       {/* Timeline */}

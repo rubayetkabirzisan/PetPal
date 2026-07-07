@@ -12,6 +12,7 @@ import {
 import { useAuth } from "../contexts/AuthContext"
 import { useTheme } from "../contexts/ThemeContext"
 import { colors } from "../theme/theme"
+import { API } from "../config/api"
 
 interface NavigationHeaderProps {
   title: string
@@ -37,10 +38,10 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
 
   useFocusEffect(
     useCallback(() => {
-      if (!showNotificationIcon) return;
+      if (!showNotificationIcon || !user?.id) return;
       
-      // Fetch actual notification count from backend
-      fetch('http://192.168.0.101:5000/api/notifications/viewAll')
+      // Fetch actual notification count from backend for this user
+      fetch(API.notifications.byUser(user.id))
         .then(res => res.json())
         .then(data => {
           if (Array.isArray(data)) {
@@ -49,7 +50,7 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
           }
         })
         .catch(err => console.error('Error fetching notification count:', err));
-    }, [showNotificationIcon])
+    }, [showNotificationIcon, user])
   );
 
   const handleBackPress = () => {

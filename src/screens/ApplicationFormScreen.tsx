@@ -1,9 +1,12 @@
 "use client"
 
 import { Ionicons, MaterialIcons } from "@expo/vector-icons"
-import { useState } from "react"
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from "react-native"
-import * as data from "../data/mockData"
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View, ActivityIndicator } from "react-native"
+import { useEffect, useState } from "react"
+import axios from "axios"
+import DateTimePicker from "@react-native-community/datetimepicker"
+import { API } from "../config/api"
+import { useAuth } from "../contexts/AuthContext"
 import { colors } from "../theme/theme"
 
 interface ApplicationFormScreenProps {
@@ -69,8 +72,19 @@ export default function ApplicationFormScreen({ navigation, route }: Application
     additionalComments: "",
   })
 
+  const { user } = useAuth()
   const petId = route.params?.petId
-  const petInfo = petId ? data.getPets().find((pet: any) => pet.id === petId) : null
+  const [petInfo, setPetInfo] = useState<any>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showDatePicker, setShowDatePicker] = useState(false)
+
+  useEffect(() => {
+    if (petId) {
+      axios.get(API.pets.byId(petId))
+        .then(res => setPetInfo(res.data))
+        .catch(err => console.error("Error fetching pet info:", err))
+    }
+  }, [petId])
 
   const steps = ["Personal Info", "Address", "Pet Experience", "Lifestyle", "References", "Additional", "Review"]
 
@@ -91,26 +105,66 @@ export default function ApplicationFormScreen({ navigation, route }: Application
   }
 
   const submitApplication = () => {
+    if (!user) {
+      Alert.alert("Error", "You must be logged in to apply")
+      return
+    }
+
     Alert.alert("Submit Application", "Are you sure you want to submit your adoption application?", [
       { text: "Cancel", style: "cancel" },
       {
         text: "Submit",
-        onPress: () => {
-          // Here you would typically send the form data to your backend API
-          Alert.alert(
-            "Application Submitted!",
-            "Your adoption application has been submitted successfully. You will receive updates via email and in-app notifications.",
-            [                {
-                text: "OK",
-                onPress: () => {
-                  // Navigate directly to ApplicationList screen with applicationId parameter
-                  navigation.navigate("ApplicationList", { 
-                    applicationId: "new-app-" + Date.now() 
-                  });
+        onPress: async () => {
+          setIsSubmitting(true)
+          try {
+            const actualUserId = user.id || (user as any).uid;
+            
+            if (!actualUserId) {
+              Alert.alert("Error", "Missing user ID. Please log out and log back in.");
+              setIsSubmitting(false);
+              return;
+            }
+            if (!petId) {
+              Alert.alert("Error", "Missing pet ID.");
+              setIsSubmitting(false);
+              return;
+            }
+
+            const payload = {
+              userId: actualUserId,
+              petId: petId,
+              shelterId: petInfo?.shelterId || "shelter_1",
+              petName: petInfo?.name || "Unknown Pet",
+              petBreed: petInfo?.breed || "",
+              petImage: petInfo?.image || (petInfo?.images && petInfo.images[0]) || "",
+              shelterName: petInfo?.shelterName || "",
+              status: "Pending",
+              answers: formData
+            }
+
+            await axios.post(API.applications.create, payload)
+            
+            Alert.alert(
+              "Application Submitted!",
+              "Your adoption application has been submitted successfully.",
+              [
+                {
+                  text: "OK",
+                  onPress: () => {
+                    navigation.navigate("ModernApplicationList")
+                  },
                 },
-              },
-            ],
-          )
+              ]
+            )
+          } catch (err: any) {
+            console.log("Application submission error:", err.response?.data || err.message)
+            Alert.alert(
+              "Error", 
+              `Failed to submit application.\nDetails: ${err.response?.data?.error || err.message || JSON.stringify(err)}`
+            )
+          } finally {
+            setIsSubmitting(false)
+          }
         },
       },
     ])
@@ -197,13 +251,28 @@ export default function ApplicationFormScreen({ navigation, route }: Application
 
       <View style={styles.inputGroup}>
         <Text style={styles.inputLabel}>Date of Birth *</Text>
-        <TextInput
+        <TouchableOpacity
           style={styles.textInput}
-          value={formData.dateOfBirth}
-          onChangeText={(text) => updateFormData("dateOfBirth", text)}
-          placeholder="MM/DD/YYYY"
-          placeholderTextColor={colors.text + "80"}
-        />
+          onPress={() => setShowDatePicker(true)}
+        >
+          <Text style={{ color: formData.dateOfBirth ? colors.text : colors.text + "80", marginTop: Platform.OS === 'ios' ? 4 : 0 }}>
+            {formData.dateOfBirth || "MM/DD/YYYY"}
+          </Text>
+        </TouchableOpacity>
+        {showDatePicker && (
+          <DateTimePicker
+            value={formData.dateOfBirth ? new Date(formData.dateOfBirth) : new Date()}
+            mode="date"
+            display="default"
+            onChange={(event, selectedDate) => {
+              setShowDatePicker(false)
+              if (selectedDate) {
+                const formattedDate = `${selectedDate.getMonth() + 1}/${selectedDate.getDate()}/${selectedDate.getFullYear()}`
+                updateFormData("dateOfBirth", formattedDate)
+              }
+            }}
+          />
+        )}
       </View>
     </View>
   )
@@ -816,11 +885,18 @@ export default function ApplicationFormScreen({ navigation, route }: Application
         )}
 
         <TouchableOpacity
-          style={styles.nextButton}
+          style={[styles.nextButton, isSubmitting && { opacity: 0.7 }]}
           onPress={currentStep === steps.length - 1 ? submitApplication : nextStep}
+          disabled={isSubmitting}
         >
-          <Text style={styles.nextButtonText}>{currentStep === steps.length - 1 ? "Submit Application" : "Next"}</Text>
-          {currentStep < steps.length - 1 && <Ionicons name="chevron-forward" size={20} color="white" />}
+          {isSubmitting ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <>
+              <Text style={styles.nextButtonText}>{currentStep === steps.length - 1 ? "Submit Application" : "Next"}</Text>
+              {currentStep < steps.length - 1 && <Ionicons name="arrow-forward" size={20} color="white" />}
+            </>
+          )}
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>

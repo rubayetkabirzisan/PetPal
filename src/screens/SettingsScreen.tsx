@@ -105,15 +105,26 @@ export default function SettingsScreen() {
           text: "Delete", 
           style: "destructive", 
           onPress: async () => {
-            if (user?.id) {
-              await clearUserPreferences(user.id);
-              await clearUserNotifications(user.id);
+            try {
+              if (user?.id) {
+                // Delete user from backend database
+                const axios = require('axios');
+                const { API } = require('../config/api');
+                await axios.delete(API.users.deleteAccount(user.id));
+
+                // Clear local data
+                await clearUserPreferences(user.id);
+                await clearUserNotifications(user.id);
+              }
+              if (logout) await logout();
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'Landing' as never }],
+              });
+            } catch (error) {
+              console.error("Error deleting account:", error);
+              Alert.alert("Error", "Failed to delete account from server.");
             }
-            if (logout) await logout();
-            navigation.reset({
-              index: 0,
-              routes: [{ name: 'Landing' as never }],
-            });
           }
         }
       ]

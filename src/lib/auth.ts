@@ -1,4 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import { API } from '../config/api';
 
 export interface User {
   id: string;
@@ -24,6 +26,10 @@ export async function getStoredAuth(): Promise<AuthState> {
     const stored = await AsyncStorage.getItem(AUTH_STORAGE_KEY);
     if (stored) {
       const parsed = JSON.parse(stored);
+      // Seamlessly migrate old cached users to the new interface
+      if (parsed.uid && !parsed.id) {
+        parsed.id = parsed.uid;
+      }
       return { user: parsed, isAuthenticated: true };
     }
   } catch (error) {
@@ -63,19 +69,24 @@ export async function authenticateUser(
   password: string, 
   type: "adopter" | "admin"
 ): Promise<User | null> {
-  // Simulate authentication logic
-  if (email && password.length >= 6) {
+  try {
+    const response = await axios.post(API.users.login, { email, password, userType: type });
+    const { user: backendUser } = response.data;
+    
     const user: User = {
-      id: `user-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-      email,
-      name: email.split("@")[0],
-      type,
+      id: backendUser.uid,
+      email: backendUser.email,
+      name: backendUser.name,
+      type: backendUser.userType || type,
       shelterName: type === "admin" ? "Happy Paws Shelter" : undefined,
     };
+    
     await setStoredAuth(user);
     return user;
+  } catch (error) {
+    console.error("Authentication error:", error);
+    return null;
   }
-  return null;
 }
 
 /**
@@ -86,18 +97,20 @@ export async function registerUser(
   password: string, 
   name: string
 ): Promise<User | null> {
-  // Simulate registration logic
-  if (email && password.length >= 6 && name) {
-    const user: User = {
-      id: `user-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-      email,
-      name,
-      type: "adopter",
-    };
-    await setStoredAuth(user);
-    return user;
+  try {
+    const response = await axios.post(API.users.signup, { 
+      name, 
+      email, 
+      password, 
+      userType: "adopter" 
+    });
+    
+    // Automatically log the user in after successful registration
+    return await authenticateUser(email, password, "adopter");
+  } catch (error) {
+    console.error("Registration error:", error);
+    return null;
   }
-  return null;
 }
 
 /**

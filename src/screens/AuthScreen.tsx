@@ -240,6 +240,15 @@ const handleSignUp = async () => {
             <Text style={styles.requiredFieldsNote}>* Required fields</Text>
           )}
 
+          {isLogin && (
+            <TouchableOpacity 
+              style={{ alignSelf: 'flex-end', marginBottom: spacing.md }}
+              onPress={() => navigation.navigate("ForgotPassword")}
+            >
+              <Text style={{ color: colors.primary, fontWeight: '600' }}>Forgot Password?</Text>
+            </TouchableOpacity>
+          )}
+
           <TouchableOpacity
             style={[styles.authButton, loading && styles.authButtonDisabled]}
             onPress={handleAuth}

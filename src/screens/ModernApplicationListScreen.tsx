@@ -570,6 +570,26 @@ export default function ModernApplicationListScreen({ route }: { route?: any }) 
             </Text>
           </View>
 
+          {/* Application Answers */}
+          {application.answers && Object.keys(application.answers).length > 0 && (
+            <View style={[styles.card, { marginTop: 16 }]}>
+              <Text style={styles.sectionTitle}>Your Application Answers</Text>
+              {Object.entries(application.answers).map(([key, value]) => {
+                if (value === "" || value === false || value === undefined) return null;
+                const formatKey = (k: string) => {
+                  const result = k.replace(/([A-Z])/g, " $1");
+                  return result.charAt(0).toUpperCase() + result.slice(1);
+                };
+                return (
+                  <View key={key} style={{ marginBottom: 8, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: "#E5E7EB" }}>
+                    <Text style={{ color: "#6B7280", fontSize: 12, marginBottom: 2 }}>{formatKey(key)}</Text>
+                    <Text style={{ color: "#1F2937", fontSize: 14 }}>{String(value)}</Text>
+                  </View>
+                );
+              })}
+            </View>
+          )}
+
           {/* Application Steps */}
           <Text style={styles.sectionTitleStandalone}>
             Application Timeline
@@ -637,7 +657,12 @@ export default function ModernApplicationListScreen({ route }: { route?: any }) 
               
               <TouchableOpacity
                 style={styles.messageButton}
-                onPress={() => navigation.navigate('Chat', { petId: application.petId })}
+                onPress={() => navigation.navigate('Chat', { 
+                  otherUserId: application.shelterId || "demo-admin-1758643069247",
+                  shelterName: application.shelterName,
+                  petId: application.petId,
+                  petName: application.petName
+                })}
               >
                 <Ionicons name="chatbubble-outline" size={16} color="#007AFF" style={styles.buttonIcon} />
                 <Text style={styles.messageButtonText}>Message</Text>

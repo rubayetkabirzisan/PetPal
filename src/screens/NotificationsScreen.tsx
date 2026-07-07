@@ -35,7 +35,7 @@ export default function NotificationsScreen() {
       const fetchAndFilterNotifications = async () => {
         try {
           const [notifsResponse, userPrefs] = await Promise.all([
-            axios.get(API.notifications.all),
+            axios.get(API.notifications.byUser(user.id)),
             getUserPreferences(user.id)
           ]);
           
@@ -93,7 +93,8 @@ export default function NotificationsScreen() {
   };
 
   const markAllAsRead = () => {
-    axios.patch(API.notifications.markAllRead)
+    if (!user?.id) return;
+    axios.patch(API.notifications.markAllRead(user.id))
       .then(() => {
         setNotifications((prevNotifications) =>
           prevNotifications.map((notif) => ({ ...notif, read: true }))

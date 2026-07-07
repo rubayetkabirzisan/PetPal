@@ -10,6 +10,8 @@ import { useTheme } from "../contexts/ThemeContext"
 import { spacing } from "../theme/theme"
 import { useFocusEffect } from "@react-navigation/native"
 import React from "react"
+import axios from "axios"
+import { API } from "../config/api"
 
 const { width } = Dimensions.get("window")
 
@@ -65,86 +67,79 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
   );
 
   useEffect(() => {
-    import('axios').then(axios => {
-      import('../config/api').then(({ API }) => {
-        axios.default.get(API.pets.all)
-          .then(res => {
-            const mappedPets = res.data.map((p: any) => ({ ...p, id: p._id || p.id }));
-            
-            // Filter out duplicate names
-            const uniquePets: any[] = [];
-            const seenNames = new Set<string>();
-            const availablePets = mappedPets.filter((pet: any) => pet.status === "Available" || pet.status === "available");
-            
-            for (const pet of availablePets) {
-              const nameLower = pet.name?.toLowerCase() || "";
-              if (!seenNames.has(nameLower)) {
-                seenNames.add(nameLower);
-                uniquePets.push(pet);
-              }
-            }
-            
-            setPets(uniquePets);
-          })
-          .catch(err => console.error("Error fetching dashboard pets:", err));
-      });
-    });
+    axios.get(API.pets.all)
+      .then(res => {
+        const mappedPets = res.data.map((p: any) => ({ ...p, id: p._id || p.id }));
+        
+        // Filter out duplicate names
+        const uniquePets: any[] = [];
+        const seenNames = new Set<string>();
+        const availablePets = mappedPets.filter((pet: any) => pet.status === "Available" || pet.status === "available");
+        
+        for (const pet of availablePets) {
+          const nameLower = pet.name?.toLowerCase() || "";
+          if (!seenNames.has(nameLower)) {
+            seenNames.add(nameLower);
+            uniquePets.push(pet);
+          }
+        }
+        
+        setPets(uniquePets);
+      })
+      .catch(err => console.error("Error fetching dashboard pets:", err));
   }, [])
 
   useEffect(() => {
-    if (user?.id) {
-      import('axios').then(axios => {
-        import('../config/api').then(({ API }) => {
-          axios.default.get(API.messages.conversations(user.id))
-            .then(res => {
-              // Count unread conversations, or total conversations if none unread
-              const unread = res.data.filter((c: any) => c.unread).length;
-              setMessageCount(unread > 0 ? unread : res.data.length);
-            })
-            .catch(err => console.error("Error fetching dashboard message count:", err));
-            
-            axios.default.get(API.careEntries.byUser(user.id))
-            .then(res => {
-              // Map _id to id and take top 2
-              const entries = res.data
-                .map((e: any) => ({ ...e, id: e._id || e.id }))
-                .slice(0, 2);
-              setRecentEntries(entries);
-            })
-            .catch(err => console.error("Error fetching dashboard care entries:", err));
-            
-            axios.default.get(API.reminders.byUser(user.id))
-            .then(res => {
-              setReminderCount(res.data.length);
-            })
-            .catch(err => console.error("Error fetching dashboard reminders count:", err));
-            
-          axios.default.get(API.applications.byUser(user.id))
-            .then(res => {
-              setApplicationCount(res.data.length);
-            })
-            .catch(err => console.error("Error fetching dashboard applications count:", err));
-            
-          fetch(API.adoptionHistory.byUser(user.id))
-            .then((res) => res.json())
-            .then((data) => {
-              if (Array.isArray(data)) setAdoptedPetsCount(data.length)
-            })
-            .catch((err) => console.error("Error fetching adoption history:", err))
+    const actualUserId = user?.id || (user as any)?.uid;
+    if (actualUserId) {
+      axios.get(API.messages.conversations(actualUserId))
+        .then(res => {
+          // Count unread conversations, or total conversations if none unread
+          const unread = res.data.filter((c: any) => c.unread).length;
+          setMessageCount(unread > 0 ? unread : res.data.length);
+        })
+        .catch(err => console.error("Error fetching dashboard message count:", err));
+        
+      axios.get(API.careEntries.byUser(actualUserId))
+        .then(res => {
+          // Map _id to id and take top 2
+          const entries = res.data
+            .map((e: any) => ({ ...e, id: e._id || e.id }))
+            .slice(0, 2);
+          setRecentEntries(entries);
+        })
+        .catch(err => console.error("Error fetching dashboard care entries:", err));
+        
+      axios.get(API.reminders.byUser(actualUserId))
+        .then(res => {
+          setReminderCount(res.data.length);
+        })
+        .catch(err => console.error("Error fetching dashboard reminders count:", err));
+        
+      axios.get(API.applications.byUser(actualUserId))
+        .then(res => {
+          setApplicationCount(res.data.length);
+        })
+        .catch(err => console.error("Error fetching dashboard applications count:", err));
+        
+      fetch(API.adoptionHistory.byUser(actualUserId))
+        .then((res) => res.json())
+        .then((data) => {
+          if (Array.isArray(data)) setAdoptedPetsCount(data.length)
+        })
+        .catch((err) => console.error("Error fetching adoption history:", err))
 
-          fetch(API.gps.byUser(user.id))
-            .then((res) => res.json())
-            .then((data) => {
-              if (Array.isArray(data)) {
-                const alerts = data.filter((pet: any) => pet.status === "Alert" || pet.status === "Low Battery").length;
-                setGpsAlertCount(alerts);
-              }
-            })
-            .catch((err) => console.error("Error fetching GPS alerts:", err))
-        });
-      });
+      fetch(API.gps.byUser(actualUserId))
+        .then((res) => res.json())
+        .then((data) => {
+          if (Array.isArray(data)) {
+            const alerts = data.filter((pet: any) => pet.status === "Alert" || pet.status === "Low Battery").length;
+            setGpsAlertCount(alerts);
+          }
+        })
+        .catch((err) => console.error("Error fetching GPS alerts:", err))
     }
-  }, [user?.id])
+  }, [user?.id, (user as any)?.uid])
 
   const filteredPets = pets.filter((pet) => {
     const searchLower = searchQuery.toLowerCase();

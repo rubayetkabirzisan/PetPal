@@ -36,6 +36,7 @@ import SafeZoneScreen from "./src/screens/SafeZoneScreen"
 import SettingsScreen from "./src/screens/SettingsScreen"
 import ChangePasswordScreen from "./src/screens/ChangePasswordScreen"
 import DocumentScreen from "./src/screens/DocumentScreen"
+import ForgotPasswordScreen from "./src/screens/ForgotPasswordScreen"
 import { theme, colors } from "./src/theme/theme"
 
 const Stack = createStackNavigator()
@@ -63,6 +64,7 @@ export default function App() {
             <Stack.Navigator initialRouteName="Landing" screenOptions={{ headerShown: false }}>
             <Stack.Screen name="Landing" component={LandingScreen} />
             <Stack.Screen name="Auth" component={AuthScreen} />
+            <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
             <Stack.Screen name="AdopterTabs" component={AdopterTabNavigator} />
             <Stack.Screen name="AdminTabs" component={AdminTabNavigator} />
             <Stack.Screen

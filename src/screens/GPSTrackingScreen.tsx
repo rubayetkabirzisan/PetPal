@@ -189,7 +189,10 @@ export default function GPSTrackingScreen({ navigation }: GPSTrackingScreenProps
             <Text style={styles.emptyStateText}>
               Add GPS trackers to your pets to monitor their location and safety
             </Text>
-            <TouchableOpacity style={styles.addTrackerButton}>
+            <TouchableOpacity 
+              style={styles.addTrackerButton}
+              onPress={() => Alert.alert("Hardware Required", "In the production app, this would open a Bluetooth pairing screen to connect a physical GPS collar to your pet.")}
+            >
               <Text style={styles.addTrackerButtonText}>Add GPS Tracker</Text>
             </TouchableOpacity>
           </View>

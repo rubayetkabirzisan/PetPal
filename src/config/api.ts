@@ -15,11 +15,14 @@
 import { Platform } from 'react-native';
 export const API_BASE_URL = 'http://192.168.0.101:5000';
 export const API = {
-  // Users
+  // Auth & Users
   users: {
-    login: `${API_BASE_URL}/api/users/login`,
     signup: `${API_BASE_URL}/api/users/signup`,
+    login:  `${API_BASE_URL}/api/users/login`,
     changePassword: `${API_BASE_URL}/api/users/change-password`,
+    deleteAccount: (userId: string) => `${API_BASE_URL}/api/users/delete/${userId}`,
+    forgotPassword: `${API_BASE_URL}/api/users/forgot-password`,
+    resetPassword: `${API_BASE_URL}/api/users/reset-password`,
   },
 
   // Pets
@@ -49,8 +52,9 @@ export const API = {
   // Notifications
   notifications: {
     all:      `${API_BASE_URL}/api/notifications/viewAll`,
+    byUser:   (userId: string) => `${API_BASE_URL}/api/notifications/viewByUser/${userId}`,
     markRead: (id: string) => `${API_BASE_URL}/api/notifications/markRead/${id}`,
-    markAllRead: `${API_BASE_URL}/api/notifications/markAllRead`,
+    markAllRead: (userId: string) => `${API_BASE_URL}/api/notifications/markAllRead/${userId}`,
     create:   `${API_BASE_URL}/api/notifications/AddNew`,
   },
 
@@ -78,6 +82,7 @@ export const API = {
   // Applications
   applications: {
     byUser: (userId: string) => `${API_BASE_URL}/api/applications/viewById/${userId}`,
+    create: `${API_BASE_URL}/api/applications/create`,
   },
 
   // Adoption History
