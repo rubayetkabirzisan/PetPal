@@ -2,9 +2,10 @@
 const express = require("express");
 const Pet = require("../models/Pet");
 const router = express.Router();
+const auth = require("../middleware/auth");
 
 // Get all lost pets
-router.get("/viewAll", async (req, res) => {
+router.get("/viewAll", auth, async (req, res) => {
   try {
     const pets = await Pet.find();
     res.json(pets);
@@ -14,7 +15,7 @@ router.get("/viewAll", async (req, res) => {
 });
 
 // Add a new lost pet
-router.post("/addpet", async (req, res) => {
+router.post("/addpet", auth, async (req, res) => {
   const { 
     name, type, species, breed, color, lastSeen, location, reportedDate, status, 
     ownerName, ownerPhone, description, image, contactEmail, reward, priority, actionLog 
@@ -50,7 +51,7 @@ router.post("/addpet", async (req, res) => {
 });
 
 // Update pet status
-router.patch("/update/:id", async (req, res) => {
+router.patch("/update/:id", auth, async (req, res) => {
   const { status, priority, actionLog } = req.body;
   
   const updateData = {};
@@ -77,7 +78,7 @@ router.patch("/update/:id", async (req, res) => {
 });
 
 // Add a sighting
-router.post("/sighting/:id", async (req, res) => {
+router.post("/sighting/:id", auth, async (req, res) => {
   try {
     const sighting = req.body;
     
@@ -106,7 +107,7 @@ router.post("/sighting/:id", async (req, res) => {
 });
 
 // Delete a pet
-router.delete("/delete/:id", async (req, res) => {
+router.delete("/delete/:id", auth, async (req, res) => {
   try {
     const deletedPet = await Pet.findByIdAndDelete(req.params.id);
     res.json({ message: "Pet deleted successfully", deletedPet });

@@ -1,9 +1,10 @@
 const express = require('express');
 const User = require('../models/User');
 const router = express.Router();
+const auth = require("../middleware/auth");
 
 // View profile
-router.get("/view/:uid", async (req, res) => {
+router.get("/view/:uid", auth, async (req, res) => {
   try {
     // Both _id and uid can be used depending on what frontend sends
     const user = await User.findOne({ 
@@ -34,7 +35,7 @@ router.get("/view/:uid", async (req, res) => {
 });
 
 // Update profile
-router.put("/update/:uid", async (req, res) => {
+router.put("/update/:uid", auth, async (req, res) => {
   try {
     const { name, phone, location, bio } = req.body;
     

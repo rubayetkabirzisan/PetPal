@@ -2,6 +2,7 @@
 const express = require("express");
 const Pet = require("../models/Pet");
 const router = express.Router();
+const auth = require("../middleware/auth");
 
 // Get all pets
 router.get("/view", async (req, res) => {
@@ -25,7 +26,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // Add a new pet
-router.post("/addpet", async (req, res) => {
+router.post("/addpet", auth, async (req, res) => {
   try {
     const newPet = new Pet(req.body);
     await newPet.save();
@@ -36,7 +37,7 @@ router.post("/addpet", async (req, res) => {
 });
 
 // Update a pet's status or other fields
-router.put("/:id", async (req, res) => {
+router.put("/:id", auth, async (req, res) => {
   try {
     const updatedPet = await Pet.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.json(updatedPet);
@@ -46,7 +47,7 @@ router.put("/:id", async (req, res) => {
 });
 
 // Delete a pet
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", auth, async (req, res) => {
   try {
     await Pet.findByIdAndDelete(req.params.id);
     res.status(200).json({ message: "Pet deleted" });

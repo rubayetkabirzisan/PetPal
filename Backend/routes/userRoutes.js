@@ -1,3 +1,7 @@
+const rateLimit = require("express-rate-limit");
+const auth = require("../middleware/auth");
+const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 const express = require('express');
 const User = require('../models/User');
 const router = express.Router();
@@ -52,13 +56,14 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ message: "Wrong user type" });
     }
 
-    res.json({ message: "Login successful", user: { uid: user.uid, name: user.name, email: user.email, userType: user.userType } });
+    const token = jwt.sign({ id: user._id, uid: user.uid, type: user.userType }, process.env.JWT_SECRET || "super_secret_jwt_key_for_petpal_app_change_in_production", { expiresIn: "7d" });
+    res.json({ message: "Login successful", token, user: { uid: user.uid, name: user.name, email: user.email, userType: user.userType } });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
   }
 });
 // Change password route
-router.post("/change-password", async (req, res) => {
+router.post("/change-password", auth, async (req, res) => {
   try {
     const { userId, currentPassword, newPassword } = req.body;
 
@@ -84,7 +89,7 @@ router.post("/change-password", async (req, res) => {
 });
 
 // Delete account route
-router.delete("/delete/:userId", async (req, res) => {
+router.delete("/delete/:userId", auth, async (req, res) => {
   try {
     const { userId } = req.params;
     const user = await User.findOneAndDelete({ uid: userId });
@@ -100,8 +105,15 @@ router.delete("/delete/:userId", async (req, res) => {
   }
 });
 
+
+const passwordResetLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Limit each IP to 5 password reset requests per windowMs
+  message: "Too many password reset requests from this IP, please try again after 15 minutes"
+});
+
 // Forgot Password Route
-router.post("/forgot-password", async (req, res) => {
+router.post("/forgot-password", passwordResetLimiter, async (req, res) => {
   try {
     const { email } = req.body;
     const user = await User.findOne({ email });
@@ -110,12 +122,14 @@ router.post("/forgot-password", async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Generate 6 digit code
-    const resetToken = Math.floor(100000 + Math.random() * 900000).toString();
+    // Generate 64-char hex cryptographically secure token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+
     const expireDate = new Date();
     expireDate.setMinutes(expireDate.getMinutes() + 15); // 15 mins expiry
 
-    user.resetToken = resetToken;
+    user.resetToken = hashedToken;
     user.resetTokenExpire = expireDate;
     await user.save();
 
@@ -167,7 +181,9 @@ router.post("/reset-password", async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    if (user.resetToken !== token) {
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+    if (user.resetToken !== hashedToken) {
       return res.status(400).json({ message: "Invalid reset token" });
     }
 

@@ -3,9 +3,10 @@ const Message = require('../models/Message');
 const User = require('../models/User');
 
 const router = express.Router();
+const auth = require("../middleware/auth");
 
 // Get active conversations for a user
-router.get('/conversations/:userId', async (req, res) => {
+router.get('/conversations/:userId', auth, async (req, res) => {
   try {
     const { userId } = req.params;
     
@@ -83,7 +84,7 @@ router.get('/conversations/:userId', async (req, res) => {
 });
 
 // Get chat history between two users regarding a specific pet
-router.get('/history/:userId/:otherUserId/:petId', async (req, res) => {
+router.get('/history/:userId/:otherUserId/:petId', auth, async (req, res) => {
   try {
     const { userId, otherUserId, petId } = req.params;
 
@@ -119,7 +120,7 @@ router.get('/history/:userId/:otherUserId/:petId', async (req, res) => {
 });
 
 // Send a message
-router.post('/send', async (req, res) => {
+router.post('/send', auth, async (req, res) => {
   try {
     const { senderId, receiverId, text, senderName, petId, petName } = req.body;
 

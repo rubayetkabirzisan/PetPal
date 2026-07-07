@@ -2,8 +2,9 @@ const express = require('express');
 const Application = require('../models/Application');
 
 const router = express.Router();
+const auth = require("../middleware/auth");
 
-router.get('/drop-index', async (req, res) => {
+router.get('/drop-index', auth, async (req, res) => {
   try {
     const result = await Application.collection.dropIndex('applicationId_1');
     res.json({ success: true, result });
@@ -13,7 +14,7 @@ router.get('/drop-index', async (req, res) => {
 });
 
 // Get all applications for a user
-router.get('/viewById/:userId', async (req, res) => {
+router.get('/viewById/:userId', auth, async (req, res) => {
   try {
     const applications = await Application.find({ userId: req.params.userId }).sort({ submittedDate: -1 });
     res.json(applications);
@@ -22,7 +23,7 @@ router.get('/viewById/:userId', async (req, res) => {
   }
 });
 
-router.post('/create', async (req, res) => {
+router.post('/create', auth, async (req, res) => {
   try {
     const payload = req.body;
     
@@ -73,7 +74,7 @@ router.post('/create', async (req, res) => {
 });
 
 // Update application status (Admin)
-router.patch('/updateStatus/:id', async (req, res) => {
+router.patch('/updateStatus/:id', auth, async (req, res) => {
   try {
     const { status } = req.body;
     const application = await Application.findByIdAndUpdate(

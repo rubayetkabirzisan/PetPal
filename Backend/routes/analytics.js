@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
+const auth = require("../middleware/auth");
 const Analytics = require('../models/analytics'); // Model to store analytics data
 
 // Example Analytics Route: Get data
-router.get('/view', async (req, res) => {
+router.get('/view', auth, async (req, res) => {
   try {
     const data = await Analytics.find();
     console.log(data); // Log the response to ensure data is being fetched
@@ -15,7 +16,7 @@ router.get('/view', async (req, res) => {
 
 
 // Example Analytics Route: Save data
-router.post('/save', async (req, res) => {
+router.post('/save', auth, async (req, res) => {
   try {
     const newData = new Analytics(req.body);
     await newData.save();

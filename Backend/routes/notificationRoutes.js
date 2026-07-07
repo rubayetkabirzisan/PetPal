@@ -2,9 +2,10 @@ const express = require('express');
 const Notification = require('../models/Notification');
 
 const router = express.Router();
+const auth = require("../middleware/auth");
 
 // Get all notifications by user
-router.get('/viewByUser/:userId', async (req, res) => {
+router.get('/viewByUser/:userId', auth, async (req, res) => {
   try {
     const notifications = await Notification.find({ userId: req.params.userId }).sort({ time: -1 });
     res.json(notifications);
@@ -14,7 +15,7 @@ router.get('/viewByUser/:userId', async (req, res) => {
 });
 
 // Add a new notification
-router.post('/AddNew', async (req, res) => {
+router.post('/AddNew', auth, async (req, res) => {
   const notification = new Notification({
     userId: req.body.userId,
     title: req.body.title,
@@ -33,7 +34,7 @@ router.post('/AddNew', async (req, res) => {
 });
 
 // Mark notification as read
-router.patch('/markRead/:id', async (req, res) => {
+router.patch('/markRead/:id', auth, async (req, res) => {
   try {
     const notification = await Notification.findById(req.params.id);
     if (!notification) return res.status(404).json({ message: 'Notification not found' });
@@ -47,7 +48,7 @@ router.patch('/markRead/:id', async (req, res) => {
 });
 
 // Mark all notifications as read for a specific user
-router.patch('/markAllRead/:userId', async (req, res) => {
+router.patch('/markAllRead/:userId', auth, async (req, res) => {
   try {
     await Notification.updateMany({ userId: req.params.userId, read: false }, { $set: { read: true } });
     res.json({ message: 'All notifications marked as read' });

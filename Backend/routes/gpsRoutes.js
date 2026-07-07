@@ -2,6 +2,7 @@ const express = require('express');
 const AdoptionHistory = require('../models/AdoptionHistory');
 
 const router = express.Router();
+const auth = require("../middleware/auth");
 
 // Get simulated tracked pets for a user
 router.get('/track/:userId', async (req, res) => {
