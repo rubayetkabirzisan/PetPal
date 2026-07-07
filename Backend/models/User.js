@@ -9,7 +9,9 @@ const UserSchema = new mongoose.Schema({
   location: { type: String, default: "" },
   bio: { type: String, default: "" },
   userType: { type: String, enum: ["adopter", "shelter", "admin"], default: "adopter" },
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  resetToken: { type: String },
+  resetTokenExpire: { type: Date }
 });
 
 module.exports = mongoose.model("User", UserSchema);

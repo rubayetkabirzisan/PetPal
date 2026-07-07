@@ -3,6 +3,15 @@ const Application = require('../models/Application');
 
 const router = express.Router();
 
+router.get('/drop-index', async (req, res) => {
+  try {
+    const result = await Application.collection.dropIndex('applicationId_1');
+    res.json({ success: true, result });
+  } catch (err) {
+    res.json({ success: false, error: err.message });
+  }
+});
+
 // Get all applications for a user
 router.get('/viewById/:userId', async (req, res) => {
   try {
@@ -13,13 +22,52 @@ router.get('/viewById/:userId', async (req, res) => {
   }
 });
 
-// Create a new application
 router.post('/create', async (req, res) => {
   try {
-    const newApplication = new Application(req.body);
+    const payload = req.body;
+    
+    // Auto-generate standard timeline if not provided
+    if (!payload.timeline || payload.timeline.length === 0) {
+      payload.timeline = [
+        {
+          id: "step1",
+          status: "Application Submitted",
+          description: "Your application has been received.",
+          completed: true,
+          date: new Date().toISOString()
+        },
+        {
+          id: "step2",
+          status: "Initial Review",
+          description: "Our team is reviewing your application.",
+          completed: false,
+          date: null
+        },
+        {
+          id: "step3",
+          status: "Interview & Home Check",
+          description: "We will contact you to schedule a brief interview.",
+          completed: false,
+          date: null
+        },
+        {
+          id: "step4",
+          status: "Final Decision",
+          description: "Your application is approved or denied.",
+          completed: false,
+          date: null
+        }
+      ];
+      payload.completionPercentage = 25;
+      payload.currentStep = "Initial Review";
+    }
+
+    const newApplication = new Application(payload);
     await newApplication.save();
     res.json(newApplication);
   } catch (err) {
+    console.error("Application create error:", err.message);
+    console.error("Payload was:", req.body);
     res.status(500).json({ error: err.message });
   }
 });

@@ -23,7 +23,8 @@ const applicationSchema = new mongoose.Schema({
     description: String,
     completed: Boolean,
     date: Date
-  }]
+  }],
+  answers: { type: Object, default: {} }
 });
 
 const Application = mongoose.model('Application', applicationSchema);

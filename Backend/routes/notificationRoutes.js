@@ -3,10 +3,10 @@ const Notification = require('../models/Notification');
 
 const router = express.Router();
 
-// Get all notifications
-router.get('/viewAll', async (req, res) => {
+// Get all notifications by user
+router.get('/viewByUser/:userId', async (req, res) => {
   try {
-    const notifications = await Notification.find();
+    const notifications = await Notification.find({ userId: req.params.userId }).sort({ time: -1 });
     res.json(notifications);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -16,6 +16,7 @@ router.get('/viewAll', async (req, res) => {
 // Add a new notification
 router.post('/AddNew', async (req, res) => {
   const notification = new Notification({
+    userId: req.body.userId,
     title: req.body.title,
     message: req.body.message,
     time: req.body.time,
@@ -45,10 +46,10 @@ router.patch('/markRead/:id', async (req, res) => {
   }
 });
 
-// Mark all notifications as read
-router.patch('/markAllRead', async (req, res) => {
+// Mark all notifications as read for a specific user
+router.patch('/markAllRead/:userId', async (req, res) => {
   try {
-    await Notification.updateMany({ read: false }, { $set: { read: true } });
+    await Notification.updateMany({ userId: req.params.userId, read: false }, { $set: { read: true } });
     res.json({ message: 'All notifications marked as read' });
   } catch (err) {
     res.status(500).json({ message: err.message });

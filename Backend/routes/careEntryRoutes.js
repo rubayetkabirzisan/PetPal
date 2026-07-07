@@ -39,11 +39,13 @@ router.get('/viewById/:id', async (req, res) => {
 // Create a new care entry
 router.post('/create', async (req, res) => {
   try {
+    console.log("CareEntry Create Body:", req.body);
     const newCareEntry = new CareEntry(req.body);
     await newCareEntry.save();
     res.json(newCareEntry);
   } catch (err) {
-    res.status(500).send('Server Error');
+    console.error("CareEntry Create Error:", err);
+    res.status(500).json({ error: err.message, message: 'Server Error' });
   }
 });
 

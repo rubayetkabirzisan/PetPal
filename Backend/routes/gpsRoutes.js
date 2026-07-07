@@ -17,24 +17,22 @@ router.get('/track/:userId', async (req, res) => {
 
     // Generate simulated GPS data for each adopted pet
     const trackedPets = adoptedPets.map((history) => {
-      // Simulate random battery level between 10% and 100%
-      const batteryLevel = Math.floor(Math.random() * 90) + 10;
-      
-      // Assign status based on battery or random chance
-      let status = "Safe";
-      if (batteryLevel < 20) {
-        status = "Low Battery";
-      } else if (Math.random() > 0.8) {
-        status = "Alert"; // 20% chance of random alert for demo
+      // Use the petId to generate a deterministic battery level between 50 and 100
+      let seed = 0;
+      if (history.petId) {
+        for (let i = 0; i < history.petId.length; i++) {
+          seed += history.petId.charCodeAt(i);
+        }
       }
-
-      // Pick a random mock location string
-      const locations = ["Home", "Backyard", "Living Room", "Nearby Park", "Front Porch"];
-      const lastLocation = locations[Math.floor(Math.random() * locations.length)];
+      const batteryLevel = 50 + (seed % 51);
       
-      // Random last update time
-      const times = ["Just now", "2 minutes ago", "5 minutes ago", "10 minutes ago"];
-      const lastUpdate = times[Math.floor(Math.random() * times.length)];
+      const status = "Safe"; // Always safe in demo unless explicitly changed
+
+      // Pick a deterministic location
+      const locations = ["Home", "Backyard", "Living Room", "Nearby Park", "Front Porch"];
+      const lastLocation = locations[seed % locations.length];
+      
+      const lastUpdate = "Just now";
 
       return {
         id: history.petId,
