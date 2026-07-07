@@ -13,7 +13,7 @@
  *   Replace with your deployed backend URL.
  */
 import { Platform } from 'react-native';
-export const API_BASE_URL = 'http://192.168.0.101:5000';
+export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.0.101:5000';
 export const API = {
   // Auth & Users
   users: {

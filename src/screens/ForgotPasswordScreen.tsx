@@ -126,10 +126,10 @@ export default function ForgotPasswordScreen({ navigation }: any) {
                 <Ionicons name="key-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
-                  placeholder="6-Digit Reset Code"
+                  placeholder="Secure Reset Token"
                   value={token}
                   onChangeText={setToken}
-                  keyboardType="number-pad"
+                  keyboardType="default"
                   placeholderTextColor={colors.textSecondary}
                   editable={!loading}
                 />

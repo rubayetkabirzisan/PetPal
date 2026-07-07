@@ -8,6 +8,7 @@ export interface User {
   name: string;
   type: "adopter" | "admin";
   shelterName?: string;
+  token?: string;
 }
 
 export interface AuthState {
@@ -71,7 +72,7 @@ export async function authenticateUser(
 ): Promise<User | null> {
   try {
     const response = await axios.post(API.users.login, { email, password, userType: type });
-    const { user: backendUser } = response.data;
+    const { user: backendUser, token } = response.data;
     
     const user: User = {
       id: backendUser.uid,
@@ -79,6 +80,7 @@ export async function authenticateUser(
       name: backendUser.name,
       type: backendUser.userType || type,
       shelterName: type === "admin" ? "Happy Paws Shelter" : undefined,
+      token: token,
     };
     
     await setStoredAuth(user);

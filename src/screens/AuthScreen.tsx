@@ -70,7 +70,8 @@ export default function AuthScreen({ navigation, route }: AuthScreenProps) {
           id: data.user.uid,
           email: data.user.email,
           name: data.user.name,
-          type: data.user.userType
+          type: data.user.userType,
+          token: data.token
         };
         // Save user to context!
         setUser(newUser);

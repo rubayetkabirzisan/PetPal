@@ -7,6 +7,7 @@ import {
     registerUser
 } from '@lib/auth';
 import React, { createContext, useContext, useEffect, useState } from "react";
+import axios from "axios";
 
 interface AuthContextType {
   user: User | null;
@@ -18,7 +19,37 @@ interface AuthContextType {
   loading: boolean;
 }
 
+
+// Set up global axios interceptor for JWT
+axios.interceptors.request.use(
+  async (config) => {
+    try {
+      const authState = await getStoredAuth();
+      if (authState.user?.token) {
+        config.headers.Authorization = `Bearer ${authState.user.token}`;
+      }
+    } catch (error) {
+      console.error("Error applying JWT token:", error);
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Auto-logout on 401 Unauthorized
+axios.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response && error.response.status === 401) {
+      console.warn("401 Unauthorized detected! Clearing old auth cache...");
+      await clearStoredAuth();
+    }
+    return Promise.reject(error);
+  }
+);
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -27,12 +58,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Load authentication state on mount
   useEffect(() => {
-    const loadAuth = async () => {
+const loadAuth = async () => {
       try {
-        // Initialize demo users for convenience
         await initializeDemoUsers();
-        
-        // Load stored auth state
         const authState = await getStoredAuth();
         setUser(authState.user);
         setIsAuthenticated(authState.isAuthenticated);
@@ -44,7 +72,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     loadAuth();
-  }, []);
+}, []);
 
   const login = async (email: string, password: string, userType: "adopter" | "admin"): Promise<boolean> => {
     try {
