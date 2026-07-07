@@ -13,6 +13,7 @@ import {
   View
 } from 'react-native';
 import NavigationHeader from '../components/NavigationHeader';
+import { useTheme } from "../contexts/ThemeContext";
 
 // Mock colors object - replace with your actual theme
 const colors = {
@@ -62,6 +63,10 @@ const EmergencyActions: React.FC<EmergencyActionsProps> = ({
   trackedPets, 
   onEmergencyAction 
 }) => {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+
   const [loading, setLoading] = useState<string | null>(null);
   const [modalData, setModalData] = useState<EmergencyModalData>({
     type: null,
@@ -550,7 +555,7 @@ const EmergencyActions: React.FC<EmergencyActionsProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   emergencySection: {
     margin: 16,
     marginBottom: 32,
@@ -562,7 +567,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   emergencyCard: {
-    backgroundColor: 'white',
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
     flexDirection: 'row',
@@ -606,7 +611,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   emergencyStatus: {
-    backgroundColor: 'white',
+    backgroundColor: colors.surface,
     borderRadius: 8,
     padding: 12,
     marginTop: 8,
@@ -646,7 +651,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     paddingTop: 60,
-    backgroundColor: 'white',
+    backgroundColor: colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
@@ -664,7 +669,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: 16,
     paddingBottom: 34,
-    backgroundColor: 'white',
+    backgroundColor: colors.surface,
     borderTopWidth: 1,
     borderTopColor: colors.border,
     gap: 12,
@@ -679,7 +684,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   textInput: {
-    backgroundColor: 'white',
+    backgroundColor: colors.surface,
     borderRadius: 8,
     padding: 12,
     borderWidth: 1,
@@ -687,7 +692,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   textArea: {
-    backgroundColor: 'white',
+    backgroundColor: colors.surface,
     borderRadius: 8,
     padding: 12,
     borderWidth: 1,
@@ -703,7 +708,7 @@ const styles = StyleSheet.create({
   priorityButton: {
     flex: 1,
     padding: 12,
-    backgroundColor: 'white',
+    backgroundColor: colors.surface,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: colors.border,
@@ -719,7 +724,7 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   priorityButtonTextActive: {
-    color: 'white',
+    color: colors.background,
   },
   switchRow: {
     flexDirection: 'row',
@@ -753,7 +758,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: 'white',
+    backgroundColor: colors.surface,
     borderRadius: 8,
     padding: 12,
     marginBottom: 8,
@@ -788,7 +793,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   volunteerStats: {
-    backgroundColor: 'white',
+    backgroundColor: colors.surface,
     borderRadius: 8,
     padding: 16,
     marginTop: 16,
@@ -820,7 +825,7 @@ const styles = StyleSheet.create({
   cancelButton: {
     flex: 1,
     padding: 16,
-    backgroundColor: 'white',
+    backgroundColor: colors.surface,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: colors.border,
@@ -841,7 +846,7 @@ const styles = StyleSheet.create({
   confirmButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: 'white',
+    color: colors.background,
   },
 });
 

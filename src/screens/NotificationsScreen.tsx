@@ -26,7 +26,7 @@ export default function NotificationsScreen() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const { theme } = useTheme();
   const colors = (theme as any).colors;
-  const styles = getStyles(colors);
+  const styles = getStyles(theme.colors);
 
   useFocusEffect(
     useCallback(() => {

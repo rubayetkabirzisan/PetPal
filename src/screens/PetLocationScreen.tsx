@@ -3,6 +3,7 @@ import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import React, { useState } from "react";
 import { ActivityIndicator, Alert, Image, Linking, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { colors, spacing } from "../theme/theme";
+import { useTheme } from "../contexts/ThemeContext";
 // Import MapView conditionally to handle potential module missing errors
 let MapView: any, Marker: any;
 try {
@@ -30,6 +31,9 @@ type PetMapParams = {
  * PetLocationScreen displays pet location information
  */
 function PetLocationScreen() {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
   const navigation = useNavigation();
   const route = useRoute<RouteProp<{ PetMap: PetMapParams }, 'PetMap'>>();
   const [mapError, setMapError] = useState(false);
@@ -179,7 +183,7 @@ function PetLocationScreen() {
                 pinColor={colors.primary}
               >
                 <View style={styles.customMarker}>
-                  <Ionicons name="paw" size={20} color="white" />
+                  <Ionicons name="paw" size={20} color={colors.background} />
                 </View>
               </Marker>
             </MapView>
@@ -208,7 +212,7 @@ function PetLocationScreen() {
                     
                     {/* Central marker */}
                     <View style={styles.mapFallbackMarker}>
-                      <Ionicons name="paw" size={20} color="white" />
+                      <Ionicons name="paw" size={20} color={colors.background} />
                     </View>
                     
                     {/* Compass rose */}
@@ -299,7 +303,7 @@ function PetLocationScreen() {
         <Ionicons 
           name={isOpeningDirections ? "timer-outline" : "navigate"} 
           size={18} 
-          color="white" 
+          color={colors.background} 
         />
         <Text style={styles.actionButtonText}>
           {isOpeningDirections ? "Opening Maps..." : "Get Directions"}
@@ -309,7 +313,7 @@ function PetLocationScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -400,7 +404,7 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 20,
     borderWidth: 2,
-    borderColor: 'white',
+    borderColor: colors.surface,
   },
   mapOverlay: {
     position: 'absolute',
@@ -499,7 +503,7 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 20,
     borderWidth: 2,
-    borderColor: 'white',
+    borderColor: colors.surface,
   },
   compassRose: {
     position: 'absolute',
@@ -508,7 +512,7 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor: 'white',
+    backgroundColor: colors.surface,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,

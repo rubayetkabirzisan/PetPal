@@ -3,6 +3,7 @@ import { useNavigation } from "@react-navigation/native";
 import { Link, usePathname, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useTheme } from "../contexts/ThemeContext";
 import { useAuth } from "../contexts/AuthContext";
 
 interface HeaderProps {
@@ -22,6 +23,9 @@ export function Header({
   showBackButton = false,
   backHref,
 }: HeaderProps) {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
   const [notificationCount, setNotificationCount] = useState(0);
   const { user } = useAuth();
   const pathname = usePathname();
@@ -130,9 +134,9 @@ export function Header({
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   header: {
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,

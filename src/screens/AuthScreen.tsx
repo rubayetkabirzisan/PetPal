@@ -17,6 +17,7 @@ import { API } from "../config/api"
 import { colors, spacing } from "../theme/theme"
 import { useAuth } from "../contexts/AuthContext"
 import { setStoredAuth } from "../lib/auth"
+import { useTheme } from "../contexts/ThemeContext";
 
 interface AuthScreenProps {
   navigation: any
@@ -26,6 +27,10 @@ interface AuthScreenProps {
 
 const API_BASE = API.users.signup.replace("/signup", "");
 export default function AuthScreen({ navigation, route }: AuthScreenProps) {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLogin, setIsLogin] = useState(true)
@@ -273,7 +278,7 @@ const handleSignUp = async () => {
   )
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -312,7 +317,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderRadius: 12,
     marginBottom: spacing.md,
     paddingHorizontal: spacing.md,
@@ -352,7 +357,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   authButtonText: {
-    color: "white",
+    color: colors.background,
     fontSize: 16,
     fontWeight: "600",
   },

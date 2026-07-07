@@ -14,6 +14,7 @@ import {
 } from "react-native"
 import MapView, { Circle, Marker, PROVIDER_GOOGLE } from "react-native-maps"
 import { colors, spacing } from "../theme/theme"
+import { useTheme } from "../contexts/ThemeContext";
 
 // Define the type for the route params
 type SafeZoneParams = {
@@ -31,6 +32,10 @@ type SafeZoneParams = {
  * SafeZoneScreen allows users to set and manage safe zones for their pets
  */
 export default function SafeZoneScreen() {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+
   const navigation = useNavigation();
   const route = useRoute<RouteProp<{ "SafeZone": SafeZoneParams }, "SafeZone">>();
 
@@ -365,7 +370,7 @@ export default function SafeZoneScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -512,7 +517,7 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   addButtonText: {
-    color: "white",
+    color: colors.background,
     fontSize: 14,
     fontWeight: "bold",
   },
@@ -564,7 +569,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   typeOptionTextSelected: {
-    color: 'white',
+    color: colors.background,
   },
   radiusContainer: {
     marginTop: spacing.xs,
@@ -606,7 +611,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   saveButtonText: {
-    color: 'white',
+    color: colors.background,
     fontWeight: 'bold',
   },
   mapContainer: {

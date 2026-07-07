@@ -20,12 +20,17 @@ interface TrackedPet {
 }
 
 import { StackNavigationProp } from "@react-navigation/stack"
+import { useTheme } from "../contexts/ThemeContext";
 
 interface GPSTrackingScreenProps {
   navigation: StackNavigationProp<any>
 }
 
 export default function GPSTrackingScreen({ navigation }: GPSTrackingScreenProps) {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+
   const [trackedPets, setTrackedPets] = useState<TrackedPet[]>([])
 
   const { user } = useAuth()
@@ -224,7 +229,7 @@ export default function GPSTrackingScreen({ navigation }: GPSTrackingScreenProps
   )
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -253,7 +258,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   petCard: {
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: spacing.md,
     borderWidth: 1,
@@ -284,7 +289,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   statusText: {
-    color: "white",
+    color: colors.background,
     fontSize: 12,
     fontWeight: "600",
   },
@@ -335,14 +340,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   actionButtonText: {
-    color: "white",
+    color: colors.background,
     fontSize: 14,
     fontWeight: "600",
   },
   secondaryActionButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderRadius: 8,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
@@ -407,13 +412,13 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
   },
   addTrackerButtonText: {
-    color: "white",
+    color: colors.background,
     fontSize: 14,
     fontWeight: "600",
   },
   infoSection: {
     margin: spacing.md,
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: spacing.md,
     borderWidth: 1,

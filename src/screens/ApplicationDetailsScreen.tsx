@@ -29,6 +29,10 @@ interface ApplicationStep {
 }
 
 export default function ApplicationDetailsScreen() {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+
   // Use React Navigation as the primary navigation system
   const navigation = useNavigation<any>();
   
@@ -71,8 +75,6 @@ export default function ApplicationDetailsScreen() {
   const [steps, setSteps] = useState<ApplicationStep[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
-  const { theme } = useTheme();
-
   useEffect(() => {
     const loadApplicationData = async () => {
       try {
@@ -472,7 +474,7 @@ export default function ApplicationDetailsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -511,7 +513,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   errorButtonText: {
-    color: 'white',
+    color: colors.background,
     fontWeight: '600',
     fontSize: 16,
   },
@@ -678,7 +680,7 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
   contactButtonText: {
-    color: 'white',
+    color: colors.background,
     fontWeight: '500',
     fontSize: 14,
   },

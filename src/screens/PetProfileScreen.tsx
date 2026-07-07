@@ -8,6 +8,7 @@ import { useAuth } from "../contexts/AuthContext"
 import { colors } from "../theme/theme"
 import axios from "axios"
 import { API } from "../config/api"
+import { useTheme } from "../contexts/ThemeContext";
 
 const { width } = Dimensions.get("window")
 
@@ -17,9 +18,15 @@ interface PetProfileScreenProps {
 }
 
 export default function PetProfileScreen({ navigation, route }: PetProfileScreenProps) {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [isFavorited, setIsFavorited] = useState(false)
   const [pet, setPet] = useState<any>(null)
+  const [hasApplied, setHasApplied] = useState(false)
+  const [isCheckingApplication, setIsCheckingApplication] = useState(true)
 
   const { user } = useAuth()
   const petId = route.params?.petId
@@ -38,8 +45,21 @@ export default function PetProfileScreen({ navigation, route }: PetProfileScreen
           console.error("Error fetching pet details:", err);
           Alert.alert("Error", "Could not load pet details.");
         });
+
+      const actualUserId = user?.id || (user as any)?.uid;
+      if (actualUserId) {
+        axios.get(API.applications.byUser(actualUserId))
+          .then(res => {
+            const hasApp = res.data.some((app: any) => app.petId === petId);
+            setHasApplied(hasApp);
+          })
+          .catch(err => console.error("Error checking application status:", err))
+          .finally(() => setIsCheckingApplication(false));
+      } else {
+        setIsCheckingApplication(false);
+      }
     }
-  }, [petId])
+  }, [petId, user?.id, (user as any)?.uid])
 
   const handleApplyForAdoption = () => {
     if (!pet || !user) {
@@ -66,10 +86,10 @@ export default function PetProfileScreen({ navigation, route }: PetProfileScreen
     if (!pet) return
     
     navigation.navigate("Chat", { 
-      otherUserId: pet.addedByUserId || pet.shelter?.id || "admin-demo-123",
-      shelterName: pet.shelter?.name || pet.shelterName || "Shelter",
+      otherUserId: pet.shelterId || pet.addedByUserId || pet.shelter?.id || "admin-demo-123",
+      shelterName: pet.shelterName || pet.shelter?.name || "Shelter",
       shelterImage: pet.images?.[0],
-      petId: pet.id,
+      petId: pet.id || pet._id,
       petName: pet.name
     })
   }
@@ -122,7 +142,7 @@ export default function PetProfileScreen({ navigation, route }: PetProfileScreen
           {/* Image Indicators */}
           {petImages.length > 1 && (
             <View style={styles.imageIndicators}>
-              {petImages.map((_, index) => (
+              {petImages.map((_: any, index: number) => (
                 <View key={index} style={[styles.indicator, index === currentImageIndex && styles.activeIndicator]} />
               ))}
             </View>
@@ -203,7 +223,7 @@ export default function PetProfileScreen({ navigation, route }: PetProfileScreen
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Personality</Text>
           <View style={styles.personalityContainer}>
-            {(pet.personality || []).map((trait, index) => (
+            {(pet.personality || []).map((trait: any, index: number) => (
               <View key={index} style={styles.personalityTag}>
                 <Ionicons name="star-outline" size={12} color={colors.primary} />
                 <Text style={styles.personalityText}>{trait}</Text>
@@ -240,7 +260,7 @@ export default function PetProfileScreen({ navigation, route }: PetProfileScreen
           {(pet.healthRecords || []).length > 0 && (
             <View style={styles.healthRecords}>
               <Text style={styles.healthRecordsTitle}>Recent Health Records</Text>
-              {(pet.healthRecords || []).map((record, index) => (
+              {(pet.healthRecords || []).map((record: any, index: number) => (
                 <View key={index} style={styles.healthRecord}>
                   <Ionicons name="calendar-outline" size={16} color={colors.primary} />
                   <View style={styles.healthRecordInfo}>
@@ -301,9 +321,18 @@ export default function PetProfileScreen({ navigation, route }: PetProfileScreen
             <Text style={styles.chatButtonText}>Chat with Shelter</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.adoptButton} onPress={handleApplyForAdoption}>
-            <Text style={styles.adoptButtonText}>Apply for Adoption</Text>
-          </TouchableOpacity>
+          {hasApplied ? (
+            <TouchableOpacity 
+              style={[styles.adoptButton, { backgroundColor: colors.success }]} 
+              onPress={() => navigation.navigate("ModernApplicationList")}
+            >
+              <Text style={styles.adoptButtonText}>Already Applied - Track</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity style={styles.adoptButton} onPress={handleApplyForAdoption}>
+              <Text style={styles.adoptButtonText}>Apply for Adoption</Text>
+            </TouchableOpacity>
+          )}
         </View>
       )}
     </View>
@@ -311,7 +340,7 @@ export default function PetProfileScreen({ navigation, route }: PetProfileScreen
   )
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -359,7 +388,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255, 255, 255, 0.5)",
   },
   activeIndicator: {
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
   },
   favoriteButton: {
     position: "absolute",
@@ -371,7 +400,7 @@ const styles = StyleSheet.create({
   },
   petInfo: {
     padding: 24,
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     marginTop: -24,
@@ -430,7 +459,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   section: {
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     marginTop: 12,
     padding: 24,
   },
@@ -568,7 +597,7 @@ const styles = StyleSheet.create({
   },
   contactButtonText: {
     fontSize: 16,
-    color: "white",
+    color: colors.background,
     fontWeight: "600",
   },
   bottomSpacing: {
@@ -579,7 +608,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     padding: 16,
     borderTopWidth: 1,
     borderTopColor: colors.border,
@@ -596,7 +625,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderWidth: 2,
     borderColor: colors.primary,
     borderRadius: 16,
@@ -625,7 +654,7 @@ const styles = StyleSheet.create({
   },
   adoptButtonText: {
     fontSize: 16,
-    color: "white",
+    color: colors.background,
     fontWeight: "600",
   },
   compactButton: {
@@ -648,7 +677,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontSize: 16,
-    color: "white",
+    color: colors.background,
     fontWeight: "600",
   },
 })

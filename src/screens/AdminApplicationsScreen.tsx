@@ -13,6 +13,7 @@ import {
 } from "react-native"
 import NavigationHeader from "../components/NavigationHeader"
 import { colors, spacing } from "../theme/theme"
+import { useTheme } from "../contexts/ThemeContext";
 
 const { width } = Dimensions.get('window')
 
@@ -161,6 +162,10 @@ const sendStatusUpdateNotification = async (application: Application, newStatus:
 }
 
 export default function AdminApplicationsScreen({ navigation }: Props) {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+
   const [applications, setApplications] = useState<Application[]>([])
   const [selectedStatus, setSelectedStatus] = useState("All")
   const [searchQuery, setSearchQuery] = useState("")
@@ -883,7 +888,7 @@ export default function AdminApplicationsScreen({ navigation }: Props) {
   )
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F8FAFB',
@@ -957,7 +962,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   filterButtonTextActive: {
-    color: 'white',
+    color: colors.background,
     fontWeight: '600',
   },
   statsSection: {
@@ -1085,7 +1090,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   quickActionText: {
-    color: 'white',
+    color: colors.background,
     fontSize: 12,
     fontWeight: '600',
   },
@@ -1350,7 +1355,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   actionButtonText: {
-    color: 'white',
+    color: colors.background,
     fontSize: 14,
     fontWeight: '600',
   },

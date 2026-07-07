@@ -8,6 +8,7 @@ import { BarChart } from "react-native-chart-kit";
 import NavigationHeader from "../components/NavigationHeader";
 import { API } from "../config/api";
 import { colors, spacing } from "../theme/theme";
+import { useTheme } from "../contexts/ThemeContext";
 
 interface AnalyticsScreenProps {
   navigation: any;
@@ -27,6 +28,10 @@ interface MetricItem {
 }
 
 export default function AnalyticsScreen({ navigation }: AnalyticsScreenProps) {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+
   const [analyticsData, setAnalyticsData] = useState<AnalyticsItem[]>([]);
   const [recentMetrics, setRecentMetrics] = useState<MetricItem[]>([]);
 
@@ -216,7 +221,7 @@ export default function AnalyticsScreen({ navigation }: AnalyticsScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,

@@ -18,6 +18,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import NavigationHeader from '../components/NavigationHeader';
 import { API } from '../config/api';
 import { useAuth } from "../contexts/AuthContext";
+import { useTheme } from "../contexts/ThemeContext";
 
 // --- Types ---
 interface CareEntry {
@@ -44,6 +45,10 @@ interface CareJournalScreenProps {
 }
 
 export default function CareJournalScreen({ route, navigation }: CareJournalScreenProps) {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+
   const [entries, setEntries] = useState<CareEntry[]>([]);
   const [adoptedPets, setAdoptedPets] = useState<Pet[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -596,7 +601,7 @@ export default function CareJournalScreen({ route, navigation }: CareJournalScre
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFF5F0',
@@ -633,7 +638,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   addButtonText: {
-    color: 'white',
+    color: colors.background,
     fontWeight: '600',
     fontSize: 16,
     marginLeft: 8,
@@ -648,7 +653,7 @@ const styles = StyleSheet.create({
   formCard: {
     width: '100%',
     maxHeight: '90%',
-    backgroundColor: 'white',
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 16,
     shadowColor: '#000',
@@ -689,7 +694,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
   },
   formTextarea: {
     height: 100,
@@ -703,7 +708,7 @@ const styles = StyleSheet.create({
     borderColor: '#E8E8E8',
     borderRadius: 8,
     padding: 12,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
   },
   formSelectText: {
     fontSize: 16,
@@ -726,7 +731,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   saveButtonText: {
-    color: 'white',
+    color: colors.background,
     fontWeight: '600',
     fontSize: 16,
     marginLeft: 8,
@@ -759,7 +764,7 @@ const styles = StyleSheet.create({
   pickerContent: {
     width: '80%',
     maxHeight: '70%',
-    backgroundColor: 'white',
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 16,
     shadowColor: '#000',
@@ -802,7 +807,7 @@ const styles = StyleSheet.create({
   emptyState: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'white',
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 32,
     shadowColor: '#000',
@@ -837,13 +842,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   emptyStateButtonText: {
-    color: 'white',
+    color: colors.background,
     fontWeight: '600',
     fontSize: 16,
     marginLeft: 8,
   },
   entryCard: {
-    backgroundColor: 'white',
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,

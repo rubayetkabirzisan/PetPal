@@ -56,6 +56,10 @@ type ApplicationWithPet = {
 
 // Main application screen component - combination of list and tracker
 export default function ModernApplicationListScreen({ route }: { route?: any }) {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+
   const originalNavigation = useNavigation<any>();
   // Create a navigation wrapper to handle back actions
   const navigation = {
@@ -71,8 +75,6 @@ export default function ModernApplicationListScreen({ route }: { route?: any }) 
     },
     navigate: originalNavigation.navigate
   };
-  
-  const { theme } = useTheme();
   const { user } = useAuth();
   const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
   const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
@@ -717,7 +719,7 @@ export default function ModernApplicationListScreen({ route }: { route?: any }) 
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   // Base styles
   container: {
     flex: 1,

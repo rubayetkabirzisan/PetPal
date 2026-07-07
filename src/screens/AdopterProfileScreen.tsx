@@ -41,7 +41,7 @@ const AdopterProfileScreen: React.FC = () => {
   const [saving, setSaving] = useState<boolean>(false);
   const { theme } = useTheme();
   const colors = (theme as any).colors;
-  const styles = getStyles(colors);
+  const styles = getStyles(theme.colors);
   const [profile, setProfile] = useState<ProfileData>({
     name: "",
     email: "",
@@ -379,7 +379,7 @@ const getStyles = (colors: any) => StyleSheet.create({
     color: colors.text,
   },
   profileHeader: {
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     alignItems: "center",
     padding: 32,
     borderBottomWidth: 1,
@@ -408,7 +408,7 @@ const getStyles = (colors: any) => StyleSheet.create({
     opacity: 0.7,
   },
   profileDetails: {
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     margin: 16,
     borderRadius: 12,
     padding: 20,
@@ -504,12 +504,12 @@ const getStyles = (colors: any) => StyleSheet.create({
     opacity: 0.7,
   },
   saveButtonText: {
-    color: "white",
+    color: colors.background,
     fontSize: 16,
     fontWeight: "600",
   },
   menuContainer: {
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     margin: 16,
     borderRadius: 12,
     borderWidth: 1,

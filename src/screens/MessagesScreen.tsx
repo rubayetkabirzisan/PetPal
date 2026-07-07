@@ -14,6 +14,10 @@ interface SimpleHeaderProps {
 
 // Custom header component with back button
 const SimpleHeader = ({ title, subtitle, showBackButton, navigation }: SimpleHeaderProps) => {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const headerStyles = getHeaderStyles(colors);
+
   return (
     <View style={headerStyles.container}>
       {showBackButton && (
@@ -35,7 +39,7 @@ const SimpleHeader = ({ title, subtitle, showBackButton, navigation }: SimpleHea
   );
 };
 
-const headerStyles = StyleSheet.create({
+const getHeaderStyles = (colors: any) => StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -88,6 +92,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { API } from '../config/api';
 import axios from 'axios';
 import { useFocusEffect } from '@react-navigation/native';
+import { useTheme } from "../contexts/ThemeContext";
 
 interface Conversation {
   id: string; // The OTHER user's ID
@@ -105,6 +110,10 @@ interface MessagesScreenProps {
 }
 
 export default function MessagesScreen({ navigation }: MessagesScreenProps) {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+
   const { user } = useAuth();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -223,7 +232,7 @@ export default function MessagesScreen({ navigation }: MessagesScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFF5F0',
@@ -240,7 +249,7 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#E8E8E8',
@@ -263,13 +272,13 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   messageCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.surface,
     borderRadius: 12,
     marginBottom: 16,
     padding: 16,
     borderWidth: 1,
     borderColor: '#E8E8E8',
-    shadowColor: '#000',
+    shadowColor: colors.text,
     shadowOffset: {
       width: 0,
       height: 2,

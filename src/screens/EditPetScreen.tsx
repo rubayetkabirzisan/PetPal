@@ -22,6 +22,7 @@ import MapView, { Marker } from "react-native-maps";
 import NavigationHeader from "../components/NavigationHeader";
 import { catBreeds, dogBreeds, getPetById, petTypes, type Pet } from "../data/mockData";
 import { borderRadius, colors, spacing } from "../theme/theme";
+import { useTheme } from "../contexts/ThemeContext";
 
 // Types
 type EditPetScreenRouteProp = RouteProp<{ params: { petId: string } }, "params">;
@@ -84,26 +85,40 @@ const useAnimations = () => {
 };
 
 // Components
-const LoadingScreen = () => (
+const LoadingScreen = () => {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+  return (
   <View style={styles.loadingContainer}>
     <ActivityIndicator size="large" color={colors.primary} />
     <Text style={styles.loadingText}>Loading pet details...</Text>
   </View>
-);
+  );
+};
 
-const ErrorScreen = () => (
+const ErrorScreen = () => {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+  return (
   <View style={styles.loadingContainer}>
     <Ionicons name="sad-outline" size={64} color={colors.text + "60"} />
     <Text style={styles.errorText}>Pet not found</Text>
     <Text style={styles.errorSubText}>The pet you're looking for doesn't exist.</Text>
   </View>
-);
+  );
+};
 
 const FormSection: React.FC<{
   icon: string;
   title: string;
   children: React.ReactNode;
-}> = ({ icon, title, children }) => (
+}> = ({ icon, title, children }) => {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+  return (
   <View style={styles.formSection}>
     <View style={styles.sectionHeader}>
       <Ionicons name={icon as any} size={20} color={colors.primary} />
@@ -111,7 +126,8 @@ const FormSection: React.FC<{
     </View>
     {children}
   </View>
-);
+  );
+};
 
 const InputField: React.FC<{
   label: string;
@@ -122,7 +138,11 @@ const InputField: React.FC<{
   multiline?: boolean;
   numberOfLines?: number;
   required?: boolean;
-}> = ({ label, value, onChangeText, placeholder, error, multiline, numberOfLines, required }) => (
+}> = ({ label, value, onChangeText, placeholder, error, multiline, numberOfLines, required }) => {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+  return (
   <View style={styles.inputGroup}>
     <Text style={styles.inputLabel}>
       {label} {required && <Text style={styles.required}>*</Text>}
@@ -148,14 +168,19 @@ const InputField: React.FC<{
       </View>
     )}
   </View>
-);
+  );
+};
 
 const ChipSelector: React.FC<{
   options: Array<{ id: string; name: string; icon?: string }>;
   selectedValue: string;
   onSelect: (value: string) => void;
   horizontal?: boolean;
-}> = ({ options, selectedValue, onSelect, horizontal = true }) => (
+}> = ({ options, selectedValue, onSelect, horizontal = true }) => {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+  return (
   <ScrollView 
     horizontal={horizontal} 
     showsHorizontalScrollIndicator={false} 
@@ -187,14 +212,19 @@ const ChipSelector: React.FC<{
       </TouchableOpacity>
     ))}
   </ScrollView>
-);
+  );
+};
 
 const ToggleCard: React.FC<{
   icon: string;
   label: string;
   value: boolean;
   onToggle: (value: boolean) => void;
-}> = ({ icon, label, value, onToggle }) => (
+}> = ({ icon, label, value, onToggle }) => {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+  return (
   <View style={styles.toggleCard}>
     <View style={styles.toggleHeader}>
       <Ionicons name={icon as any} size={20} color={colors.primary} />
@@ -207,7 +237,8 @@ const ToggleCard: React.FC<{
       thumbColor={value ? "white" : "#f4f3f4"}
     />
   </View>
-);
+  );
+};
 
 const MapPicker: React.FC<{
   visible: boolean;
@@ -215,6 +246,10 @@ const MapPicker: React.FC<{
   onSave: (location: string) => void;
   initialLocation?: string;
 }> = ({ visible, onClose, onSave, initialLocation }) => {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+  
   const [marker, setMarker] = useState<{ latitude: number; longitude: number } | null>(null);
   const [mapRegion] = useState({
     latitude: 30.2672,
@@ -264,6 +299,10 @@ const MapPicker: React.FC<{
 
 // Main Component
 export default function EditPetScreen(props: any) {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+  
   const { route, navigation } = props;
   const { petId } = route.params || {};
 
@@ -727,7 +766,7 @@ export default function EditPetScreen(props: any) {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -830,7 +869,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 8,
     right: 8,
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderRadius: 20,
     padding: 4,
   },

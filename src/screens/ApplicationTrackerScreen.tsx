@@ -5,6 +5,7 @@ import { useEffect, useState } from "react"
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import { getApplicationById, getPetById, type AdoptionApplication } from "../data/mockData"
 import { colors } from "../theme/theme"
+import { useTheme } from "../contexts/ThemeContext";
 
 interface ApplicationTrackerScreenProps {
   navigation?: any
@@ -13,6 +14,10 @@ interface ApplicationTrackerScreenProps {
 }
 
 export default function ApplicationTrackerScreen({ navigation, route }: ApplicationTrackerScreenProps) {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+
   const [application, setApplication] = useState<AdoptionApplication | null>(null)
   const [pet, setPet] = useState<any>(null)
 
@@ -295,7 +300,7 @@ export default function ApplicationTrackerScreen({ navigation, route }: Applicat
   )
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -312,7 +317,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   petCard: {
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     margin: 16,
     borderRadius: 12,
     padding: 16,
@@ -362,7 +367,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   statusCard: {
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     margin: 16,
     marginTop: 0,
     borderRadius: 12,
@@ -428,7 +433,7 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   timelineContainer: {
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     margin: 16,
     marginTop: 0,
     borderRadius: 12,
@@ -467,7 +472,7 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
   },
   timelineLine: {
     width: 2,
@@ -508,7 +513,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   nextStepsCard: {
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     margin: 16,
     marginTop: 0,
     borderRadius: 12,
@@ -537,7 +542,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   contactCard: {
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     margin: 16,
     marginTop: 0,
     marginBottom: 32,

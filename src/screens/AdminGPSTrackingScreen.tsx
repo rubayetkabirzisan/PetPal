@@ -6,6 +6,7 @@ import { useState } from "react"
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import NavigationHeader from "../components/NavigationHeader"
 import { colors } from "../theme/theme"
+import { useTheme } from "../contexts/ThemeContext";
 import EmergencyActions from "./EmergencyActions"
 
 interface TrackedPet {
@@ -23,6 +24,9 @@ interface AdminGPSTrackingScreenProps {
 }
 
 export default function AdminGPSTrackingScreen({ navigation }: AdminGPSTrackingScreenProps) {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
   const [activeFilter, setActiveFilter] = useState<"Safe" | "Alert" | "Lost" | null>(null);
   const [trackedPets, setTrackedPets] = useState<TrackedPet[]>([
     {
@@ -192,7 +196,133 @@ export default function AdminGPSTrackingScreen({ navigation }: AdminGPSTrackingS
     : trackedPets
 
 // Styles for tracked pets, system status, and pet cards
-const styles = StyleSheet.create({
+
+  return (
+    <View style={{ flex: 1 }}>
+      <NavigationHeader title="GPS Tracking" />
+      <ScrollView style={styles.container}>
+      {/* Overview Stats */}
+      <View style={styles.statsContainer}>
+        <TouchableOpacity 
+          style={[
+            styles.statCard, 
+            activeFilter === "Safe" && styles.activeStatCard
+          ]}
+          onPress={() => handleFilterByStatus("Safe")}
+          activeOpacity={0.7}
+        >
+          <View style={[styles.statIcon, { backgroundColor: "rgba(76, 175, 80, 0.15)" }]}> 
+            <Ionicons name="shield-checkmark-outline" size={24} color="#2E7D32" />
+          </View>
+          <Text style={styles.statNumber}>{safeCount}</Text>
+          <Text style={styles.statLabel}>Safe</Text>
+          {activeFilter === "Safe" && (
+            <View style={styles.filterIndicator}>
+              <Ionicons name="checkmark-circle" size={16} color="#2E7D32" />
+            </View>
+          )}
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[
+            styles.statCard, 
+            activeFilter === "Alert" && styles.activeStatCard
+          ]}
+          onPress={() => handleFilterByStatus("Alert")}
+          activeOpacity={0.7}
+        >
+          <View style={[styles.statIcon, { backgroundColor: "rgba(255, 152, 0, 0.15)" }]}> 
+            <Ionicons name="warning-outline" size={24} color="#E65100" />
+          </View>
+          <Text style={styles.statNumber}>{alertCount}</Text>
+          <Text style={styles.statLabel}>Alerts</Text>
+          {activeFilter === "Alert" && (
+            <View style={styles.filterIndicator}>
+              <Ionicons name="checkmark-circle" size={16} color="#E65100" />
+            </View>
+          )}
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[
+            styles.statCard, 
+            activeFilter === "Lost" && styles.activeStatCard
+          ]}
+          onPress={() => handleFilterByStatus("Lost")}
+          activeOpacity={0.7}
+        >
+          <View style={[styles.statIcon, { backgroundColor: "rgba(244, 67, 54, 0.15)" }]}> 
+            <Ionicons name="alert-circle-outline" size={24} color="#C62828" />
+          </View>
+          <Text style={styles.statNumber}>{lostCount}</Text>
+          <Text style={styles.statLabel}>Lost</Text>
+          {activeFilter === "Lost" && (
+            <View style={styles.filterIndicator}>
+              <Ionicons name="checkmark-circle" size={16} color="#C62828" />
+            </View>
+          )}
+        </TouchableOpacity>
+      </View>
+
+      {/* System Status */}
+      <View style={styles.systemStatus}>
+        <Text style={styles.sectionTitle}>System Status</Text>
+        <View style={styles.statusCard}>
+          <View style={styles.statusItem}>
+            <Ionicons name="wifi-outline" size={20} color={colors.success} />
+            <Text style={styles.systemStatusText}>GPS Network: Online</Text>
+          </View>
+          <View style={styles.statusItem}>
+            <Ionicons name="server-outline" size={20} color={colors.success} />
+            <Text style={styles.systemStatusText}>Tracking Server: Active</Text>
+          </View>
+          <View style={styles.statusItem}>
+            <Ionicons name="notifications-outline" size={20} color={colors.success} />
+            <Text style={styles.systemStatusText}>Alert System: Operational</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Tracked Pets */}
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>
+            {activeFilter 
+              ? `${activeFilter} Pets (${filteredPets.length})`
+              : `Tracked Pets (${trackedPets.length})`
+            }
+          </Text>
+          {activeFilter && (
+            <TouchableOpacity 
+              style={styles.clearFilterButton}
+              onPress={() => setActiveFilter(null)}
+            >
+              <Text style={styles.clearFilterText}>Clear Filter</Text>
+              <Ionicons name="close-circle" size={16} color={colors.primary} />
+            </TouchableOpacity>
+          )}
+        </View>
+        {filteredPets.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyStateText}>No pets found with this status</Text>
+          </View>
+        ) : (
+          filteredPets.map(renderPetCard)
+        )}
+      </View>
+      {/* Emergency Actions */}
+      <EmergencyActions 
+        trackedPets={trackedPets}
+        onEmergencyAction={(action, details) => {
+          console.log('Emergency action taken:', action, details);
+          // Handle the emergency action (API calls, notifications, etc.)
+        }}
+      />
+    </ScrollView>
+    </View>
+  );
+}
+const getStyles = (colors: any) => StyleSheet.create({
   systemStatus: {
     backgroundColor: "#f5f7fa",
     padding: 14,
@@ -469,129 +599,3 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
 });
-
-  return (
-    <View style={{ flex: 1 }}>
-      <NavigationHeader title="GPS Tracking" />
-      <ScrollView style={styles.container}>
-      {/* Overview Stats */}
-      <View style={styles.statsContainer}>
-        <TouchableOpacity 
-          style={[
-            styles.statCard, 
-            activeFilter === "Safe" && styles.activeStatCard
-          ]}
-          onPress={() => handleFilterByStatus("Safe")}
-          activeOpacity={0.7}
-        >
-          <View style={[styles.statIcon, { backgroundColor: "rgba(76, 175, 80, 0.15)" }]}> 
-            <Ionicons name="shield-checkmark-outline" size={24} color="#2E7D32" />
-          </View>
-          <Text style={styles.statNumber}>{safeCount}</Text>
-          <Text style={styles.statLabel}>Safe</Text>
-          {activeFilter === "Safe" && (
-            <View style={styles.filterIndicator}>
-              <Ionicons name="checkmark-circle" size={16} color="#2E7D32" />
-            </View>
-          )}
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={[
-            styles.statCard, 
-            activeFilter === "Alert" && styles.activeStatCard
-          ]}
-          onPress={() => handleFilterByStatus("Alert")}
-          activeOpacity={0.7}
-        >
-          <View style={[styles.statIcon, { backgroundColor: "rgba(255, 152, 0, 0.15)" }]}> 
-            <Ionicons name="warning-outline" size={24} color="#E65100" />
-          </View>
-          <Text style={styles.statNumber}>{alertCount}</Text>
-          <Text style={styles.statLabel}>Alerts</Text>
-          {activeFilter === "Alert" && (
-            <View style={styles.filterIndicator}>
-              <Ionicons name="checkmark-circle" size={16} color="#E65100" />
-            </View>
-          )}
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={[
-            styles.statCard, 
-            activeFilter === "Lost" && styles.activeStatCard
-          ]}
-          onPress={() => handleFilterByStatus("Lost")}
-          activeOpacity={0.7}
-        >
-          <View style={[styles.statIcon, { backgroundColor: "rgba(244, 67, 54, 0.15)" }]}> 
-            <Ionicons name="alert-circle-outline" size={24} color="#C62828" />
-          </View>
-          <Text style={styles.statNumber}>{lostCount}</Text>
-          <Text style={styles.statLabel}>Lost</Text>
-          {activeFilter === "Lost" && (
-            <View style={styles.filterIndicator}>
-              <Ionicons name="checkmark-circle" size={16} color="#C62828" />
-            </View>
-          )}
-        </TouchableOpacity>
-      </View>
-
-      {/* System Status */}
-      <View style={styles.systemStatus}>
-        <Text style={styles.sectionTitle}>System Status</Text>
-        <View style={styles.statusCard}>
-          <View style={styles.statusItem}>
-            <Ionicons name="wifi-outline" size={20} color={colors.success} />
-            <Text style={styles.systemStatusText}>GPS Network: Online</Text>
-          </View>
-          <View style={styles.statusItem}>
-            <Ionicons name="server-outline" size={20} color={colors.success} />
-            <Text style={styles.systemStatusText}>Tracking Server: Active</Text>
-          </View>
-          <View style={styles.statusItem}>
-            <Ionicons name="notifications-outline" size={20} color={colors.success} />
-            <Text style={styles.systemStatusText}>Alert System: Operational</Text>
-          </View>
-        </View>
-      </View>
-
-      {/* Tracked Pets */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>
-            {activeFilter 
-              ? `${activeFilter} Pets (${filteredPets.length})`
-              : `Tracked Pets (${trackedPets.length})`
-            }
-          </Text>
-          {activeFilter && (
-            <TouchableOpacity 
-              style={styles.clearFilterButton}
-              onPress={() => setActiveFilter(null)}
-            >
-              <Text style={styles.clearFilterText}>Clear Filter</Text>
-              <Ionicons name="close-circle" size={16} color={colors.primary} />
-            </TouchableOpacity>
-          )}
-        </View>
-        {filteredPets.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyStateText}>No pets found with this status</Text>
-          </View>
-        ) : (
-          filteredPets.map(renderPetCard)
-        )}
-      </View>
-      {/* Emergency Actions */}
-      <EmergencyActions 
-        trackedPets={trackedPets}
-        onEmergencyAction={(action, details) => {
-          console.log('Emergency action taken:', action, details);
-          // Handle the emergency action (API calls, notifications, etc.)
-        }}
-      />
-    </ScrollView>
-    </View>
-  );
-}

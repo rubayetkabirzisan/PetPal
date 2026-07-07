@@ -8,6 +8,7 @@ import DateTimePicker from "@react-native-community/datetimepicker"
 import { API } from "../config/api"
 import { useAuth } from "../contexts/AuthContext"
 import { colors } from "../theme/theme"
+import { useTheme } from "../contexts/ThemeContext";
 
 interface ApplicationFormScreenProps {
   navigation: any
@@ -19,6 +20,10 @@ type OwnRentType = "own" | "rent" | "other"
 type ExerciseCommitment = "low" | "medium" | "high"
 
 export default function ApplicationFormScreen({ navigation, route }: ApplicationFormScreenProps) {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+
   const [currentStep, setCurrentStep] = useState(0)
   const [formData, setFormData] = useState({
     // Personal Information
@@ -903,14 +908,14 @@ export default function ApplicationFormScreen({ navigation, route }: Application
   )
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
   },
   stepIndicatorScroll: {
     maxHeight: 100,
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
@@ -946,7 +951,7 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   stepNumberActive: {
-    color: "white",
+    color: colors.background,
   },
   stepLabel: {
     fontSize: 10,
@@ -997,7 +1002,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   textInput: {
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
@@ -1010,7 +1015,7 @@ const styles = StyleSheet.create({
     textAlignVertical: "top",
   },
   selectInput: {
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderRadius: 8,
     padding: 12,
     flexDirection: "row",
@@ -1039,7 +1044,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: colors.border,
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     minWidth: "48%",
   },
   optionButtonSelected: {
@@ -1080,7 +1085,7 @@ const styles = StyleSheet.create({
   reviewSection: {
     marginBottom: 24,
     padding: 16,
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: colors.border,
@@ -1132,14 +1137,14 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     padding: 24,
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderTopWidth: 1,
     borderTopColor: colors.border,
   },
   backButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.primary,
     borderRadius: 8,
@@ -1165,7 +1170,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   nextButtonText: {
-    color: "white",
+    color: colors.background,
     fontSize: 16,
     fontWeight: "600",
   },

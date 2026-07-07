@@ -30,6 +30,7 @@ import {
     processImagePickerResult
 } from "../utils/imageUtils";
 import { colors, spacing } from "../theme/theme";
+import { useTheme } from "../contexts/ThemeContext";
 
 interface SightingReportModalProps {
   visible: boolean;
@@ -52,6 +53,10 @@ interface SightingFormData {
 }
 
 export default function SightingReportModal({ visible, onClose, pet }: SightingReportModalProps) {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+
   const [sightingForm, setSightingForm] = useState<SightingFormData>({
     petId: '',
     location: '',
@@ -522,9 +527,9 @@ export default function SightingReportModal({ visible, onClose, pet }: SightingR
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   modalContainer: { flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(0,0,0,0.5)" },
-  sightingModalContent: { backgroundColor: "white", borderTopLeftRadius: 16, borderTopRightRadius: 16, padding: spacing.md, paddingBottom: 34, maxHeight: "90%" },
+  sightingModalContent: { backgroundColor: colors.surface, borderTopLeftRadius: 16, borderTopRightRadius: 16, padding: spacing.md, paddingBottom: 34, maxHeight: "90%" },
   modalHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: spacing.md },
   modalTitle: { fontSize: 20, fontWeight: "bold", color: colors.text },
   petSummary: { paddingBottom: spacing.md },
@@ -551,7 +556,7 @@ const styles = StyleSheet.create({
   locationButton: { flexDirection: 'row', backgroundColor: colors.background, paddingVertical: spacing.sm, paddingHorizontal: spacing.md, borderRadius: 8, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.primary, flex: 0.45 },
   locationButtonText: { color: colors.primary, fontSize: 14, fontWeight: '500', marginLeft: spacing.xs },
   confirmLocationButton: { backgroundColor: colors.primary, paddingVertical: spacing.sm, paddingHorizontal: spacing.md, borderRadius: 8, alignItems: 'center', justifyContent: 'center', flex: 0.45 },
-  confirmLocationText: { color: 'white', fontSize: 14, fontWeight: 'bold' },
+  confirmLocationText: { color: colors.background, fontSize: 14, fontWeight: 'bold' },
   photoPreviewContainer: { minHeight: 100, marginTop: spacing.sm, marginBottom: spacing.sm, borderRadius: 8, borderWidth: 1, borderColor: colors.border, borderStyle: 'dashed', overflow: 'hidden' },
   photoPreviewItem: { position: 'relative', marginRight: spacing.xs, borderRadius: 8, overflow: 'hidden' },
   photoThumbnail: { width: 80, height: 80, borderRadius: 8 },
@@ -567,6 +572,6 @@ const styles = StyleSheet.create({
   cancelButton: { flex: 1, padding: spacing.md, borderRadius: 8, backgroundColor: colors.background, borderWidth: 1, borderColor: colors.border, alignItems: 'center' },
   cancelButtonText: { color: colors.text, fontWeight: '500', fontSize: 16 },
   submitButton: { flex: 1, flexDirection: 'row', padding: spacing.md, borderRadius: 8, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
-  submitButtonText: { color: 'white', fontWeight: '500', fontSize: 16, marginLeft: spacing.xs },
+  submitButtonText: { color: colors.background, fontWeight: '500', fontSize: 16, marginLeft: spacing.xs },
   disabledButton: { opacity: 0.5 }
 });

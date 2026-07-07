@@ -4,6 +4,7 @@ import React from "react"
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps"
 import { colors, spacing } from "../theme/theme"
+import { useTheme } from "../contexts/ThemeContext";
 
 // Define the type for the route params
 type PetMapParams = {
@@ -21,6 +22,10 @@ type PetMapParams = {
  * PetMapScreen displays pet location information
  */
 export default function PetMapScreen() {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+
   const navigation = useNavigation();
   const route = useRoute<RouteProp<{ PetMap: PetMapParams }, 'PetMap'>>();
 
@@ -121,7 +126,7 @@ export default function PetMapScreen() {
   )
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -261,7 +266,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   actionButtonText: {
-    color: "white",
+    color: colors.background,
     fontSize: 16,
     fontWeight: "bold",
   },

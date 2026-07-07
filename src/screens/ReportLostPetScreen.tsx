@@ -20,12 +20,17 @@ import NavigationHeader from "../components/NavigationHeader"
 import axios from "axios"
 import { API } from "../config/api"
 import { colors, spacing } from "../theme/theme"
+import { useTheme } from "../contexts/ThemeContext";
 
 interface ReportLostPetScreenProps {
   navigation: any
 }
 
 export default function ReportLostPetScreen({ navigation }: ReportLostPetScreenProps) {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+
   const [isLoading, setIsLoading] = useState(false)
   const [images, setImages] = useState<string[]>([])
   const [formData, setFormData] = useState({
@@ -421,7 +426,7 @@ export default function ReportLostPetScreen({ navigation }: ReportLostPetScreenP
   )
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -467,7 +472,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   input: {
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: 8,
@@ -496,7 +501,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: 8,
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     gap: spacing.xs,
   },
   selectedOption: {
@@ -509,7 +514,7 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   selectedOptionText: {
-    color: "white",
+    color: colors.background,
   },
   imageSection: {
     marginTop: spacing.md,
@@ -562,7 +567,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   submitButtonText: {
-    color: "white",
+    color: colors.background,
     fontSize: 16,
     fontWeight: "600",
   }

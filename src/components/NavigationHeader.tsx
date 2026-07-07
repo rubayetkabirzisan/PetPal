@@ -30,7 +30,9 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
   const navigation = useNavigation<any>() // Use any type for now to allow nested navigation
   const router = useRouter()
   const { user } = useAuth()
-  const { theme } = useTheme()
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
   const [notificationCount, setNotificationCount] = useState(0) 
   
   // Determine if user is admin
@@ -116,7 +118,7 @@ const NavigationHeader: React.FC<NavigationHeaderProps> = ({
   )
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     backgroundColor: colors.primary, // Better visual representation with primary color
     paddingTop: Platform.OS === "ios" ? 50 : 24, // Increased padding for status bar
@@ -124,7 +126,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
-    shadowColor: "#000",
+    shadowColor: colors.text,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15, // Slightly increased shadow
     shadowRadius: 4,

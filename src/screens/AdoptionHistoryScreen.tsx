@@ -9,12 +9,17 @@ import { useAuth } from "../contexts/AuthContext";
 import { type AdoptionHistoryEntry } from "../lib/adoption-history";
 import axios from "axios";
 import { API } from "../config/api";
+import { useTheme } from "../contexts/ThemeContext";
 
 interface AdoptionHistoryScreenProps {
   navigation: any;
 }
 
 export default function AdoptionHistoryScreen({ navigation }: AdoptionHistoryScreenProps) {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+
   const [adoptedPets, setAdoptedPets] = useState<AdoptionHistoryEntry[]>([]);
   const { user } = useAuth();
 
@@ -193,7 +198,7 @@ export default function AdoptionHistoryScreen({ navigation }: AdoptionHistoryScr
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#FFF5F0",
@@ -261,7 +266,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   browseButtonText: {
-    color: "white",
+    color: colors.background,
     fontSize: 16,
     fontWeight: "600",
   },
@@ -269,7 +274,7 @@ const styles = StyleSheet.create({
     gap: 24,
   },
   petCard: {
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderRadius: 12,
     overflow: "hidden",
     marginBottom: 24,
@@ -355,13 +360,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   primaryButtonText: {
-    color: "white",
+    color: colors.background,
     fontSize: 14,
     fontWeight: "600",
   },
   outlineButton: {
     flex: 1,
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderRadius: 8,
     paddingVertical: 10,
     paddingHorizontal: 16,
@@ -409,7 +414,7 @@ const styles = StyleSheet.create({
     color: "#8B4513",
   },
   chatButton: {
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderRadius: 6,
     paddingVertical: 6,
     paddingHorizontal: 12,

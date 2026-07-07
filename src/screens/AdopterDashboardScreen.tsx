@@ -33,7 +33,7 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
   const { user, logout } = useAuth()
   const { theme } = useTheme()
   const colors = (theme as any).colors
-  const styles = getStyles(colors)
+  const styles = getStyles(theme.colors)
 
   // Handle hardware back press on Android
   useFocusEffect(
@@ -536,7 +536,7 @@ const getStyles = (colors: any) => StyleSheet.create({
     color: colors.primary,
   },
   journalEntryCard: {
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderRadius: 12,
     marginBottom: spacing.md,
     borderWidth: 1,
@@ -604,7 +604,7 @@ const getStyles = (colors: any) => StyleSheet.create({
     elevation: 3,
   },
   addJournalEntryButtonText: {
-    color: "white",
+    color: colors.background,
     fontWeight: "600",
     marginLeft: spacing.xs,
     fontSize: 15,
@@ -615,7 +615,7 @@ const getStyles = (colors: any) => StyleSheet.create({
   },
   quickActionCard: {
     flex: 1,
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: spacing.md,
     alignItems: "center",
@@ -667,7 +667,7 @@ const getStyles = (colors: any) => StyleSheet.create({
     borderColor: "#4A6FA5",
   },
   gpsAlertsBadgeText: {
-    color: "white",
+    color: colors.background,
     fontWeight: "bold",
     fontSize: 12,
   },
@@ -678,7 +678,7 @@ const getStyles = (colors: any) => StyleSheet.create({
   gpsAlertsTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "white",
+    color: colors.background,
   },
   gpsAlertsSubtitle: {
     fontSize: 14,
@@ -695,7 +695,7 @@ const getStyles = (colors: any) => StyleSheet.create({
   searchInputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderRadius: 12,
     paddingHorizontal: spacing.md,
     borderWidth: 1,
@@ -714,7 +714,7 @@ const getStyles = (colors: any) => StyleSheet.create({
     flexDirection: "row",
   },
   filterButton: {
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderRadius: 20,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
@@ -732,14 +732,14 @@ const getStyles = (colors: any) => StyleSheet.create({
     fontWeight: "500",
   },
   filterButtonTextActive: {
-    color: "white",
+    color: colors.background,
   },
   petsContainer: {
     padding: spacing.md,
     gap: spacing.md,
   },
   petCard: {
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderRadius: 12,
     flexDirection: "row",
     overflow: "hidden",
@@ -824,7 +824,7 @@ const getStyles = (colors: any) => StyleSheet.create({
     gap: spacing.xs,
   },
   viewButtonText: {
-    color: "white",
+    color: colors.background,
     fontSize: 12,
     fontWeight: "600",
   },
@@ -869,7 +869,7 @@ const getStyles = (colors: any) => StyleSheet.create({
   aiMatchingTitle: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "white",
+    color: colors.background,
   },
   aiMatchingSubtitle: {
     fontSize: 12,

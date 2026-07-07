@@ -6,12 +6,17 @@ import { Alert, Image, Modal, ScrollView, StyleSheet, Text, TextInput, Touchable
 import NavigationHeader from "../components/NavigationHeader"
 import { getPets, type Pet } from "../data/mockData"
 import { colors } from "../theme/theme"
+import { useTheme } from "../contexts/ThemeContext";
 
 interface ManagePetsScreenProps {
   navigation: any
 }
 
 export default function ManagePetsScreen({ navigation }: ManagePetsScreenProps) {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+
   const [pets, setPets] = useState<Pet[]>(getPets())
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedStatus, setSelectedStatus] = useState("All")
@@ -240,13 +245,13 @@ export default function ManagePetsScreen({ navigation }: ManagePetsScreenProps) 
   )
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
   },
   header: {
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
@@ -303,7 +308,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   statusFilterTextActive: {
-    color: "white",
+    color: colors.background,
   },
   addButton: {
     backgroundColor: colors.primary,
@@ -321,7 +326,7 @@ const styles = StyleSheet.create({
   resultsContainer: {
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
@@ -335,7 +340,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   petCard: {
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderRadius: 16,
     flexDirection: "row",
     marginBottom: 16,
@@ -474,13 +479,13 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   addPetButtonText: {
-    color: "white",
+    color: colors.background,
     fontSize: 15,
     fontWeight: "600",
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     paddingTop: 16,
   },
   modalHeader: {

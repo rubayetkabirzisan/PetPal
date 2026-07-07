@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import type { LostPet } from '../lib/lost-pets';
+import { useTheme } from "../contexts/ThemeContext";
 
 interface LostPetCardProps {
   pet: LostPet;
@@ -17,6 +18,10 @@ export default function LostPetCard({
   onViewDetails, 
   onReportSighting 
 }: LostPetCardProps) {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+
   const router = useRouter();
 
   const getStatusColor = (status: LostPet["status"]) => {
@@ -160,9 +165,9 @@ export default function LostPetCard({
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   card: {
-    backgroundColor: 'white',
+    backgroundColor: colors.surface,
     borderRadius: 8,
     overflow: 'hidden',
     shadowColor: '#000',
@@ -351,6 +356,6 @@ const styles = StyleSheet.create({
   primaryButtonText: {
     fontSize: 14,
     fontWeight: '500',
-    color: 'white',
+    color: colors.background,
   },
 });

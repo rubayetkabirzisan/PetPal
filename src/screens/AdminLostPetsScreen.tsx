@@ -5,6 +5,7 @@ import { Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity
 import NavigationHeader from "../components/NavigationHeader";
 import { API } from "../config/api";
 import { colors } from "../theme/theme";
+import { useTheme } from "../contexts/ThemeContext";
 
 // Interface for lost pet data
 interface LostPet {
@@ -29,6 +30,10 @@ interface AdminLostPetsScreenProps {
 }
 
 export default function AdminLostPetsScreen({ navigation }: AdminLostPetsScreenProps) {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("All");
   const [lostPets, setLostPets] = useState<LostPet[]>([]);
@@ -301,13 +306,13 @@ export default function AdminLostPetsScreen({ navigation }: AdminLostPetsScreenP
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
   },
   header: {
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
@@ -355,7 +360,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   statusFilterTextActive: {
-    color: "white",
+    color: colors.background,
   },
   statsContainer: {
     flexDirection: "row",
@@ -364,7 +369,7 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
     alignItems: "center",
@@ -385,7 +390,7 @@ const styles = StyleSheet.create({
   resultsContainer: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
@@ -398,7 +403,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   petCard: {
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderRadius: 12,
     flexDirection: "row",
     marginBottom: 16,

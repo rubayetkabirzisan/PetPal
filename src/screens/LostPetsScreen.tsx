@@ -39,6 +39,7 @@ import {
     processImagePickerResult
 } from "../utils/imageUtils"
 import { colors, spacing } from "../theme/theme"
+import { useTheme } from "../contexts/ThemeContext";
 
 interface LostPetsScreenProps {
   navigation: any
@@ -65,6 +66,10 @@ interface SightingFormData {
 }
 
 export default function LostPetsScreen({ navigation }: LostPetsScreenProps) {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+
   const [lostPets, setLostPets] = useState<LostPet[]>([])
   const [selectedTab, setSelectedTab] = useState<"lost" | "found">("lost")
   const [searchQuery, setSearchQuery] = useState("")
@@ -952,7 +957,7 @@ export default function LostPetsScreen({ navigation }: LostPetsScreenProps) {
   )
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   // Map related styles
   locationInputContainer: {
     flexDirection: 'row',
@@ -1072,7 +1077,7 @@ const styles = StyleSheet.create({
     flex: 0.45,
   },
   confirmLocationText: {
-    color: 'white',
+    color: colors.background,
     fontSize: 14,
     fontWeight: 'bold',
   },
@@ -1144,7 +1149,7 @@ const styles = StyleSheet.create({
   },
   // Form styles for sighting report
   sightingModalContent: {
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     padding: spacing.md,
@@ -1255,7 +1260,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -8,
     right: -8,
-    backgroundColor: 'white',
+    backgroundColor: colors.surface,
     borderRadius: 12,
   },
   formActions: {
@@ -1300,7 +1305,7 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
   },
   submitButtonText: {
-    color: 'white',
+    color: colors.background,
     fontWeight: '600',
   },
   disabledButton: {
@@ -1334,11 +1339,11 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   activeTabText: {
-    color: "white",
+    color: colors.background,
   },
   searchContainer: {
     flexDirection: "row",
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderRadius: 8,
     paddingHorizontal: spacing.md,
     paddingVertical: 0, // Reduced vertical padding to give more space to the text input
@@ -1372,7 +1377,7 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   reportButtonText: {
-    color: "white",
+    color: colors.background,
     fontSize: 14,
     fontWeight: "600",
   },
@@ -1426,7 +1431,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   petCard: {
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderRadius: 12,
     flexDirection: "row",
     overflow: "hidden",
@@ -1467,7 +1472,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.success,
   },
   statusText: {
-    color: "white",
+    color: colors.background,
     fontSize: 10,
     fontWeight: "600",
   },
@@ -1525,14 +1530,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   contactButtonText: {
-    color: "white",
+    color: colors.background,
     fontSize: 12,
     fontWeight: "600",
   },
   sightingButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderRadius: 6,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
@@ -1571,7 +1576,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.5)",
   },
   modalContent: {
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     padding: spacing.md,
@@ -1623,7 +1628,7 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   activeFilterOptionText: {
-    color: "white",
+    color: colors.background,
   },
   locationInput: {
     borderWidth: 1,
@@ -1660,13 +1665,13 @@ const styles = StyleSheet.create({
   applyButtonText: {
     fontSize: 14,
     fontWeight: "600",
-    color: "white",
+    color: colors.background,
   },
   // Resources section styles
   resourcesSection: {
     marginHorizontal: spacing.md,
     marginBottom: spacing.md,
-    backgroundColor: 'white',
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: spacing.md,
     borderWidth: 1,

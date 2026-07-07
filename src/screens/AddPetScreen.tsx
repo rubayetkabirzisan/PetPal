@@ -18,12 +18,17 @@ import NavigationHeader from "../components/NavigationHeader"
 import { addPet } from "../data/mockData"
 import { useAuth } from "../contexts/AuthContext"
 import { colors, spacing } from "../theme/theme"
+import { useTheme } from "../contexts/ThemeContext";
 
 interface AddPetScreenProps {
   navigation?: any
 }
 
 export default function AddPetScreen({ navigation: navProp }: AddPetScreenProps) {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+
   const navigation = useNavigation()
   const { user } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
@@ -618,7 +623,7 @@ export default function AddPetScreen({ navigation: navProp }: AddPetScreenProps)
   )
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -714,7 +719,7 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   optionButtonTextActive: {
-    color: 'white',
+    color: colors.background,
   },
   traitsContainer: {
     flexDirection: 'row',
@@ -781,7 +786,7 @@ const styles = StyleSheet.create({
     marginRight: spacing.sm,
   },
   submitButtonText: {
-    color: 'white',
+    color: colors.background,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -806,7 +811,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -8,
     right: -8,
-    backgroundColor: 'white',
+    backgroundColor: colors.surface,
     borderRadius: 12,
     width: 24,
     height: 24,

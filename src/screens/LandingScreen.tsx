@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons"
 import { useEffect, useState } from "react"
 import { Animated, Dimensions, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import { colors, spacing } from "../theme/theme"
+import { useTheme } from "../contexts/ThemeContext";
 
 const { width, height } = Dimensions.get("window")
 
@@ -12,6 +13,10 @@ interface LandingScreenProps {
 }
 
 export default function LandingScreen({ navigation }: LandingScreenProps) {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+
   const [showAnimation, setShowAnimation] = useState(true)
   const [showUserSelection, setShowUserSelection] = useState(false)
   const fadeAnim = new Animated.Value(0)
@@ -115,7 +120,7 @@ export default function LandingScreen({ navigation }: LandingScreenProps) {
   return null
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   animationContainer: {
     flex: 1,
     backgroundColor: colors.primary,
@@ -129,7 +134,7 @@ const styles = StyleSheet.create({
     width: 128,
     height: 128,
     borderRadius: 64,
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: spacing.xl,
@@ -145,7 +150,7 @@ const styles = StyleSheet.create({
   appTitle: {
     fontSize: 48,
     fontWeight: "bold",
-    color: "white",
+    color: colors.background,
     marginBottom: spacing.sm,
   },
   appSubtitle: {
@@ -196,7 +201,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xl,
   },
   optionCard: {
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: spacing.xl,
     alignItems: "center",

@@ -2,8 +2,13 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import NavigationHeader from '../components/NavigationHeader';
 import { colors, spacing } from '../theme/theme';
+import { useTheme } from "../contexts/ThemeContext";
 
 export default function DocumentScreen({ route }: any) {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+
   const { title, type } = route.params || { title: 'Document', type: 'privacy' };
 
   const getContent = () => {
@@ -82,7 +87,7 @@ Your profile name and photo may be visible to other users if you participate in 
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,

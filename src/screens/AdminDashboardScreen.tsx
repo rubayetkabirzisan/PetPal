@@ -5,12 +5,17 @@ import { colors } from "../theme/theme"
 import { useAuth } from "../contexts/AuthContext"
 import { useFocusEffect } from "@react-navigation/native"
 import React from "react"
+import { useTheme } from "../contexts/ThemeContext";
 
 interface AdminDashboardScreenProps {
   navigation: any
 }
 
 export default function AdminDashboardScreen({ navigation }: AdminDashboardScreenProps) {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+
   const { logout } = useAuth()
 
   // Handle hardware back press on Android
@@ -234,13 +239,13 @@ export default function AdminDashboardScreen({ navigation }: AdminDashboardScree
   )
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
   },
   header: {
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     padding: 24,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
@@ -263,7 +268,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   statCard: {
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
     alignItems: "center",
@@ -314,7 +319,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   actionCard: {
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
     alignItems: "center",
@@ -330,7 +335,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   activityContainer: {
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.border,
@@ -370,7 +375,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   alertCard: {
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
     flexDirection: "row",
@@ -409,7 +414,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   alertButtonText: {
-    color: "white",
+    color: colors.background,
     fontSize: 12,
     fontWeight: "600",
   },

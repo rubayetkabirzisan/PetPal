@@ -49,6 +49,10 @@ type ApplicationWithPet = {
 
 // Main application screen component - combination of list and tracker
 export default function ApplicationListScreen({ route }: { route?: any }) {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+
   const originalNavigation = useNavigation<any>();
   // Create a navigation wrapper to handle back actions
   const navigation = {
@@ -64,8 +68,6 @@ export default function ApplicationListScreen({ route }: { route?: any }) {
     },
     navigate: originalNavigation.navigate
   };
-  
-  const { theme } = useTheme();
   const { user } = useAuth();
   const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
   const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
@@ -713,7 +715,7 @@ export default function ApplicationListScreen({ route }: { route?: any }) {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   // Base styles
   container: {
     flex: 1,
@@ -801,7 +803,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   viewButtonText: {
-    color: 'white',
+    color: colors.background,
     fontSize: 12,
     fontWeight: '500',
   },
@@ -980,7 +982,7 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
   contactButtonText: {
-    color: 'white',
+    color: colors.background,
     fontWeight: '500',
     fontSize: 14,
   },
@@ -1039,7 +1041,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   errorButtonText: {
-    color: 'white',
+    color: colors.background,
     fontWeight: '600',
     fontSize: 16,
   },

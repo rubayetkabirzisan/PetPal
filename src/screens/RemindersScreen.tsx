@@ -6,6 +6,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { API } from "../config/api";
 import { useAuth } from "../contexts/AuthContext";
 import { borderRadius, colors, spacing } from "../theme/theme";
+import { useTheme } from "../contexts/ThemeContext";
 
 // Types
 interface Reminder {
@@ -35,6 +36,10 @@ interface RemindersScreenProps {
 }
 
 export default function RemindersScreen({ navigation }: RemindersScreenProps) {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [filter, setFilter] = useState<'all' | 'upcoming' | 'overdue' | 'completed'>('all');
   const [isLoading, setIsLoading] = useState(true);
@@ -685,7 +690,7 @@ export default function RemindersScreen({ navigation }: RemindersScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   outerContainer: {
     flex: 1,
     backgroundColor: colors.background,
@@ -762,7 +767,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   activeFilterButtonText: {
-    color: 'white',
+    color: colors.background,
     fontWeight: '600',
   },
   emptyContainer: {
@@ -798,7 +803,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   emptyStateAddButtonText: {
-    color: 'white',
+    color: colors.background,
     fontWeight: 'bold',
     fontSize: 16,
     marginLeft: spacing.sm,
@@ -1064,7 +1069,7 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   switchTextActive: {
-    color: '#fff',
+    color: colors.background,
     fontWeight: '600',
     fontSize: 16,
   },
@@ -1130,7 +1135,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   addButtonText: {
-    color: '#fff',
+    color: colors.background,
     fontWeight: '600',
   },
 });

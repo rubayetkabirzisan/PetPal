@@ -34,8 +34,13 @@ import { API } from "../config/api";
 import { useAuth } from "../contexts/AuthContext";
 import { useFocusEffect } from "@react-navigation/native";
 import React from "react";
+import { useTheme } from "../contexts/ThemeContext";
 
 export default function ChatScreen({ navigation, route }: ChatScreenProps) {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+
   const { user } = useAuth();
   
   // Get the params from route if available
@@ -320,7 +325,7 @@ export default function ChatScreen({ navigation, route }: ChatScreenProps) {
   )
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -329,7 +334,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   statusBar: {
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -395,7 +400,7 @@ const styles = StyleSheet.create({
   },
   shelterMessage: {
     alignSelf: "flex-start",
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderRadius: 18,
     borderBottomLeftRadius: 4,
     padding: 12,
@@ -413,7 +418,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   userMessageText: {
-    color: "white",
+    color: colors.background,
   },
   shelterMessageText: {
     color: colors.text,
@@ -489,7 +494,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border,
   },
   quickActions: {
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     flexDirection: "row",
     paddingHorizontal: 16,
     paddingVertical: 8,

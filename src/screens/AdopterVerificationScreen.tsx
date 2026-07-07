@@ -5,6 +5,7 @@ import { useState } from "react"
 import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
 import NavigationHeader from "../components/NavigationHeader"
 import { colors } from "../theme/theme"
+import { useTheme } from "../contexts/ThemeContext";
 
 interface VerificationRequest {
   id: string
@@ -27,6 +28,10 @@ interface AdopterVerificationScreenProps {
 }
 
 export default function AdopterVerificationScreen({ navigation }: AdopterVerificationScreenProps) {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedStatus, setSelectedStatus] = useState("All")
   const [verificationRequests, setVerificationRequests] = useState<VerificationRequest[]>([
@@ -280,13 +285,13 @@ export default function AdopterVerificationScreen({ navigation }: AdopterVerific
   )
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
   },
   header: {
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
@@ -334,7 +339,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   statusFilterTextActive: {
-    color: "white",
+    color: colors.background,
   },
   statsContainer: {
     flexDirection: "row",
@@ -343,7 +348,7 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
     alignItems: "center",
@@ -364,7 +369,7 @@ const styles = StyleSheet.create({
   resultsContainer: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
@@ -377,7 +382,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   requestCard: {
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,

@@ -8,12 +8,17 @@ import { colors, spacing } from "../theme/theme"
 import axios from "axios"
 import { API } from "../config/api"
 import { useFocusEffect } from "@react-navigation/native"
+import { useTheme } from "../contexts/ThemeContext";
 
 interface BrowsePetsScreenProps {
   navigation: any
 }
 
 export default function BrowsePetsScreen({ navigation }: BrowsePetsScreenProps) {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedFilter, setSelectedFilter] = useState("all")
   const [pets, setPets] = useState<any[]>([])
@@ -211,7 +216,7 @@ export default function BrowsePetsScreen({ navigation }: BrowsePetsScreenProps) 
 
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -263,13 +268,13 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   filterButtonTextActive: {
-    color: "white",
+    color: colors.background,
   },
   petsContainer: {
     padding: spacing.md,
   },
   petCard: {
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderRadius: 12,
     margin: spacing.xs,
     flex: 1,

@@ -21,6 +21,7 @@ import NavigationHeader from "../components/NavigationHeader"
 import { API } from "../config/api"
 import { type Pet } from "../data/mockData"
 import { colors, spacing } from "../theme/theme"
+import { useTheme } from "../contexts/ThemeContext";
 
 const { width } = Dimensions.get("window")
 
@@ -48,6 +49,10 @@ interface MatchScore {
 }
 
 export default function AiPetScreen({ navigation }: AiPetScreenProps) {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+
   const [pets, setPets] = useState<Pet[]>([])
   const [preferences, setPreferences] = useState<UserPreferences>({
     petType: "",
@@ -117,7 +122,7 @@ export default function AiPetScreen({ navigation }: AiPetScreenProps) {
     try {
       const res = await axios.get(API.pets.all)
       const allPets = res.data
-      setPets(allPets.filter((pet: any) => pet.status === "available" || !pet.status))
+      setPets(allPets.filter((pet: any) => !pet.status || pet.status.toLowerCase() === "available"))
     } catch (error) {
       console.error("Error loading pets from backend:", error)
     }
@@ -128,11 +133,15 @@ export default function AiPetScreen({ navigation }: AiPetScreenProps) {
     const reasons: string[] = []
     const maxScore = 100
 
-    // Pet type matching (20 points)
+    // Pet type matching (Strict Elimination)
     const petType = pet.species || pet.type || "";
-    if (preferences.petType && petType.toLowerCase() === preferences.petType.toLowerCase()) {
-      score += 20
-      reasons.push(`Perfect ${petType} match for your preference`)
+    if (preferences.petType) {
+      if (petType.toLowerCase() !== preferences.petType.toLowerCase()) {
+        return { pet, score: 0, reasons: [] } // Eliminate immediately
+      } else {
+        score += 20
+        reasons.push(`Perfect ${petType} match for your preference`)
+      }
     }
 
     // Size matching (15 points)
@@ -601,7 +610,10 @@ export default function AiPetScreen({ navigation }: AiPetScreenProps) {
   const renderMatchCard = (match: MatchScore) => (
     <View key={match.pet.id || (match.pet as any)._id} style={styles.matchCard}>
       <View style={styles.matchHeader}>
-        <Image source={{ uri: (match.pet as any).image || match.pet.imageUrl }} style={styles.matchImage} />
+        <Image 
+          source={{ uri: (match.pet as any).image || (match.pet.images?.[0]) || (match.pet as any).imageUrl || "https://via.placeholder.com/80" }} 
+          style={styles.matchImage} 
+        />
         <View style={styles.matchInfo}>
           <Text style={styles.matchName}>{match.pet.name}</Text>
           <Text style={styles.matchBreed}>{match.pet.breed}</Text>
@@ -704,7 +716,7 @@ export default function AiPetScreen({ navigation }: AiPetScreenProps) {
   )
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -763,7 +775,7 @@ const styles = StyleSheet.create({
   optionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'white',
+    backgroundColor: colors.surface,
     borderWidth: 2,
     borderColor: colors.border,
     borderRadius: 12,
@@ -784,7 +796,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   selectedOptionText: {
-    color: 'white',
+    color: colors.background,
   },
   checkboxContainer: {
     marginTop: spacing.md,
@@ -826,7 +838,7 @@ const styles = StyleSheet.create({
   },
   nextButtonText: {
     fontSize: 16,
-    color: 'white',
+    color: colors.background,
     marginRight: spacing.xs,
   },
   analyzeButton: {
@@ -839,7 +851,7 @@ const styles = StyleSheet.create({
   },
   analyzeButtonText: {
     fontSize: 16,
-    color: 'white',
+    color: colors.background,
     marginLeft: spacing.xs,
   },
   disabledButton: {
@@ -906,7 +918,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
   },
   matchCard: {
-    backgroundColor: 'white',
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: spacing.lg,
     marginBottom: spacing.lg,
@@ -1014,7 +1026,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   adjustButtonText: {
-    color: 'white',
+    color: colors.background,
     fontSize: 16,
     fontWeight: '600',
   },

@@ -30,7 +30,7 @@ export default function SettingsScreen() {
   const { user, logout } = useAuth()
   const { isDarkMode, toggleTheme, theme } = useTheme()
   const colors = (theme as any).colors
-  const styles = getStyles(colors)
+  const styles = getStyles(theme.colors)
   const [preferences, setPreferences] = useState<UserPreferences | null>(null)
   const [loading, setLoading] = useState(true)
   const [showLanguageModal, setShowLanguageModal] = useState(false)

@@ -15,8 +15,13 @@ import {
 } from "react-native"
 import { colors, spacing } from "../theme/theme"
 import { API } from "../config/api"
+import { useTheme } from "../contexts/ThemeContext";
 
 export default function ForgotPasswordScreen({ navigation }: any) {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+
   const [step, setStep] = useState<1 | 2>(1)
   const [email, setEmail] = useState("")
   const [token, setToken] = useState("")
@@ -159,7 +164,7 @@ export default function ForgotPasswordScreen({ navigation }: any) {
   )
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -206,7 +211,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   form: {
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderRadius: 24,
     padding: spacing.xl,
     shadowColor: "#000",
@@ -250,7 +255,7 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   resetButtonText: {
-    color: "white",
+    color: colors.background,
     fontSize: 18,
     fontWeight: "bold",
   },

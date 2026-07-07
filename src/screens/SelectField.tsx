@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { borderRadius, colors, spacing } from "../theme/theme";
+import { useTheme } from "../contexts/ThemeContext";
 
 interface SelectFieldProps {
   label: string;
@@ -22,6 +23,10 @@ export const SelectField: React.FC<SelectFieldProps> = ({
   required,
   layout = "horizontal",
 }) => {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+
   return (
     <View style={styles.container}>
       <Text style={styles.label}>
@@ -63,7 +68,7 @@ export const SelectField: React.FC<SelectFieldProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     marginBottom: spacing.md,
   },
@@ -128,7 +133,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   optionTextActive: {
-    color: "white",
+    color: colors.background,
     fontWeight: "600",
   },
   errorContainer: {

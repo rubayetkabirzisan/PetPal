@@ -4,6 +4,7 @@ import { getLostPets } from "@lib/lost-pets";
 import { usePathname, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useTheme } from "../contexts/ThemeContext";
 
 interface NavigationProps {
   userType: "adopter" | "admin";
@@ -13,6 +14,10 @@ interface NavigationProps {
  * Bottom tab navigation component for the PetPal app
  */
 export function Navigation({ userType }: NavigationProps) {
+  const { theme } = useTheme();
+  const colors = theme.colors;
+  const styles = getStyles(colors);
+
   const pathname = usePathname();
   const router = useRouter();
   const [lostPetsCount, setLostPetsCount] = useState(0);
@@ -161,13 +166,13 @@ export function Navigation({ userType }: NavigationProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   navContainer: {
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: "white",
+    backgroundColor: colors.surface,
     borderTopWidth: 1,
     borderTopColor: "#E8E8E8",
     zIndex: 50,
