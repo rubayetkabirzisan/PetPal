@@ -8,6 +8,17 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// S12 FIX: Enforce HTTPS in production
+if (process.env.NODE_ENV === 'production') {
+  app.use((req, res, next) => {
+    if (req.header('x-forwarded-proto') !== 'https') {
+      res.redirect(`https://${req.header('host')}${req.url}`);
+    } else {
+      next();
+    }
+  });
+}
+
 const PORT = process.env.PORT || 5000;
 const mongoUrl = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/petpal";
 

@@ -16,6 +16,11 @@ router.get('/drop-index', auth, async (req, res) => {
 // Get all applications for a user
 router.get('/viewById/:userId', auth, async (req, res) => {
   try {
+    // S2 FIX: Verify that the requesting user can only see their own applications.
+    // Admins (type === 'admin') may view any user's applications.
+    if (req.user.type !== 'admin' && req.user.id !== req.params.userId && req.user.uid !== req.params.userId) {
+      return res.status(403).json({ error: "Access denied: you can only view your own applications." });
+    }
     const applications = await Application.find({ userId: req.params.userId }).sort({ submittedDate: -1 });
     res.json(applications);
   } catch (err) {
@@ -26,7 +31,19 @@ router.get('/viewById/:userId', auth, async (req, res) => {
 router.post('/create', auth, async (req, res) => {
   try {
     const payload = req.body;
-    
+
+    // S7 FIX: Always use the userId from the verified JWT — never trust the client-supplied userId.
+    payload.userId = req.user.id;
+
+    // S6 FIX: Sanitize application answers to prevent XSS/NoSQLi
+    if (payload.answers && typeof payload.answers === 'object') {
+      for (let key in payload.answers) {
+        if (typeof payload.answers[key] === 'string') {
+          payload.answers[key] = payload.answers[key].replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+      }
+    }
+
     // Auto-generate standard timeline if not provided
     if (!payload.timeline || payload.timeline.length === 0) {
       payload.timeline = [

@@ -4,16 +4,53 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const express = require('express');
 const User = require('../models/User');
+const Application = require('../models/Application');
+const AdoptionHistory = require('../models/AdoptionHistory');
+const VerificationRequest = require('../models/VerificationRequest');
+const Notification = require('../models/Notification');
+const Message = require('../models/Message');
+const Reminder = require('../models/Reminder');
+const CareEntry = require('../models/careEntry');
 const router = express.Router();
 const bcrypt = require("bcryptjs");
 const nodemailer = require("nodemailer");
-// Signup route
+
+// S1 FIX: Validate JWT_SECRET at startup — fail fast rather than falling back to a public string
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  console.error(
+    "FATAL: JWT_SECRET environment variable is not set. " +
+    "Set it in your .env file before starting the server. " +
+    "Using a hardcoded secret in production is a critical security vulnerability."
+  );
+  if (process.env.NODE_ENV === 'production') {
+    process.exit(1); // Hard stop in production
+  }
+}
+const EFFECTIVE_JWT_SECRET = JWT_SECRET || "dev_only_secret_replace_before_deploy";
+
+// S9 FIX: Rate limit login attempts (10 per 15 minutes per IP)
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { message: "Too many login attempts. Please try again in 15 minutes." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// S11 FIX: Email validation regex
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 router.post("/signup", async (req, res) => {
   try {
     const { name, email, password, phone, location, bio, userType } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({ message: "Name, email, and password required" });
+    }
+
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: "Invalid email format" });
     }
 
     const existing = await User.findOne({ email });
@@ -40,10 +77,14 @@ router.post("/signup", async (req, res) => {
   }
 });
 
-// Login route
-router.post("/login", async (req, res) => {
+// Login route — protected by rate limiter
+router.post("/login", loginLimiter, async (req, res) => {
   try {
     const { email, password, userType } = req.body;
+
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: "Invalid email format" });
+    }
 
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: "Invalid credentials" });
@@ -56,7 +97,12 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ message: "Wrong user type" });
     }
 
-    const token = jwt.sign({ id: user._id, uid: user.uid, type: user.userType }, process.env.JWT_SECRET || "super_secret_jwt_key_for_petpal_app_change_in_production", { expiresIn: "7d" });
+    // S1 FIX & S13 FIX: 1 day expiration instead of 7 days
+    const token = jwt.sign(
+      { id: user._id, uid: user.uid, type: user.userType },
+      EFFECTIVE_JWT_SECRET,
+      { expiresIn: "1d" }
+    );
     res.json({ message: "Login successful", token, user: { uid: user.uid, name: user.name, email: user.email, userType: user.userType } });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
@@ -88,17 +134,45 @@ router.post("/change-password", auth, async (req, res) => {
   }
 });
 
+// S13 FIX: Refresh token route
+router.post("/refresh", auth, async (req, res) => {
+  try {
+    // If the token is valid (auth middleware passes), issue a fresh 1-day token
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+    
+    const newToken = jwt.sign(
+      { id: user._id, uid: user.uid, type: user.userType },
+      EFFECTIVE_JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+    res.json({ token: newToken });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 // Delete account route
 router.delete("/delete/:userId", auth, async (req, res) => {
   try {
     const { userId } = req.params;
+    
+    // S8 FIX: Cascade delete associated user records
+    await Application.deleteMany({ userId });
+    await AdoptionHistory.deleteMany({ userId });
+    await VerificationRequest.deleteMany({ adopterId: userId });
+    await Notification.deleteMany({ userId });
+    await Message.deleteMany({ $or: [{ senderId: userId }, { receiverId: userId }] });
+    await Reminder.deleteMany({ userId });
+    await CareEntry.deleteMany({ userId });
+
     const user = await User.findOneAndDelete({ uid: userId });
     
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
     
-    res.json({ message: "Account deleted successfully" });
+    res.json({ message: "Account and associated data deleted successfully" });
   } catch (err) {
     console.error("Delete Account Error:", err);
     res.status(500).json({ message: "Server error" });
@@ -116,6 +190,12 @@ const passwordResetLimiter = rateLimit({
 router.post("/forgot-password", passwordResetLimiter, async (req, res) => {
   try {
     const { email } = req.body;
+    if (!email) return res.status(400).json({ message: "Email is required" });
+    
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: "Invalid email format" });
+    }
+
     const user = await User.findOne({ email });
     
     if (!user) {
@@ -157,7 +237,8 @@ router.post("/forgot-password", passwordResetLimiter, async (req, res) => {
     console.log("====================================");
     console.log("PASSWORD RESET EMAIL SENT!");
     console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
-    console.log("Code: ", resetToken);
+    // S5 FIX: Do not log reset tokens to the server console
+    // console.log("Code: ", resetToken);
     console.log("====================================");
 
     res.json({ message: "Reset code sent to your email" });

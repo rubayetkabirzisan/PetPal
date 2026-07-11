@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
+const User = require('../models/User');
 
-const auth = (req, res, next) => {
+const auth = async (req, res, next) => {
   // Get token from header
   const authHeader = req.header("Authorization");
   
@@ -12,10 +13,23 @@ const auth = (req, res, next) => {
 
   try {
     // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "super_secret_jwt_key_for_petpal_app_change_in_production");
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
-    // Add user from payload
-    req.user = decoded;
+    // Fetch fresh user from DB to ensure we have the latest uid and type
+    // This fixes issues where old tokens lacked these fields
+    const user = await User.findById(decoded.id);
+    
+    if (!user) {
+      return res.status(401).json({ message: "User no longer exists" });
+    }
+    
+    // Add user from payload but merge in fresh DB fields
+    req.user = {
+      id: decoded.id,
+      uid: user.uid,
+      type: user.userType || "adopter" // fallback if undefined in old documents
+    };
+    
     next();
   } catch (err) {
     res.status(401).json({ message: "Token is not valid" });

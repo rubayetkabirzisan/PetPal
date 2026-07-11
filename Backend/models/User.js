@@ -11,7 +11,8 @@ const UserSchema = new mongoose.Schema({
   userType: { type: String, enum: ["adopter", "shelter", "admin"], default: "adopter" },
   createdAt: { type: Date, default: Date.now },
   resetToken: { type: String },
-  resetTokenExpire: { type: Date }
+  resetTokenExpire: { type: Date },
+  savedPets: [{ type: mongoose.Schema.Types.ObjectId, ref: "Pet" }]
 });
 
 module.exports = mongoose.model("User", UserSchema);
