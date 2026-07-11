@@ -23,12 +23,11 @@ export default function PetProfileScreen({ navigation, route }: PetProfileScreen
   const styles = getStyles(colors);
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
-  const [isFavorited, setIsFavorited] = useState(false)
   const [pet, setPet] = useState<any>(null)
   const [hasApplied, setHasApplied] = useState(false)
   const [isCheckingApplication, setIsCheckingApplication] = useState(true)
 
-  const { user } = useAuth()
+  const { user, savedPetIds, toggleSavedPet } = useAuth()
   const petId = route.params?.petId
   
   // Determine if user is a shelter (admin)
@@ -69,8 +68,9 @@ export default function PetProfileScreen({ navigation, route }: PetProfileScreen
     navigation.navigate("ApplicationForm", { petId: pet.id })
   }
 
-  const toggleFavorite = () => {
-    setIsFavorited(!isFavorited)
+  const handleToggleFavorite = () => {
+    if (!pet) return;
+    toggleSavedPet(pet.id);
   }
 
   const handleContactShelter = () => {
@@ -149,11 +149,11 @@ export default function PetProfileScreen({ navigation, route }: PetProfileScreen
           )}
 
           {/* Favorite Button */}
-          <TouchableOpacity style={styles.favoriteButton} onPress={toggleFavorite}>
+          <TouchableOpacity style={styles.favoriteButton} onPress={handleToggleFavorite}>
             <Ionicons
-              name={isFavorited ? "heart" : "heart-outline"}
+              name={(pet && savedPetIds.includes(pet.id)) ? "heart" : "heart-outline"}
               size={24}
-              color={isFavorited ? colors.primary : "white"}
+              color={(pet && savedPetIds.includes(pet.id)) ? colors.primary : "white"}
             />
           </TouchableOpacity>
         </View>

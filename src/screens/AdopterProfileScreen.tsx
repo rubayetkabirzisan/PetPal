@@ -50,7 +50,7 @@ const AdopterProfileScreen: React.FC = () => {
     bio: "",
   });
 
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const userId = user?.id ?? "";
 
   // Load profile data on component mount
@@ -112,7 +112,7 @@ const AdopterProfileScreen: React.FC = () => {
         text: "Sign Out", 
         style: "destructive", 
         onPress: async () => {
-          await (() => {})();
+          await logout();
           navigation.reset({
             index: 0,
             routes: [{ name: 'Auth' }],
@@ -127,7 +127,7 @@ const AdopterProfileScreen: React.FC = () => {
     {
       icon: "notifications-outline",
       title: "Notifications",
-      subtitle: "2 new notifications",
+      subtitle: "View your updates",
       path: "notifications",
       onPress: () => navigation.navigate('Notifications'),
     },
@@ -163,23 +163,8 @@ const AdopterProfileScreen: React.FC = () => {
       icon: "log-out-outline",
       title: "Log Out",
       subtitle: "Sign out of your account",
-      path: "(() => {})",
-      onPress: () => {
-        Alert.alert("Log Out", "Are you sure you want to log out?", [
-          { text: "Cancel", style: "cancel" },
-          { 
-            text: "Log Out", 
-            style: "destructive", 
-            onPress: async () => {
-              await (() => {})();
-              navigation.reset({
-                index: 0,
-                routes: [{ name: 'Auth' }],
-              });
-            }
-          }
-        ]);
-      },
+      path: "logout",
+      onPress: handleLogout,
     },
   ];
 
@@ -225,11 +210,11 @@ const AdopterProfileScreen: React.FC = () => {
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Email *</Text>
+                <Text style={styles.inputLabel}>Email (Cannot be changed here)</Text>
                 <TextInput
-                  style={styles.textInput}
+                  style={[styles.textInput, { opacity: 0.7, backgroundColor: colors.surface }]}
                   value={profile.email}
-                  onChangeText={(text) => setProfile({ ...profile, email: text })}
+                  editable={false}
                   keyboardType="email-address"
                   placeholder="Enter your email"
                 />

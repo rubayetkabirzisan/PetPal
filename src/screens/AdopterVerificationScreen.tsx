@@ -1,14 +1,17 @@
 "use client"
 
 import { Ionicons } from "@expo/vector-icons"
-import { useState } from "react"
-import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
+import { useEffect, useState } from "react"
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
 import NavigationHeader from "../components/NavigationHeader"
-import { colors } from "../theme/theme"
-import { useTheme } from "../contexts/ThemeContext";
+import { useTheme } from "../contexts/ThemeContext"
+import { useAuth } from "../contexts/AuthContext"
+import axios from "axios"
+import { API } from "../config/api"
 
 interface VerificationRequest {
-  id: string
+  _id: string
+  adopterId: string
   adopterName: string
   email: string
   phone: string
@@ -16,7 +19,7 @@ interface VerificationRequest {
   submittedDate: string
   status: "Pending" | "Approved" | "Rejected"
   documents: {
-    id: string
+    _id?: string
     type: string
     status: "Pending" | "Approved" | "Rejected"
   }[]
@@ -31,55 +34,80 @@ export default function AdopterVerificationScreen({ navigation }: AdopterVerific
   const { theme } = useTheme();
   const colors = theme.colors;
   const styles = getStyles(colors);
+  const { user } = useAuth();
+
+  const isAdmin = (user as any)?.userType === "admin";
 
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedStatus, setSelectedStatus] = useState("All")
-  const [verificationRequests, setVerificationRequests] = useState<VerificationRequest[]>([
-    {
-      id: "1",
-      adopterName: "John Smith",
-      email: "john.smith@email.com",
-      phone: "(555) 123-4567",
-      address: "123 Main St, Austin, TX 78701",
-      submittedDate: "2024-01-15",
-      status: "Pending",
-      documents: [
-        { id: "1", type: "ID Verification", status: "Approved" },
-        { id: "2", type: "Address Proof", status: "Pending" },
-        { id: "3", type: "Income Verification", status: "Pending" },
-      ],
-    },
-    {
-      id: "2",
-      adopterName: "Sarah Johnson",
-      email: "sarah.j@email.com",
-      phone: "(555) 987-6543",
-      address: "456 Oak Ave, Austin, TX 78702",
-      submittedDate: "2024-01-14",
-      status: "Approved",
-      documents: [
-        { id: "4", type: "ID Verification", status: "Approved" },
-        { id: "5", type: "Address Proof", status: "Approved" },
-        { id: "6", type: "Income Verification", status: "Approved" },
-      ],
-      notes: "All documents verified. Excellent references.",
-    },
-    {
-      id: "3",
-      adopterName: "Mike Wilson",
-      email: "mike.w@email.com",
-      phone: "(555) 456-7890",
-      address: "789 Pine St, Austin, TX 78703",
-      submittedDate: "2024-01-13",
-      status: "Rejected",
-      documents: [
-        { id: "7", type: "ID Verification", status: "Approved" },
-        { id: "8", type: "Address Proof", status: "Rejected" },
-        { id: "9", type: "Income Verification", status: "Rejected" },
-      ],
-      notes: "Insufficient income documentation. Address verification failed.",
-    },
-  ])
+  const [verificationRequests, setVerificationRequests] = useState<VerificationRequest[]>([])
+  const [loading, setLoading] = useState(true)
+
+  // Adopter submission form state
+  const [phone, setPhone] = useState("")
+  const [address, setAddress] = useState("")
+  const [submitting, setSubmitting] = useState(false)
+  const [myRequest, setMyRequest] = useState<VerificationRequest | null>(null)
+
+  useEffect(() => {
+    if (isAdmin) {
+      fetchAllRequests();
+    } else {
+      fetchMyStatus();
+    }
+  }, [isAdmin]);
+
+  const fetchAllRequests = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(API.verification.all);
+      setVerificationRequests(res.data);
+    } catch (err) {
+      console.error("Error fetching verification requests:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchMyStatus = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(API.verification.myStatus);
+      setMyRequest(res.data);
+    } catch (err: any) {
+      if (err?.response?.status !== 404) {
+        console.error("Error fetching verification status:", err);
+      }
+      setMyRequest(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmitRequest = async () => {
+    if (!user) return;
+    if (!phone.trim() || !address.trim()) {
+      Alert.alert("Error", "Please provide your phone number and address.");
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      await axios.post(API.verification.submit, {
+        adopterName: (user as any).name || "Unknown",
+        email: (user as any).email || "",
+        phone,
+        address,
+      });
+      Alert.alert("Success", "Your verification request has been submitted. We'll review it shortly.");
+      fetchMyStatus();
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || "Failed to submit request. Please try again.";
+      Alert.alert("Error", msg);
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const statusOptions = ["All", "Pending", "Approved", "Rejected"]
 
@@ -95,53 +123,53 @@ export default function AdopterVerificationScreen({ navigation }: AdopterVerific
   })
 
   const handleApprove = (requestId: string) => {
-    Alert.alert("Approve Verification", "Are you sure you want to approve this verification request?", [
+    Alert.alert("Approve Verification", "Approve this verification request?", [
       { text: "Cancel", style: "cancel" },
       {
         text: "Approve",
-        onPress: () => {
-          const updatedRequests = verificationRequests.map((request) =>
-            request.id === requestId ? { ...request, status: "Approved" as const } : request,
-          )
-          setVerificationRequests(updatedRequests)
-          Alert.alert("Success", "Verification request approved")
+        onPress: async () => {
+          try {
+            await axios.patch(API.verification.approve(requestId));
+            Alert.alert("Success", "Verification request approved");
+            fetchAllRequests();
+          } catch (err) {
+            Alert.alert("Error", "Failed to approve request");
+          }
         },
       },
-    ])
+    ]);
   }
 
   const handleReject = (requestId: string) => {
-    Alert.alert("Reject Verification", "Are you sure you want to reject this verification request?", [
+    Alert.alert("Reject Verification", "Reject this verification request?", [
       { text: "Cancel", style: "cancel" },
       {
         text: "Reject",
         style: "destructive",
-        onPress: () => {
-          const updatedRequests = verificationRequests.map((request) =>
-            request.id === requestId ? { ...request, status: "Rejected" as const } : request,
-          )
-          setVerificationRequests(updatedRequests)
-          Alert.alert("Success", "Verification request rejected")
+        onPress: async () => {
+          try {
+            await axios.patch(API.verification.reject(requestId));
+            Alert.alert("Success", "Verification request rejected");
+            fetchAllRequests();
+          } catch (err) {
+            Alert.alert("Error", "Failed to reject request");
+          }
         },
       },
-    ])
+    ]);
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Pending":
-        return colors.warning
-      case "Approved":
-        return colors.success
-      case "Rejected":
-        return colors.error
-      default:
-        return colors.text
+      case "Pending": return colors.warning
+      case "Approved": return colors.success
+      case "Rejected": return colors.error
+      default: return colors.text
     }
   }
 
   const renderVerificationCard = (request: VerificationRequest) => (
-    <View key={request.id} style={styles.requestCard}>
+    <View key={request._id} style={styles.requestCard}>
       <View style={styles.requestHeader}>
         <View style={styles.adopterInfo}>
           <Text style={styles.adopterName}>{request.adopterName}</Text>
@@ -160,8 +188,8 @@ export default function AdopterVerificationScreen({ navigation }: AdopterVerific
 
       <View style={styles.documentsSection}>
         <Text style={styles.documentsTitle}>Documents:</Text>
-        {request.documents.map((doc) => (
-          <View key={doc.id} style={styles.documentItem}>
+        {request.documents.map((doc, i) => (
+          <View key={doc._id || i} style={styles.documentItem}>
             <Text style={styles.documentType}>{doc.type}</Text>
             <View style={[styles.documentStatus, { backgroundColor: getStatusColor(doc.status) + "20" }]}>
               <Text style={[styles.documentStatusText, { color: getStatusColor(doc.status) }]}>{doc.status}</Text>
@@ -170,21 +198,21 @@ export default function AdopterVerificationScreen({ navigation }: AdopterVerific
         ))}
       </View>
 
-      {request.notes && (
+      {request.notes ? (
         <View style={styles.notesSection}>
           <Text style={styles.notesTitle}>Notes:</Text>
           <Text style={styles.notesText}>{request.notes}</Text>
         </View>
-      )}
+      ) : null}
 
       <View style={styles.requestFooter}>
-        <Text style={styles.submittedDate}>Submitted: {request.submittedDate}</Text>
+        <Text style={styles.submittedDate}>Submitted: {new Date(request.submittedDate).toLocaleDateString()}</Text>
 
-        {request.status === "Pending" && (
+        {request.status === "Pending" && isAdmin && (
           <View style={styles.actionButtons}>
             <TouchableOpacity
               style={[styles.actionButton, styles.rejectButton]}
-              onPress={() => handleReject(request.id)}
+              onPress={() => handleReject(request._id)}
             >
               <Ionicons name="close-outline" size={16} color={colors.error} />
               <Text style={[styles.actionButtonText, { color: colors.error }]}>Reject</Text>
@@ -192,7 +220,7 @@ export default function AdopterVerificationScreen({ navigation }: AdopterVerific
 
             <TouchableOpacity
               style={[styles.actionButton, styles.approveButton]}
-              onPress={() => handleApprove(request.id)}
+              onPress={() => handleApprove(request._id)}
             >
               <Ionicons name="checkmark-outline" size={16} color={colors.success} />
               <Text style={[styles.actionButtonText, { color: colors.success }]}>Approve</Text>
@@ -207,80 +235,174 @@ export default function AdopterVerificationScreen({ navigation }: AdopterVerific
   const approvedCount = verificationRequests.filter((r) => r.status === "Approved").length
   const rejectedCount = verificationRequests.filter((r) => r.status === "Rejected").length
 
+  const filteredRequests = verificationRequests.filter((request) => {
+    const matchesSearch =
+      request.adopterName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      request.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      request.phone.includes(searchQuery)
+
+    const matchesStatus = selectedStatus === "All" || request.status === selectedStatus
+    return matchesSearch && matchesStatus
+  })
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1 }}>
+        <NavigationHeader title="Verification" />
+        <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </View>
+    );
+  }
+
+  // --- ADOPTER VIEW: show own status or submit form ---
+  if (!isAdmin) {
+    return (
+      <View style={{ flex: 1 }}>
+        <NavigationHeader title="Identity Verification" />
+        <ScrollView style={styles.container} contentContainerStyle={{ padding: 16 }}>
+          {myRequest ? (
+            <View style={styles.requestCard}>
+              <Text style={[styles.adopterName, { marginBottom: 8 }]}>Your Verification Status</Text>
+              <View style={[styles.statusBadge, { backgroundColor: getStatusColor(myRequest.status) + "20", alignSelf: "flex-start", marginBottom: 12 }]}>
+                <Text style={[styles.statusText, { color: getStatusColor(myRequest.status) }]}>{myRequest.status}</Text>
+              </View>
+
+              {myRequest.documents.map((doc, i) => (
+                <View key={doc._id || i} style={styles.documentItem}>
+                  <Text style={styles.documentType}>{doc.type}</Text>
+                  <View style={[styles.documentStatus, { backgroundColor: getStatusColor(doc.status) + "20" }]}>
+                    <Text style={[styles.documentStatusText, { color: getStatusColor(doc.status) }]}>{doc.status}</Text>
+                  </View>
+                </View>
+              ))}
+
+              {myRequest.notes ? (
+                <View style={[styles.notesSection, { marginTop: 12 }]}>
+                  <Text style={styles.notesTitle}>Notes from reviewer:</Text>
+                  <Text style={styles.notesText}>{myRequest.notes}</Text>
+                </View>
+              ) : null}
+
+              <Text style={[styles.submittedDate, { marginTop: 12 }]}>
+                Submitted: {new Date(myRequest.submittedDate).toLocaleDateString()}
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.requestCard}>
+              <Text style={styles.adopterName}>Submit Verification Request</Text>
+              <Text style={[styles.adopterEmail, { marginBottom: 16 }]}>
+                Complete identity verification to strengthen your adoption application.
+              </Text>
+
+              <Text style={styles.documentsTitle}>Phone Number *</Text>
+              <TextInput
+                style={[styles.searchInput, { borderWidth: 1, borderColor: colors.border, borderRadius: 8, padding: 12, marginBottom: 12, color: colors.text }]}
+                value={phone}
+                onChangeText={setPhone}
+                placeholder="Your phone number"
+                placeholderTextColor={colors.text + "80"}
+                keyboardType="phone-pad"
+              />
+
+              <Text style={styles.documentsTitle}>Address *</Text>
+              <TextInput
+                style={[styles.searchInput, { borderWidth: 1, borderColor: colors.border, borderRadius: 8, padding: 12, marginBottom: 16, color: colors.text }]}
+                value={address}
+                onChangeText={setAddress}
+                placeholder="Your full address"
+                placeholderTextColor={colors.text + "80"}
+              />
+
+              <TouchableOpacity
+                style={[styles.approveButton, { paddingVertical: 14, borderRadius: 10, alignItems: "center", opacity: submitting ? 0.6 : 1 }]}
+                onPress={handleSubmitRequest}
+                disabled={submitting}
+              >
+                {submitting
+                  ? <ActivityIndicator size="small" color={colors.success} />
+                  : <Text style={[styles.actionButtonText, { color: colors.success, fontSize: 16 }]}>Submit for Verification</Text>
+                }
+              </TouchableOpacity>
+            </View>
+          )}
+        </ScrollView>
+      </View>
+    );
+  }
+
+  // --- ADMIN VIEW ---
   return (
     <View style={{ flex: 1 }}>
       <NavigationHeader title="Adopter Verification" />
       <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.searchContainer}>
-          <View style={styles.searchInputContainer}>
-            <Ionicons name="search-outline" size={20} color={colors.text} style={styles.searchIcon} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search by name, email, or phone..."
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              placeholderTextColor={colors.text + "80"}
-            />
+        <View style={styles.header}>
+          <View style={styles.searchContainer}>
+            <View style={styles.searchInputContainer}>
+              <Ionicons name="search-outline" size={20} color={colors.text} style={styles.searchIcon} />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search by name, email, or phone..."
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                placeholderTextColor={colors.text + "80"}
+              />
+            </View>
+          </View>
+
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.statusFilters}>
+            {statusOptions.map((status) => (
+              <TouchableOpacity
+                key={status}
+                style={[styles.statusFilter, selectedStatus === status && styles.statusFilterActive]}
+                onPress={() => setSelectedStatus(status)}
+              >
+                <Text style={[styles.statusFilterText, selectedStatus === status && styles.statusFilterTextActive]}>
+                  {status}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
+        <View style={styles.statsContainer}>
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>{pendingCount}</Text>
+            <Text style={styles.statLabel}>Pending</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>{approvedCount}</Text>
+            <Text style={styles.statLabel}>Approved</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>{rejectedCount}</Text>
+            <Text style={styles.statLabel}>Rejected</Text>
           </View>
         </View>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.statusFilters}>
-          {statusOptions.map((status) => (
-            <TouchableOpacity
-              key={status}
-              style={[styles.statusFilter, selectedStatus === status && styles.statusFilterActive]}
-              onPress={() => setSelectedStatus(status)}
-            >
-              <Text style={[styles.statusFilterText, selectedStatus === status && styles.statusFilterTextActive]}>
-                {status}
+        <View style={styles.resultsContainer}>
+          <Text style={styles.resultsText}>
+            Showing {filteredRequests.length} of {verificationRequests.length} requests
+          </Text>
+        </View>
+
+        <ScrollView style={styles.requestsList} showsVerticalScrollIndicator={false}>
+          {filteredRequests.map(renderVerificationCard)}
+
+          {filteredRequests.length === 0 && (
+            <View style={styles.emptyState}>
+              <Ionicons name="document-text-outline" size={64} color={colors.border} />
+              <Text style={styles.emptyStateTitle}>No verification requests found</Text>
+              <Text style={styles.emptyStateText}>
+                {searchQuery || selectedStatus !== "All"
+                  ? "Try adjusting your search or filters"
+                  : "No verification requests at this time"}
               </Text>
-            </TouchableOpacity>
-          ))}
+            </View>
+          )}
         </ScrollView>
       </View>
-
-      {/* Stats */}
-      <View style={styles.statsContainer}>
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{pendingCount}</Text>
-          <Text style={styles.statLabel}>Pending</Text>
-        </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{approvedCount}</Text>
-          <Text style={styles.statLabel}>Approved</Text>
-        </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{rejectedCount}</Text>
-          <Text style={styles.statLabel}>Rejected</Text>
-        </View>
-      </View>
-
-      {/* Results Summary */}
-      <View style={styles.resultsContainer}>
-        <Text style={styles.resultsText}>
-          Showing {filteredRequests.length} of {verificationRequests.length} requests
-        </Text>
-      </View>
-
-      {/* Requests List */}
-      <ScrollView style={styles.requestsList} showsVerticalScrollIndicator={false}>
-        {filteredRequests.map(renderVerificationCard)}
-
-        {filteredRequests.length === 0 && (
-          <View style={styles.emptyState}>
-            <Ionicons name="document-text-outline" size={64} color={colors.border} />
-            <Text style={styles.emptyStateTitle}>No verification requests found</Text>
-            <Text style={styles.emptyStateText}>
-              {searchQuery || selectedStatus !== "All"
-                ? "Try adjusting your search or filters"
-                : "No verification requests at this time"}
-            </Text>
-          </View>
-        )}
-      </ScrollView>
-    </View>
     </View>
   )
 }

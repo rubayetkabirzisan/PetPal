@@ -2,10 +2,11 @@
 
 import { Ionicons } from "@expo/vector-icons"
 import { useEffect, useState } from "react"
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
-import { getApplicationById, getPetById, type AdoptionApplication } from "../data/mockData"
-import { colors } from "../theme/theme"
-import { useTheme } from "../contexts/ThemeContext";
+import { Alert, ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import axios from "axios"
+import { API } from "../config/api"
+import { useTheme } from "../contexts/ThemeContext"
+import { spacing } from "../theme/theme"
 
 interface ApplicationTrackerScreenProps {
   navigation?: any
@@ -13,77 +14,70 @@ interface ApplicationTrackerScreenProps {
   isAdminView?: boolean
 }
 
+interface Application {
+  id: string;
+  petId: string;
+  petName: string;
+  petBreed: string;
+  petImage: string;
+  shelterName: string;
+  shelterId?: string;
+  status: string;
+  submittedDate: string;
+  currentStep: string;
+  completionPercentage: number;
+  progress?: number;
+  timeline?: Array<{
+    id: string;
+    status: string;
+    description: string;
+    completed: boolean;
+    date?: string | null;
+  }>;
+  answers?: Record<string, any>;
+  notes?: string;
+}
+
 export default function ApplicationTrackerScreen({ navigation, route }: ApplicationTrackerScreenProps) {
   const { theme } = useTheme();
   const colors = theme.colors;
   const styles = getStyles(colors);
 
-  const [application, setApplication] = useState<AdoptionApplication | null>(null)
-  const [pet, setPet] = useState<any>(null)
+  const [application, setApplication] = useState<Application | null>(null)
+  const [loading, setLoading] = useState(true)
 
-  const applicationId = route.params?.applicationId
+  const applicationId: string | undefined = route?.params?.applicationId
+  const userId: string | undefined = route?.params?.userId
 
   useEffect(() => {
-    if (applicationId && applicationId !== "new-app") {
-      const appData = getApplicationById(applicationId)
-      if (appData) {
-        setApplication(appData)
-        const petData = getPetById(appData.petId)
-        if (petData) {
-          setPet(petData)
-        }
+    const fetchApplication = async () => {
+      if (!applicationId) {
+        setLoading(false);
+        return;
       }
-    } else {
-      // Mock data for new application
-      setApplication({
-        id: "new-app",
-        petId: "1",
-        adopterId: "demo-user",
-        status: "Submitted",
-        submittedDate: new Date().toISOString().split("T")[0],
-        currentStep: "Initial Review",
-        progress: 20,
-        timeline: [
-          {
-            id: "1",
-            status: "Application Submitted",
-            description: "Your application has been received and is being processed",
-            date: new Date().toISOString().split("T")[0],
-            completed: true,
-          },
-          {
-            id: "2",
-            status: "Initial Review",
-            description: "Our team is reviewing your application",
-            completed: false,
-          },
-          {
-            id: "3",
-            status: "Background Check",
-            description: "Conducting background and reference checks",
-            completed: false,
-          },
-          {
-            id: "4",
-            status: "Meet & Greet",
-            description: "Schedule a meeting with the pet",
-            completed: false,
-          },
-          {
-            id: "5",
-            status: "Final Approval",
-            description: "Final decision and adoption paperwork",
-            completed: false,
-          },
-        ],
-      })
 
-      const petData = getPetById("1")
-      if (petData) {
-        setPet(petData)
+      try {
+        setLoading(true);
+
+        if (userId) {
+          // Fetch from real API — get all apps for user and find the matching one
+          const res = await axios.get(API.applications.byUser(userId));
+          const apps: any[] = res.data;
+          const found = apps.find((a: any) => (a._id || a.id) === applicationId);
+          if (found) {
+            setApplication({ ...found, id: found._id || found.id });
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching application:", err);
+        Alert.alert("Error", "Could not load application details.");
+      } finally {
+        setLoading(false);
       }
-    }
-  }, [applicationId])
+    };
+
+    fetchApplication();
+  }, [applicationId, userId])
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -100,7 +94,7 @@ export default function ApplicationTrackerScreen({ navigation, route }: Applicat
   }
 
   const renderProgressBar = () => {
-    const progress = application?.progress || 0
+    const progress = application?.completionPercentage ?? application?.progress ?? 0
     return (
       <View style={styles.progressContainer}>
         <View style={styles.progressBar}>
@@ -160,11 +154,20 @@ export default function ApplicationTrackerScreen({ navigation, route }: Applicat
     )
   }
 
-  if (!application || !pet) {
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={styles.loadingText}>Loading application details...</Text>
+      </View>
+    )
+  }
+
+  if (!application) {
     return (
       <View style={styles.loadingContainer}>
         <Ionicons name="document-text-outline" size={48} color={colors.primary} />
-        <Text style={styles.loadingText}>Loading application details...</Text>
+        <Text style={styles.loadingText}>Application not found.</Text>
       </View>
     )
   }
@@ -173,17 +176,18 @@ export default function ApplicationTrackerScreen({ navigation, route }: Applicat
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* Pet Information */}
       <View style={styles.petCard}>
-        <Image source={{ uri: pet.images[0] || "https://via.placeholder.com/80x80" }} style={styles.petImage} />
+        <Image
+          source={{ uri: application.petImage || "https://via.placeholder.com/80x80" }}
+          style={styles.petImage}
+        />
         <View style={styles.petInfo}>
-          <Text style={styles.petName}>{pet.name}</Text>
-          <Text style={styles.petDetails}>
-            {pet.breed} • {pet.age} • {pet.gender}
-          </Text>
-          <Text style={styles.petLocation}>{pet.location}</Text>
+          <Text style={styles.petName}>{application.petName || "Unknown Pet"}</Text>
+          <Text style={styles.petDetails}>{application.petBreed}</Text>
+          <Text style={styles.petLocation}>{application.shelterName}</Text>
         </View>
         <TouchableOpacity
           style={styles.viewPetButton}
-          onPress={() => navigation.navigate("PetProfile", { petId: pet.id })}
+          onPress={() => navigation?.navigate("PetProfile", { petId: application.petId })}
         >
           <Ionicons name="eye-outline" size={16} color={colors.primary} />
           <Text style={styles.viewPetButtonText}>View</Text>
@@ -206,7 +210,7 @@ export default function ApplicationTrackerScreen({ navigation, route }: Applicat
         <View style={styles.applicationDetails}>
           <View style={styles.detailItem}>
             <Ionicons name="calendar-outline" size={16} color={colors.text} />
-            <Text style={styles.detailText}>Submitted: {application.submittedDate}</Text>
+            <Text style={styles.detailText}>Submitted: {new Date(application.submittedDate).toLocaleDateString()}</Text>
           </View>
 
           <View style={styles.detailItem}>
@@ -222,7 +226,6 @@ export default function ApplicationTrackerScreen({ navigation, route }: Applicat
               if (value === "" || value === false || value === undefined) return null;
               
               const formatKey = (k: string) => {
-                // convert camelCase to Title Case
                 const result = k.replace(/([A-Z])/g, " $1");
                 return result.charAt(0).toUpperCase() + result.slice(1);
               };
@@ -251,7 +254,7 @@ export default function ApplicationTrackerScreen({ navigation, route }: Applicat
             <View style={styles.nextStepContent}>
               <Text style={styles.nextStepTitle}>Initial Review</Text>
               <Text style={styles.nextStepDescription}>
-                Our team will review your application within 2-3 business days. You'll receive an email notification
+                Our team will review your application within 2-3 business days. You'll receive a notification
                 once the review is complete.
               </Text>
             </View>
@@ -275,21 +278,33 @@ export default function ApplicationTrackerScreen({ navigation, route }: Applicat
       <View style={styles.contactCard}>
         <Text style={styles.sectionTitle}>Need Help?</Text>
         <Text style={styles.contactDescription}>
-          If you have questions about your application, feel free to contact us.
+          If you have questions about your application, feel free to contact {application.shelterName || "the shelter"}.
         </Text>
 
         <View style={styles.contactButtons}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.contactButton}
-            onPress={() => navigation.navigate("Contact", { contactType: "phone" })}
+            onPress={() =>
+              Alert.alert(
+                "Call Shelter",
+                `To reach ${application.shelterName || "the shelter"}, please contact them directly. You can find their contact details in your welcome email.`
+              )
+            }
           >
             <Ionicons name="call-outline" size={20} color={colors.primary} />
-            <Text style={styles.contactButtonText}>Call Us</Text>
+            <Text style={styles.contactButtonText}>Call Shelter</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.contactButton}
-            onPress={() => navigation.navigate("Chat", { supportChat: true })}
+            onPress={() =>
+              navigation?.navigate("Chat", {
+                otherUserId: application.shelterId,
+                shelterName: application.shelterName,
+                petId: application.petId,
+                petName: application.petName,
+              })
+            }
           >
             <Ionicons name="chatbubble-outline" size={20} color={colors.primary} />
             <Text style={styles.contactButtonText}>Live Chat</Text>

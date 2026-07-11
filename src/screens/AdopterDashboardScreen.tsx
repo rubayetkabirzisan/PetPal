@@ -23,14 +23,13 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedFilter, setSelectedFilter] = useState("all")
   const [pets, setPets] = useState<any[]>([])
-  const [favorites, setFavorites] = useState<string[]>([])
   const [messageCount, setMessageCount] = useState(0)
   const [recentEntries, setRecentEntries] = useState<any[]>([])
   const [reminderCount, setReminderCount] = useState(0)
   const [applicationCount, setApplicationCount] = useState(0)
   const [adoptedPetsCount, setAdoptedPetsCount] = useState(0)
   const [gpsAlertCount, setGpsAlertCount] = useState(0)
-  const { user, logout } = useAuth()
+  const { user, logout, savedPetIds, toggleSavedPet } = useAuth()
   const { theme } = useTheme()
   const colors = (theme as any).colors
   const styles = getStyles(theme.colors)
@@ -95,45 +94,51 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
       axios.get(API.messages.conversations(actualUserId))
         .then(res => {
           // Count unread conversations, or total conversations if none unread
-          const unread = res.data.filter((c: any) => c.unread).length;
-          setMessageCount(unread > 0 ? unread : res.data.length);
+          if (Array.isArray(res.data)) {
+            const unread = res.data.filter((c: any) => c.unread).length;
+            setMessageCount(unread > 0 ? unread : res.data.length);
+          }
         })
         .catch(err => console.error("Error fetching dashboard message count:", err));
         
       axios.get(API.careEntries.byUser(actualUserId))
         .then(res => {
-          // Map _id to id and take top 2
-          const entries = res.data
-            .map((e: any) => ({ ...e, id: e._id || e.id }))
-            .slice(0, 2);
-          setRecentEntries(entries);
+          if (Array.isArray(res.data)) {
+            // Map _id to id and take top 2
+            const entries = res.data
+              .map((e: any) => ({ ...e, id: e._id || e.id }))
+              .slice(0, 2);
+            setRecentEntries(entries);
+          }
         })
         .catch(err => console.error("Error fetching dashboard care entries:", err));
         
       axios.get(API.reminders.byUser(actualUserId))
         .then(res => {
-          setReminderCount(res.data.length);
+          if (Array.isArray(res.data)) {
+            setReminderCount(res.data.length);
+          }
         })
         .catch(err => console.error("Error fetching dashboard reminders count:", err));
         
       axios.get(API.applications.byUser(actualUserId))
         .then(res => {
-          setApplicationCount(res.data.length);
+          if (Array.isArray(res.data)) {
+            setApplicationCount(res.data.length);
+          }
         })
         .catch(err => console.error("Error fetching dashboard applications count:", err));
         
-      fetch(API.adoptionHistory.byUser(actualUserId))
-        .then((res) => res.json())
-        .then((data) => {
-          if (Array.isArray(data)) setAdoptedPetsCount(data.length)
+      axios.get(API.adoptionHistory.byUser(actualUserId))
+        .then((res) => {
+          if (Array.isArray(res.data)) setAdoptedPetsCount(res.data.length)
         })
         .catch((err) => console.error("Error fetching adoption history:", err))
 
-      fetch(API.gps.byUser(actualUserId))
-        .then((res) => res.json())
-        .then((data) => {
-          if (Array.isArray(data)) {
-            const alerts = data.filter((pet: any) => pet.status === "Alert" || pet.status === "Low Battery").length;
+      axios.get(API.gps.byUser(actualUserId))
+        .then((res) => {
+          if (Array.isArray(res.data)) {
+            const alerts = res.data.filter((pet: any) => pet.status === "Alert" || pet.status === "Low Battery").length;
             setGpsAlertCount(alerts);
           }
         })
@@ -164,10 +169,7 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
     return matchesSearch && matchesFilter
   })
 
-  const toggleFavorite = (petId: string) => {
-    const newFavorites = favorites.includes(petId) ? favorites.filter((id) => id !== petId) : [...favorites, petId]
-    setFavorites(newFavorites)
-  }
+  // favorites are handled by AuthContext savedPetIds / toggleSavedPet
 
   const renderQuickActions = () => (
     <View style={styles.quickActionsContainer}>
@@ -212,6 +214,18 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
           <Ionicons name="book-outline" size={24} color={colors.primary} />
           <Text style={styles.quickActionNumber}>{reminderCount}</Text>
           <Text style={styles.quickActionLabel}>Reminders</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.quickActionsRow}>
+        <TouchableOpacity 
+          key="saved-pets" 
+          style={[styles.quickActionCard, { width: '100%' }]}
+          onPress={() => navigation.navigate("SavedPets")}
+        >
+          <Ionicons name="heart" size={24} color={colors.primary} />
+          <Text style={styles.quickActionNumber}>{savedPetIds?.length || 0}</Text>
+          <Text style={styles.quickActionLabel}>Saved Pets</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -409,11 +423,11 @@ export default function AdopterDashboardScreen({ navigation }: AdopterDashboardS
               {pet.breed} • {pet.age}
             </Text>
           </View>
-          <TouchableOpacity onPress={() => toggleFavorite(pet.id)}>
+          <TouchableOpacity onPress={() => toggleSavedPet(pet.id)}>
             <Ionicons
-              name={favorites.includes(pet.id) ? "heart" : "heart-outline"}
+              name={savedPetIds?.includes(pet.id) ? "heart" : "heart-outline"}
               size={24}
-              color={favorites.includes(pet.id) ? colors.primary : colors.text}
+              color={savedPetIds?.includes(pet.id) ? colors.error : colors.text}
             />
           </TouchableOpacity>
         </View>

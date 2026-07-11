@@ -62,7 +62,7 @@ export default function LostPetCard({
         />
         <View style={[styles.badge, getStatusColor(pet.status), styles.topRight]}>
           <Text style={[styles.badgeText, getStatusColor(pet.status)]}>
-            {pet.status.charAt(0).toUpperCase() + pet.status.slice(1)}
+            {pet.status ? pet.status.charAt(0).toUpperCase() + pet.status.slice(1) : ''}
           </Text>
         </View>
         

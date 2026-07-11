@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import NavigationHeader from '../components/NavigationHeader';
+import axios from 'axios';
 import { API } from '../config/api';
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
@@ -96,19 +97,27 @@ export default function CareJournalScreen({ route, navigation }: CareJournalScre
     if (!user?.id) return;
     try {
       // Get care entries for this user
-      const careEntriesResponse = await fetch(API.careEntries.byUser(user.id));
-      const careEntries = await careEntriesResponse.json();
+      const careEntriesResponse = await axios.get(API.careEntries.byUser(user.id));
+      const careEntries = careEntriesResponse.data;
       
-      // Map MongoDB _id to id to fix the unique key warning
-      const mappedEntries = careEntries.map((e: any) => ({ ...e, id: e._id || e.id }));
-      setEntries(mappedEntries);
+      if (Array.isArray(careEntries)) {
+        // Map MongoDB _id to id to fix the unique key warning
+        const mappedEntries = careEntries.map((e: any) => ({ ...e, id: e._id || e.id }));
+        setEntries(mappedEntries);
+      } else {
+        setEntries([]);
+      }
 
       // Get adopted pets for this user
-      const petsResponse = await fetch(API.pets.all);
-      const pets = await petsResponse.json();
+      const petsResponse = await axios.get(API.pets.all);
+      const pets = petsResponse.data;
       
-      const mappedPets = pets.map((p: any) => ({ ...p, id: p._id || p.id }));
-      setAdoptedPets(mappedPets);
+      if (Array.isArray(pets)) {
+        const mappedPets = pets.map((p: any) => ({ ...p, id: p._id || p.id }));
+        setAdoptedPets(mappedPets);
+      } else {
+        setAdoptedPets([]);
+      }
     } catch (error) {
       console.error('Failed to load data:', error);
       Alert.alert('Error', 'Failed to load care journal data.');
@@ -135,20 +144,10 @@ export default function CareJournalScreen({ route, navigation }: CareJournalScre
 
       if (editingEntry) {
         // Edit existing entry
-        const res = await fetch(API.careEntries.update(editingEntry), {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-        if (!res.ok) throw new Error(await res.text());
+        await axios.put(API.careEntries.update(editingEntry), payload);
       } else {
         // Create new entry
-        const res = await fetch(API.careEntries.create, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-        if (!res.ok) throw new Error(await res.text());
+        await axios.post(API.careEntries.create, payload);
       }
 
       loadData();
@@ -164,8 +163,8 @@ export default function CareJournalScreen({ route, navigation }: CareJournalScre
   // --- Edit ---
   const handleEdit = async (entryId: string) => {
     try {
-      const response = await fetch(API.careEntries.byId(entryId));
-      const entry = await response.json();
+      const response = await axios.get(API.careEntries.byId(entryId));
+      const entry = response.data;
       
       // Handle the ISO date string coming from DB
       let safeDate = new Date().toISOString().split("T")[0];
@@ -204,9 +203,7 @@ export default function CareJournalScreen({ route, navigation }: CareJournalScre
           text: 'Delete',
           onPress: async () => {
             try {
-              await fetch(API.careEntries.delete(entryId), {
-                method: 'DELETE',
-              });
+              await axios.delete(API.careEntries.delete(entryId));
               loadData();
             } catch (error) {
               console.error('Error deleting entry:', error);

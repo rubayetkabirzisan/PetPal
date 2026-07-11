@@ -12,6 +12,7 @@ import AdopterTabNavigator from "./src/navigation/AdopterTabNavigator"
 import AddPetScreen from "./src/screens/AddPetScreen"
 import AdminApplicationsScreen from "./src/screens/AdminApplicationsScreen"
 import AdminLostPetsScreen from "./src/screens/AdminLostPetsScreen"
+import SavedPetsScreen from "./src/screens/SavedPetsScreen"
 import AdoptionHistoryScreen from "./src/screens/AdoptionHistoryScreen"
 import AiPetScreen from "./src/screens/AiPetScreen"
 import AnalyticsScreen from "./src/screens/AnalyticsScreen"
@@ -63,6 +64,7 @@ export default function App() {
             <StatusBar style="auto" />
             <Stack.Navigator initialRouteName="Landing" screenOptions={{ headerShown: false }}>
             <Stack.Screen name="Landing" component={LandingScreen} />
+            <Stack.Screen name="SavedPets" component={SavedPetsScreen} options={{ headerShown: false }} />
             <Stack.Screen name="Auth" component={AuthScreen} />
             <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
             <Stack.Screen name="AdopterTabs" component={AdopterTabNavigator} />

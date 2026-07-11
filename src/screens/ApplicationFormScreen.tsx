@@ -98,8 +98,59 @@ export default function ApplicationFormScreen({ navigation, route }: Application
   }
 
   const nextStep = () => {
+    // Validation logic for each step
+    let isValid = true;
+    let errorMsg = "";
+
+    switch (currentStep) {
+      case 0: // Personal Info
+        if (!formData.firstName.trim() || !formData.lastName.trim() || !formData.email.trim() || !formData.phone.trim()) {
+          isValid = false;
+          errorMsg = "Please fill in all required personal information (First Name, Last Name, Email, Phone).";
+        }
+        break;
+      case 1: // Address
+        if (!formData.address.trim() || !formData.city.trim() || !formData.state.trim() || !formData.zipCode.trim() || !formData.housingType || !formData.ownRent) {
+          isValid = false;
+          errorMsg = "Please fill in all required address and housing details.";
+        } else if (formData.ownRent === "rent" && (!formData.landlordsName.trim() || !formData.landlordsPhone.trim())) {
+          isValid = false;
+          errorMsg = "Since you rent, please provide your landlord's name and phone number.";
+        }
+        break;
+      case 2: // Pet Experience
+        if (!formData.petExperience.trim()) {
+          isValid = false;
+          errorMsg = "Please provide your pet experience level.";
+        }
+        break;
+      case 3: // Lifestyle
+        if (!formData.workSchedule.trim() || !formData.hoursAlone.trim() || !formData.exerciseCommitment || !formData.familyMembers.trim()) {
+          isValid = false;
+          errorMsg = "Please complete all required lifestyle and schedule fields.";
+        }
+        break;
+      case 4: // References
+        if (!formData.reference1Name.trim() || !formData.reference1Phone.trim() || !formData.reference1Relation.trim()) {
+          isValid = false;
+          errorMsg = "Please provide at least one reference (Reference 1).";
+        }
+        break;
+      case 5: // Additional Info
+        if (!formData.whyAdopt.trim() || !formData.healthCareCommitment.trim() || !formData.financialPreparation.trim()) {
+          isValid = false;
+          errorMsg = "Please answer all required additional questions (Why adopt, Health care, Financial prep).";
+        }
+        break;
+    }
+
+    if (!isValid) {
+      Alert.alert("Missing Information", errorMsg);
+      return;
+    }
+
     if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1)
+      setCurrentStep(currentStep + 1);
     }
   }
 

@@ -63,9 +63,9 @@ export default function SavedPetsScreen({ navigation }: any) {
       <TouchableOpacity
         style={styles.card}
         activeOpacity={0.9}
-        onPress={() => navigation.navigate("PetProfile", { pet: { ...item, id: item._id } })}
+        onPress={() => navigation.navigate("PetProfile", { petId: item._id || item.id })}
       >
-        <Image source={{ uri: item.image || "https://via.placeholder.com/150" }} style={styles.petImage} />
+        <Image source={{ uri: (item.images && item.images[0]) || item.image || "https://via.placeholder.com/150" }} style={styles.petImage} />
         <TouchableOpacity
           style={styles.heartButton}
           onPress={() => toggleSavedPet(item._id)}

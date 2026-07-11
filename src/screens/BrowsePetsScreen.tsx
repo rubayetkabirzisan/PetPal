@@ -9,6 +9,7 @@ import axios from "axios"
 import { API } from "../config/api"
 import { useFocusEffect } from "@react-navigation/native"
 import { useTheme } from "../contexts/ThemeContext";
+import { useAuth } from "../contexts/AuthContext";
 
 interface BrowsePetsScreenProps {
   navigation: any
@@ -18,12 +19,12 @@ export default function BrowsePetsScreen({ navigation }: BrowsePetsScreenProps) 
   const { theme } = useTheme();
   const colors = theme.colors;
   const styles = getStyles(colors);
+  const { savedPetIds, toggleSavedPet } = useAuth();
 
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedFilter, setSelectedFilter] = useState("all")
   const [pets, setPets] = useState<any[]>([])
-  const [favorites, setFavorites] = useState<string[]>([])
-  const [loading, setLoading] = useState(true)
+    const [loading, setLoading] = useState(true)
   
   const fetchPets = async () => {
     try {
@@ -74,10 +75,8 @@ export default function BrowsePetsScreen({ navigation }: BrowsePetsScreenProps) 
     return matchesSearch && matchesFilter
   })
 
-  const toggleFavorite = (petId: string) => {
-    const newFavorites = favorites.includes(petId) ? favorites.filter((id) => id !== petId) : [...favorites, petId]
-    setFavorites(newFavorites)
-  }
+  // We use toggleSavedPet from AuthContext directly
+  // The UI will re-render automatically because savedPetIds is pulled from context
 
   // Safe navigation function using the traditional React Navigation approach
   const handlePetPress = (petId: string) => {
@@ -118,13 +117,13 @@ export default function BrowsePetsScreen({ navigation }: BrowsePetsScreenProps) 
             <TouchableOpacity 
               onPress={(e) => {
                 e.stopPropagation();
-                toggleFavorite(pet.id);
+                toggleSavedPet(pet.id);
               }}
             >
               <Ionicons
-                name={favorites.includes(pet.id) ? "heart" : "heart-outline"}
+                name={savedPetIds.includes(pet.id) ? "heart" : "heart-outline"}
                 size={24}
-                color={favorites.includes(pet.id) ? colors.primary : colors.text}
+                color={savedPetIds.includes(pet.id) ? colors.primary : colors.text}
               />
             </TouchableOpacity>
           </View>
