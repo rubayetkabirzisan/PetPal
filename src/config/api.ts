@@ -90,6 +90,15 @@ export const API = {
     byUser: (userId: string) => `${API_BASE_URL}/api/adoption-history/viewById/${userId}`,
   },
 
+  // Verification
+  verification: {
+    submit:   `${API_BASE_URL}/api/verification_requests/submit`,
+    myStatus: `${API_BASE_URL}/api/verification_requests/my-status`,
+    all:      `${API_BASE_URL}/api/verification_requests/all`,
+    approve:  (id: string) => `${API_BASE_URL}/api/verification_requests/approve/${id}`,
+    reject:   (id: string) => `${API_BASE_URL}/api/verification_requests/reject/${id}`,
+  },
+
   // Profile
   profile: {
     view:   (userId: string) => `${API_BASE_URL}/api/profile/view/${userId}`,
